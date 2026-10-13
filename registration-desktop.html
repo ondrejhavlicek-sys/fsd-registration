@@ -290,12 +290,142 @@
   .bank:active{box-shadow:0 1px 2px rgba(0,0,0,.12)}
   .bank:focus-visible{outline-offset:-2px}
 
+
+  /* ===== desktop defaults for elements that matter on mobile ===== */
+  .rail{display:none}
+  .dic-row{display:grid;grid-template-columns:130px 1fr;margin-top:10px;align-items:center;font-size:13px}
+  .acct-panel{width:480px;align-items:flex-start}
+  .invite-field{width:280px;margin-bottom:8px}
+  .sheet-ov{display:none}
+
+  /* ===== mobile (<= 768px): layout from Figma "Heading XL" template =====
+     header, back button, "Krok X z 5" + numbered rail, content, sticky footer actions.
+     Modal dialogs become bottom sheets. Corners stay sharp. */
+  @media (max-width:768px){
+    body{font-size:14px}
+    /* header */
+    .hdr{height:64px;padding:0 12px}
+    .brand{font-size:26px;font-weight:700;gap:7px}
+    .logo{font-size:26px;letter-spacing:-.5px}
+    .hdr-actions{gap:12px}
+    .hdr-actions .login{display:none}
+    .btn-reg{padding:10px 12px;font-size:14px}
+    .avatar{width:40px;height:40px}
+
+    /* page: single column, content grows so the footer sits at the bottom */
+    .page{display:flex;flex-direction:column;margin:0;padding:12px;min-height:calc(100vh - 64px);min-height:calc(100dvh - 64px);max-width:none}
+    .page>.steps{display:none}
+    .page>main{display:flex;flex-direction:column;flex:1;min-width:0}
+
+    /* top block: back button, step label + saved, numbered rail */
+    .topbar{display:grid;grid-template-columns:1fr auto;gap:12px 8px;align-items:baseline;margin-bottom:24px}
+    .topbar .back{grid-column:1/-1;justify-self:start;width:36px;height:36px;background:#f0f0f0}
+    .topbar .grow,.topbar .xbtn{display:none}
+    .topbar .crumb{font-size:16px;line-height:20px;font-weight:600;color:#444}
+    .topbar .saved{font-size:12px;font-weight:500;color:#666}
+    .rail{grid-column:1/-1;display:flex;align-items:center;height:32px}
+    .rdot{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:600;background:#e9e9e9;color:#7c7c7c;border:0;padding:0}
+    .rdot.done{background:#005ae0;color:#fff;font-size:14px}
+    .rdot.done:hover{background:#004fc4}
+    .rdot.current{background:#fff;color:#005ae0;border:2px solid #005ae0;font-weight:700}
+    .conn{flex:1;height:2px;background:#e9e9e9;min-width:4px}
+    .conn.on{background:#005ae0}
+
+    h1{font-size:24px;line-height:28px;margin:0 0 8px}
+    .sub{margin:0 0 12px;line-height:22px}
+    .lbl{font-size:14px}
+    h3{font-size:15px}
+
+    /* sticky footer actions: primary full width, secondary link as full-width button below */
+    .actions{position:sticky;bottom:0;z-index:5;flex-direction:column;align-items:stretch;gap:12px;
+      margin:auto -12px 0 !important;padding:12px 12px max(32px,env(safe-area-inset-bottom));background:#fff;box-shadow:0 -1px 0 #ececec}
+    .actions .btn{width:100%;min-height:48px;font-size:16px;padding:12px !important}
+    .actions .link{min-height:48px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#0047c2}
+    main>.cta-intro{width:100%;min-height:48px;font-size:16px}
+
+    /* fields */
+    .ico-row{align-items:flex-end}
+    .ico-row .field{flex:1;width:auto}
+    .ico-row .btn{min-height:48px;font-size:16px !important;padding:12px !important}
+    .iconbtn.back{font-size:22px}
+    .field{height:48px}
+    .stack{max-width:none}
+    .prefix{width:119px}
+    .dic-row{grid-template-columns:1fr;gap:6px}
+    .field.small-w{width:100%}
+    .invite-field{width:100%}
+
+    /* data panels: label above value, no leading badge */
+    .panel{padding:16px;gap:0}
+    .panel .badge{display:none}
+    .panel dl{grid-template-columns:1fr;gap:0;font-size:14px}
+    .panel dt{margin-top:12px}
+    .panel dt:first-child{margin-top:0}
+    .panel dd{margin-top:2px}
+    .acct-panel{width:100%}
+    .panel.green .bigcheck{top:16px;transform:none;right:16px}
+    .info{font-size:14px}
+
+    /* bank picker: single column of tiles */
+    .banks{grid-template-columns:1fr;padding:8px}
+    .bank{min-height:64px}
+    .bank .name{font-size:15px}
+    .radio{margin-right:6px}
+
+    /* power of attorney upload */
+    .drop{flex-wrap:wrap;gap:12px}
+    .drop .t{flex:1 1 60%}
+    .file{flex-wrap:wrap}
+    .alert{font-size:14px}
+
+    /* bottom sheets (replace modal dialogs) */
+    .overlay{align-items:end;padding:0}
+    .dialog{max-width:none;width:100%;padding:28px 16px max(24px,env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .3s ease;touch-action:none}
+    .overlay.open .dialog{transform:none}
+    .dialog::before,.sheet::before{content:"";display:block;width:40px;height:4px;background:#c9ccd1;margin:-16px auto 20px}
+    .dialog .x{display:none}
+    .dialog h2{padding-right:0;font-size:20px}
+    .dialog .actions{position:static;margin:24px 0 0 !important;padding:0;box-shadow:none;gap:8px}
+    .dialog .actions .btn{padding:12px !important}
+
+    .sheet-ov{display:flex;align-items:flex-end;position:fixed;inset:0;z-index:90;background:rgba(0,20,48,.6);animation:ovIn .3s ease both}
+    .sheet{background:#fff;width:100%;border:0;box-shadow:0 -8px 32px rgba(0,0,0,.25);padding:28px 16px max(24px,env(safe-area-inset-bottom));animation:sheetUp .3s ease both;position:relative}
+    .sheet .x{display:none}
+    .sheet .btn-wide{padding:14px;font-size:15px}
+    .sheet .social button{flex:1;max-width:84px;height:44px}
+    @keyframes ovIn{from{opacity:0}to{opacity:1}}
+    @keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+    @media (prefers-reduced-motion:reduce){.sheet-ov,.sheet{animation:none}.dialog{transition:none}}
+
+    /* bank stand-in page */
+    .bsite-main{padding:24px 12px}
+    .bsite-card{padding:28px 20px}
+    .bsite-bar .bsite-wrap,.bsite-wrap{padding:0 12px}
+
+    /* landing page */
+    .lp-wrap{padding:0 12px}
+    .lp-hero{margin-top:12px;padding:32px 20px;gap:16px}
+    .lp-hero h1{font-size:36px}
+    .lp-hero p.lead{font-size:16px}
+    .lp-hero .row{flex-direction:column;gap:12px}
+    .lp-pill{width:100%}
+    .lp-stats{gap:12px;padding-top:24px}
+    .lp-why{padding-top:48px}
+    .lp-why h2{font-size:26px;margin-bottom:28px}
+    .lp-cards{gap:16px}
+    .lp-cta{margin:40px auto 48px;padding:28px 20px}
+    .lp-foot .cols{grid-template-columns:1fr 1fr}
+
+  }
+
   /* prototype controls */
   .proto{position:fixed;right:12px;bottom:12px;background:#fff;border:1px solid var(--line);box-shadow:0 2px 12px rgba(0,0,0,.12);font-size:12px;width:230px;z-index:10}
   .proto summary{padding:8px 10px;font-weight:600;cursor:pointer;color:var(--muted)}
   .proto div{padding:4px 10px 10px;display:flex;flex-direction:column;gap:8px}
   .proto label{display:flex;flex-direction:column;gap:3px;color:var(--muted)}
   .proto select{font:inherit;padding:4px}
+  @media (max-width:400px){.brand,.logo{font-size:22px}.btn-reg{padding:9px 10px;font-size:13px}}
+  @media (max-width:768px){.proto{left:4px;right:auto;bottom:4px;width:200px;opacity:.92}}
 </style>
 </head>
 <body>
@@ -456,6 +586,15 @@ function restart(){
   Object.assign(S,{idScreen:null,ico:VALID_ICO,dic:'',email:'',phone:'',bank:null,bankAll:false,consent:false,file:null,poaFail:false,invites:[],showInvite:false,terms:false,authForm:false,authEmail:''});
   go('landing');
 }
+(function swipeToDismiss(){
+  const d=$('#exitOverlay .dialog'); let y0=null, dy=0;
+  d.addEventListener('touchstart',e=>{ if(!isMobile()) return; y0=e.touches[0].clientY; dy=0; d.style.transition='none'; },{passive:true});
+  d.addEventListener('touchmove',e=>{ if(y0===null) return; dy=Math.max(0,e.touches[0].clientY-y0); d.style.transform=`translateY(${dy}px)`; },{passive:true});
+  d.addEventListener('touchend',()=>{
+    if(y0===null) return; y0=null; d.style.transition=''; d.style.transform='';
+    if(dy>80) closeExit();
+  });
+})();
 $('#exitContinue').addEventListener('click',closeExit);
 $('#exitX').addEventListener('click',closeExit);
 $('#exitRestart').addEventListener('click',()=>{
@@ -485,6 +624,7 @@ const header = (loggedIn, regTarget='auth') => `
   </header>`;
 
 // where a completed step in the sidebar leads back to
+const isMobile = () => matchMedia('(max-width:768px)').matches;
 const STEP_TARGET = n => ({1:'intro', 2:'account', 3:'icoFound', 4:S.idScreen||'idOk'})[n];
 const sidebar = (cur, done) => `
   <nav class="steps" aria-label="Kroky registrace">${STEPS.map((s,i)=>{
@@ -495,14 +635,25 @@ const sidebar = (cur, done) => `
       : `<div class="step ${st}"${st==='active'?' aria-current="step"':''}>${inner}</div>`;
   }).join('')}</nav>`;
 
+// numbered rail shown instead of the sidebar on mobile; completed steps are tappable
+const rail = cur => `<nav class="rail" aria-label="Kroky registrace">${STEPS.map((st,i)=>{
+  const n=i+1, state = n<cur?'done':n===cur?'current':'todo';
+  const conn = n<STEPS.length ? `<span class="conn ${n<cur?'on':''}"></span>` : '';
+  const dot = state==='done'
+    ? `<button type="button" class="rdot done" data-step-go="${STEP_TARGET(n)}" aria-label="Krok ${n}: ${st[0]} (dokončeno) – vrátit se">✓</button>`
+    : `<span class="rdot ${state}"${state==='current'?' aria-current="step"':''}>${n}</span>`;
+  return dot+conn;
+}).join('')}</nav>`;
+
 const topbar = (id, saved=true) => {
   const sc = SCREENS[id];
   return `<div class="topbar">
-    <button class="iconbtn" data-back aria-label="Zpět">‹</button>
-    <span>Krok ${sc.step} z 5 · ${STEPS[sc.step-1][0]}</span>
+    <button class="iconbtn back" data-back aria-label="Zpět">‹</button>
+    <span class="crumb">Krok ${sc.step} z 5 · ${STEPS[sc.step-1][0]}</span>
     ${saved?'<span class="saved">Uloženo</span>':''}
     <span class="grow"></span>
-    <button class="iconbtn" data-go="later" aria-label="Zavřít">✕</button>
+    <button class="iconbtn xbtn" data-go="later" aria-label="Zavřít">✕</button>
+    ${rail(sc.step)}
   </div>`;
 };
 
@@ -582,13 +733,14 @@ const VIEWS = {
           <ul><li>v obchodním rejstříku jste uveden(a) jako jednatel nebo statutární orgán, nebo</li>
           <li>máte plnou moc, kterou při registraci nahrajete. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></li></ul></div>
         <p style="margin:16px 0 20px">Online registraci zahajte vytvořením uživatelského účtu, pomocí kterého se budete přihlašovat do služby <b>makro distribuce</b>.</p>
-        <button class="btn" data-go="auth" style="padding:14px 8px">Začít online registraci</button>
+        <button class="btn cta-intro" data-go="auth" style="padding:14px 8px">Začít online registraci</button>
         <p style="margin:56px 0 0">Nechce se vám registraci řešit na internetu? Zavolejte nám a sjednejte si schůzku s obchodním zástupcem.</p>
         <div class="phone">📞 +420 271 005 005</div>
       </main>
     </div>`,
 
-  auth: () => `<div class="modal-wrap"><div class="modal">
+  auth: () => {
+    const content = `
       <button class="x" data-go="later" aria-label="Zavřít">✕</button>
       <span class="mlogo">makro</span>
       <h2>Registrace</h2>
@@ -606,7 +758,12 @@ const VIEWS = {
         <div class="or">NEBO</div>
         <button class="btn-wide" data-auth-mail>Registrovat se e-mailem</button>`}
       <div class="have">Máte na Košíku účet? <a href="#" data-auth-login><b>Přihlaste se</b></a></div>
-    </div></div>`,
+`;
+    // desktop: centred modal on a blank page; mobile: bottom sheet over the intro screen
+    return isMobile()
+      ? `${VIEWS.intro()}<div class="sheet-ov"><div class="sheet modal" role="dialog" aria-modal="true" aria-label="Registrace">${content}</div></div>`
+      : `<div class="modal-wrap"><div class="modal">${content}</div></div>`;
+  },
 
   account: () => `${header(true)}
     <div class="page">${sidebar(2)}
@@ -614,7 +771,7 @@ const VIEWS = {
         ${topbar('account')}
         <h1>Registrace nového uživatele</h1>
         ${alertBox('ok','Uživatelský účet byl úspěšně vytvořen','margin-top:24px')}
-        <div class="panel" style="width:480px;align-items:flex-start">
+        <div class="panel acct-panel">
           <div class="badge">${svgIcon(ICON.user)}</div>
           <div style="font-size:13px"><div>Jste přihlášen(a) jako</div><b style="display:block;margin:6px 0 12px;color:var(--ink-strong)">${esc(S.authEmail||PERSON.email)}</b>
           <button class="btn soft sm" data-go="intro">Přihlásit se jiným účtem</button></div>
@@ -636,7 +793,7 @@ const VIEWS = {
         ${alertBox('ok','Nalezli jsme firmu dle zadaného IČO.')}
         <div class="panel" style="align-items:flex-start"><div class="badge">${svgIcon(ICON.company)}</div><div style="flex:1">
           ${dataRows([['IČO',COMPANY.ico],['Název',COMPANY.name],['Sídlo (fakturační adresa)',COMPANY.seat]])}
-          <div style="display:grid;grid-template-columns:130px 1fr;margin-top:10px;align-items:center;font-size:13px"><label for="dic">DIČ (volitelné)</label>
+          <div class="dic-row"><label for="dic">DIČ (volitelné)</label>
             <div class="field small-w"><input id="dic" data-bind="dic" value="${esc(S.dic)}"></div></div>
           <button class="btn soft sm" style="margin-top:20px" data-go="ico">Zadat jiné IČO</button>
         </div></div>
@@ -736,7 +893,7 @@ const VIEWS = {
         <h3 style="font-size:13px;margin-top:28px">Přejete si přidat další uživatele? <span style="font-weight:400">(Nepovinné)</span></h3>
         <p class="hint">Dalším uživatelům pošleme pozvánku na e-mail a poté, co si vytvoří uživatelský účet, získají okamžitě přístup do služby.</p>
         ${S.showInvite?`<div style="margin-top:12px"><label class="lbl">E-mail</label>
-          ${S.invites.map((v,i)=>`<div class="field" style="width:280px;margin-bottom:8px"><input type="email" data-invite="${i}" value="${esc(v)}" placeholder="jmeno@domena.cz" aria-label="E-mail uživatele ${i+1}"></div>`).join('')}</div>`:''}
+          ${S.invites.map((v,i)=>`<div class="field invite-field"><input type="email" data-invite="${i}" value="${esc(v)}" placeholder="jmeno@domena.cz" aria-label="E-mail uživatele ${i+1}"></div>`).join('')}</div>`:''}
         <button class="btn ${S.showInvite?'soft':'soft'} sm" id="addUser" style="margin-top:6px">＋&nbsp; Přidat uživatele</button>
         <label class="chk terms"><input type="checkbox" id="terms" ${S.terms?'checked':''}><span>Souhlasím s <a href="#">Všeobecnými obchodními podmínkami</a> služby makro distribuce a <a href="#">Zásadami zpracování osobních údajů</a> a zároveň se zříkám všech práv na cokoliv.</span></label>
         <div class="actions" style="margin-top:24px"><button class="btn" id="finish" ${S.terms?'':'disabled'} style="padding:14px 8px">Dokončit registraci a přejít do online obchodu</button></div>
@@ -807,6 +964,8 @@ function wire(){
   app.querySelectorAll('[data-bind]').forEach(el=>el.addEventListener('input',()=>{ S[el.dataset.bind]=el.value; }));
 
   // auth modal
+  const sov = app.querySelector('.sheet-ov');
+  if(sov) sov.addEventListener('click',e=>{ if(e.target===sov) openExit(); }); // tap outside the sheet
   const am = app.querySelector('[data-auth-mail]');
   if(am) am.addEventListener('click',()=>{ S.authForm=true; render(); $('#aemail')?.focus(); });
   const al = app.querySelector('[data-auth-login]');
@@ -872,6 +1031,8 @@ function setFile(f){
   if(!ok){ const e=$('#fileErr'); if(e) e.textContent='Soubor musí být JPG, PNG nebo PDF a nesmí být větší než 10 MB.'; return; }
   S.file = {name:f.name,size:f.size}; S.poaFail=false; render();
 }
+
+matchMedia('(max-width:768px)').addEventListener('change',()=>render());
 
 /* prototype panel */
 $('#sc-jump').innerHTML = Object.entries(SCREENS).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('');
