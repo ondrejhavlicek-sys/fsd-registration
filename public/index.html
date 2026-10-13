@@ -131,7 +131,7 @@
   .dots i{box-shadow:0 0 0 1px #ececec}
 
   /* bank */
-  .banks{background:var(--panel);padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+  .banks{background:var(--panel);padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
   .bank{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid transparent;padding:10px;min-height:74px;text-align:left;width:100%;box-shadow:0 2px 4px rgba(0,0,0,.06),0 0 4px rgba(0,0,0,.06)}
   .bank:hover{box-shadow:0 2px 8px rgba(0,0,0,.12),0 0 4px rgba(0,0,0,.08)}
   .bank.sel{border-color:#005ae0}
@@ -367,10 +367,15 @@
     .info{font-size:14px}
 
     /* bank picker: single column of tiles */
-    .banks{grid-template-columns:1fr;padding:8px}
+    .banks{grid-template-columns:1fr;padding:12px;gap:12px}
     .bank{min-height:64px}
     .bank .name{font-size:15px}
     .radio{margin-right:6px}
+
+    /* verification method tabs: full-width halves */
+    .seg{display:flex;width:100%}
+    .seg button{flex:1;min-width:0;height:32px;font-size:13px}
+    .docpanel{padding:12px;gap:12px}
 
     /* power of attorney upload */
     .drop{flex-wrap:wrap;gap:12px}
@@ -418,6 +423,26 @@
 
   }
 
+  /* verification method: segmented control + ID document slots */
+  .seg{display:inline-flex;gap:4px;padding:4px;background:#fff;border:1px solid #e9e9e9;margin:16px 0}
+  .seg button{height:24px;min-width:120px;padding:0 16px;border:0;background:none;font-size:12px;line-height:16px;color:#222;font-weight:400}
+  .seg button:hover{background:#f3f5fe}
+  .seg button[aria-selected="true"],.seg button[aria-selected="true"]:hover{background:#005ae0;color:#fff;font-weight:600}
+  .docpanel{background:var(--panel);padding:16px;display:flex;flex-direction:column;gap:16px;margin-bottom:16px}
+  .slot-h{display:flex;flex-direction:column;gap:2px;margin-bottom:8px}
+  .slot-h b{font-size:14px;font-weight:600;color:var(--ink-strong)}
+  .slot-h span{font-size:12px;color:var(--muted)}
+  /* white rows inside the grey card look like the bank tiles: same height, padding and elevation */
+  .docpanel .drop,.docpanel .file{margin-top:0;padding:12px;min-height:74px;box-shadow:0 2px 4px rgba(0,0,0,.06),0 0 4px rgba(0,0,0,.06)}
+  .docpanel .drop{border:1px dashed #b9c4d6}
+  .docpanel .file{border:1px solid transparent;padding:11px}
+  .docpanel .file .thumb{width:50px;height:50px}
+  .slot-err{margin-top:6px;font-size:12px;color:var(--err)}
+  .file .thumb{width:40px;height:40px;object-fit:cover;flex:none;background:#eee}
+  .file .fname{font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .file .sz{margin-left:auto;flex:none}
+  .file .link.small{margin-left:12px;flex:none}
+
   /* prototype controls */
   .proto{position:fixed;right:12px;bottom:12px;background:#fff;border:1px solid var(--line);box-shadow:0 2px 12px rgba(0,0,0,.12);font-size:12px;width:230px;z-index:10}
   .proto summary{padding:8px 10px;font-weight:600;cursor:pointer;color:var(--muted)}
@@ -443,7 +468,7 @@
 <details class="proto" id="proto">
   <summary>Prototype scenarios</summary>
   <div>
-    <label>Role verified by Bank iD
+    <label>Role verified (Bank iD / ID + photo)
       <select id="sc-role">
         <option value="auto">Statutory body (jednatel)</option>
         <option value="poa">Power of attorney needed</option>
@@ -451,6 +476,12 @@
     </label>
     <label>Power of attorney check
       <select id="sc-poa">
+        <option value="ok">Success</option>
+        <option value="fail">Fail</option>
+      </select>
+    </label>
+    <label>ID + photo check
+      <select id="sc-doc">
         <option value="ok">Success</option>
         <option value="fail">Fail</option>
       </select>
@@ -491,6 +522,11 @@ const BANKS = [
   ['UniCredit Bank','data:image/png;base64,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']
 ];
 const BANK_SHORT = 6;
+const DOC_SLOTS = [
+  ['front','Osobní doklad – přední strana','Občanský průkaz, cestovní pas nebo řidičský průkaz'],
+  ['back','Osobní doklad – zadní strana','U dokladu bez zadní strany nahrajte stranu s osobními údaji'],
+  ['selfie','Vaše fotografie','Obličej dobře osvětlený, bez brýlí a čepice']
+];
 const VALID_ICO = '03255654';
 const COMPANY = { ico: VALID_ICO, name: 'EREMITA COMPANY s.r.o.', seat: 'Jičínská 226/17, Žižkov, 13000 Praha 3' };
 const PERSON = { name: 'Jan Novák', born: '5. 1. 1988', email: 'jiri.novak@eremita.cz' };
@@ -515,6 +551,7 @@ const SCREENS = {
   icoNotFound: { step:3, label:'3.3 B – IČO nenalezeno', back:'ico' },
   bank:        { step:4, label:'4.0/4.1 – Výběr banky', back:'icoFound' },
   bankSite:    { step:4, label:'4.1b – Web banky (Bank iD)', bare:true, back:'bank' },
+  docLoading:  { step:4, label:'(kontrola dokladu a fotografie)', back:'bank' },
   bankLoading: { step:4, label:'(načítání Bank iD)', back:'bank' },
   idOk:        { step:4, label:'4.2 A – Totožnost ověřena', back:'bank' },
   poa:         { step:4, label:'4.2 B – Nutná plná moc', back:'bank' },
@@ -527,6 +564,7 @@ const SCREENS = {
 const S = {
   screen:'landing',
   ico:VALID_ICO, dic:'', email:'', phone:'', icoErr:false,
+  method:'bankid', via:'bankid', docs:{front:null,back:null,selfie:null}, docErr:{}, docConsent:false, docFail:false,
   idScreen:null, bank:null, bankAll:false, consent:false,
   file:null, poaFail:false,
   invites:[], showInvite:false, terms:false,
@@ -551,6 +589,12 @@ function go(id){
   firstPaint = false;
   // auto transitions of loading screens
   if(id==='icoLoading') later(1600,()=>go(S.ico===VALID_ICO?'icoFound':'icoNotFound'));
+  if(id==='docLoading') later(1800,()=>{
+    if($('#sc-doc').value==='fail'){
+      Object.values(S.docs).forEach(d=>d&&URL.revokeObjectURL(d.url));
+      S.docs={front:null,back:null,selfie:null}; S.docConsent=false; S.docFail=true; go('bank');
+    } else go($('#sc-role').value==='poa'?'poa':'idOk'); // same outcome as a Bank iD check
+  });
   if(id==='bankLoading') later(1400,()=>go($('#sc-role').value==='poa'?'poa':'idOk'));
   if(id==='poaLoading') later(1800,()=>{
     if($('#sc-poa').value==='fail'){ S.file=null; S.poaFail=true; go('poa'); } else go('poaOk');
@@ -583,7 +627,8 @@ function closeExit(){
   if(exitReturnFocus && document.contains(exitReturnFocus)) exitReturnFocus.focus();
 }
 function restart(){
-  Object.assign(S,{idScreen:null,ico:VALID_ICO,dic:'',email:'',phone:'',bank:null,bankAll:false,consent:false,file:null,poaFail:false,invites:[],showInvite:false,terms:false,authForm:false,authEmail:''});
+  Object.values(S.docs).forEach(d=>d&&URL.revokeObjectURL(d.url));
+  Object.assign(S,{method:'bankid',via:'bankid',docs:{front:null,back:null,selfie:null},docErr:{},docConsent:false,docFail:false,idScreen:null,ico:VALID_ICO,dic:'',email:'',phone:'',bank:null,bankAll:false,consent:false,file:null,poaFail:false,invites:[],showInvite:false,terms:false,authForm:false,authEmail:''});
   go('landing');
 }
 (function swipeToDismiss(){
@@ -668,7 +713,7 @@ const loadingBox = h => `<div class="loading" style="height:${h}px" role="status
 const dataRows = rows => `<dl>${rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
 const personPanel = (roleHtml, green) => `
   <div class="panel ${green?'green':''}"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([
-    ['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes','Bank iD ✓'],['Role ve firmě',roleHtml]
+    ['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()],['Role ve firmě',roleHtml]
   ])}${green?'<span class="bigcheck">✓</span>':''}</div>`;
 
 const svgIcon = (body, size=24) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">${body}</svg>`;
@@ -683,6 +728,9 @@ const SOCIAL = {
   google:['Google','<svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2045c0-.6381-.0573-1.2518-.1636-1.8409H9v3.4814h4.8436c-.2086 1.125-.8427 2.0782-1.7959 2.7164v2.2581h2.9087c1.7018-1.5668 2.6836-3.874 2.6836-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.4673-.806 5.9564-2.1805l-2.9087-2.2581c-.8059.54-1.8368.859-3.0477.859-2.344 0-4.3282-1.5831-5.036-3.7104H.9574v2.3318C2.4382 15.9832 5.4818 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.2822-1.1168-.2822-1.71s.1023-1.17.2823-1.71V4.9582H.9573C.3477 6.1732 0 7.5477 0 9s.3477 2.8268.9573 4.0418L3.964 10.71z"/><path fill="#EA4335" d="M9 3.5795c1.3214 0 2.5077.4541 3.4405 1.346l2.5813-2.5814C13.4636.8918 11.4259 0 9 0 5.4818 0 2.4382 2.0168.9573 4.9582L3.964 7.29C4.6718 5.1627 6.6559 3.5795 9 3.5795z"/></svg>'],
   seznam:['Seznam','<svg viewBox="0 0 41 42.5" aria-hidden="true"><path fill="#CC0000" d="M20.727 2.804a67.546 67.546 0 0 0-3.522.659c-.773.163-1.545.315-2.308.506-.704.177-1.426.334-2.116.552a33.98 33.98 0 0 0-1.977.675 12.68 12.68 0 0 0-3.517 2.052c-.64.534-1.237 1.114-1.738 1.783a12.6 12.6 0 0 0-.933 1.497c-.267.497-.45 1.086-.456 1.656-.009 1.676 1.062 3.08 2.295 4.122.405.34.836.654 1.273.953 1.297.89 2.709 1.672 4.143 2.353 1.48.7 2.97 1.372 4.478 2.012 1.426.603 2.883 1.113 4.354 1.6.423.138.851.276 1.274.415 1.333.44 2.695.847 4.018 1.324.824.296 1.702.573 2.525.943.855.384 1.743.767 2.497 1.319a4.63 4.63 0 0 1 1.264 1.347c.317.522.515 1.12.529 1.73a2.886 2.886 0 0 1-.47 1.652c-.827 1.285-2.266 2.161-3.654 2.745a59.954 59.954 0 0 1-6.36 2.253c-1.232.359-2.464.715-3.705 1.036-1.246.322-2.516.66-3.775.974-1.255.314-2.51.597-3.77.867-.722.153-1.449.304-2.166.453-.432.086-.855.177-1.288.27-.901.195-1.802.388-2.707.58-1.03.226-2.06.445-3.09.669-.3.065-.598.144-.897.21-.267.061-1.264.291-.524.247 1.03-.056 3.78-.295 9.655-1.076 2.13-.35 4.267-.65 6.4-.996a114.42 114.42 0 0 0 7.918-1.555c.75-.176 1.494-.364 2.24-.566.492-.136.979-.277 1.462-.427 2.06-.634 5.365-1.754 6.147-2.092 2.989-1.3 4.85-2.278 5.821-4.608.331-.827.487-1.753.386-2.64a5.972 5.972 0 0 0-.804-2.338c-.41-.675-.97-1.251-1.555-1.783-1.09-.986-2.312-1.782-3.618-2.457a22.905 22.905 0 0 0-1.126-.545 50.831 50.831 0 0 0-1.426-.618 33.808 33.808 0 0 0-2.046-.756c-1.793-.61-3.614-1.154-5.416-1.738a38.353 38.353 0 0 1-3.017-1.103 23.41 23.41 0 0 1-1.236-.554c-.478-.23-.943-.482-1.403-.752-.565-.339-1.49-.922-1.232-1.715.18-.565.8-.785 1.306-.988.469-.188.965-.32 1.453-.447 1.49-.38 3.011-.636 4.515-.954a72.59 72.59 0 0 0 1.324-.29c1.173-.273 2.382-.477 3.5-.918.96-.375 2.192-.974 2.551-2.02.515-1.523-.07-3.17-.91-4.455a44.62 44.62 0 0 0-.938-1.365c-.442-.613-.93-1.19-1.407-1.774-.216-.265-.479-.245-.7-.177-.294.1-1.098 1.034-7.521 2.253"/></svg>']
 };
+const fmtSize = n => n < 1048576 ? Math.max(1,Math.round(n/1024))+' kB' : (n/1048576).toFixed(1)+' MB';
+const viaLabel = () => S.via==='doc' ? 'Osobní doklad a fotografie ✓' : 'Bank iD ✓';
+const viaText = () => S.via==='doc' ? 'podle osobního dokladu a fotografie' : 'přes Bank iD';
 const later_btn = `<button class="link" data-go="later">Dokončit registraci později</button>`;
 
 /* ---------- screens ---------- */
@@ -728,7 +776,7 @@ const VIEWS = {
         <p class="sub">do služby <b>makro distribuce</b> – vytvoření firemního účtu je zcela zdarma!</p>
         <h3 style="font-size:14px">Co budete pro registraci potřebovat</h3>
         <div class="info"><span class="tag">A</span>Identifikační číslo (IČO) vašeho podnikání</div>
-        <div class="info"><span class="tag">B</span>Elektronické ověření vaší identity pomocí Bank ID</div>
+        <div class="info"><span class="tag">B</span>Ověření vaší identity pomocí Bank iD, nebo osobního dokladu a fotografie</div>
         <div class="info"><span class="tag">C</span>Právo vystupovat za váš podnik v obchodních vztazích
           <ul><li>v obchodním rejstříku jste uveden(a) jako jednatel nebo statutární orgán, nebo</li>
           <li>máte plnou moc, kterou při registraci nahrajete. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></li></ul></div>
@@ -812,21 +860,50 @@ const VIEWS = {
 
   bank: () => {
     const list = S.bankAll ? BANKS : BANKS.slice(0,BANK_SHORT);
-    return `${header(true)}
-    <div class="page">${sidebar(4)}
-      <main>${topbar('bank')}
-        <h1>Ověřte svou totožnost pomocí Bank iD</h1>
-        <p class="sub">Pro dokončení registrace potřebujeme ověřit vaši totožnost. Použijeme k tomu <a href="#">Bank iD</a> – rychlé a bezpečné ověření pomocí vašeho internetového bankovnictví.</p>
-        <div class="banks" role="radiogroup">${list.map(b=>`
+    const isDoc = S.method==='doc';
+    const tabs = [['bankid','Bank iD'],['doc','Osobní doklad']].map(([k,t])=>
+      `<button type="button" role="tab" id="tab-${k}" aria-selected="${S.method===k}" aria-controls="verifyPanel" tabindex="${S.method===k?0:-1}" data-method="${k}">${t}</button>`).join('');
+    const bankPanel = `
+        <div class="banks" role="radiogroup" aria-label="Banka">${list.map(b=>`
           <button class="bank ${S.bank===b[0]?'sel':''}" role="radio" aria-checked="${S.bank===b[0]}" data-bank="${esc(b[0])}">
             <span class="lg"><img src="${b[1]}" alt=""></span><span class="name">${b[0]}</span><span class="radio"></span></button>`).join('')}
           <button class="toggle" data-toggle-banks>${S.bankAll?'Skrýt ⌃':`Zobrazit všechny banky (${BANKS.length}) ⌄`}</button>
         </div>
         <label class="chk"><input type="checkbox" id="consent" ${S.consent?'checked':''}> <span>Potvrzuji přečtení <a href="#">Zásad zpracování klientských údajů</a></span></label>
-        <div class="actions" style="margin-top:36px"><button class="btn" id="bankGo" ${S.bank&&S.consent?'':'disabled'}>Ověřit se přes Bank iD</button>${later_btn}</div>
+        <div class="actions" style="margin-top:36px"><button class="btn" id="bankGo" ${S.bank&&S.consent?'':'disabled'}>Ověřit se přes Bank iD</button>${later_btn}</div>`;
+    const slot = ([k,title,desc]) => {
+      const d = S.docs[k];
+      return `<div class="slot">
+          <div class="slot-h"><b>${title}</b><span>${desc}</span></div>
+          ${d ? `<div class="file"><img class="thumb" src="${d.url}" alt=""><b class="fname">${esc(d.name)}</b><span class="sz">${fmtSize(d.size)}</span><button type="button" class="link small" data-doc-remove="${k}" aria-label="Odebrat soubor ${esc(d.name)}">Odebrat</button></div>`
+          : `<div class="drop" data-doc-drop="${k}"><span class="up">⇪</span><div class="t"><b>Vyberte nebo přetáhněte soubor</b><small>JPG nebo PNG, velikost max 10 MB</small></div>
+              <button type="button" class="btn soft sm" data-doc-pick="${k}">${k==='selfie'?'Vyfotit nebo vybrat':'Vybrat soubor'}</button>
+              <input type="file" hidden accept="image/jpeg,image/png" data-doc-input="${k}" ${k==='selfie'?'capture="user"':''}></div>
+            ${S.docErr[k]?`<div class="slot-err" role="alert">${S.docErr[k]}</div>`:''}`}
+        </div>`;
+    };
+    const docsReady = S.docs.front && S.docs.back && S.docs.selfie;
+    const docPanel = `
+        <p class="hint" style="margin:0 0 12px">Doklad musí být platný a čitelný. Jméno a datum narození z dokladu porovnáme s údaji statutárního orgánu firmy.</p>
+        <div class="docpanel">${DOC_SLOTS.map(slot).join('')}</div>
+        <label class="chk"><input type="checkbox" id="docConsent" ${S.docConsent?'checked':''}> <span>Souhlasím se zpracováním údajů z dokladu a fotografie za účelem ověření totožnosti. <a href="#">Zásady zpracování klientských údajů</a></span></label>
+        <div class="actions" style="margin-top:36px"><button class="btn" id="docGo" ${docsReady&&S.docConsent?'':'disabled'}>Zkontrolovat doklad a fotografii</button>${later_btn}</div>`;
+    return `${header(true)}
+    <div class="page">${sidebar(4)}
+      <main>${topbar('bank')}
+        <h1>Ověřte svou totožnost</h1>
+        <p class="sub">Pro dokončení registrace potřebujeme ověřit vaši totožnost. Zvolte buď ověření přes <a href="#">Bank iD</a>, nebo nahrajte svůj osobní doklad a svou fotografii.</p>
+        ${S.docFail?alertBox('warn','Doklad a fotografii se nepodařilo ověřit. Zkontrolujte, že jsou snímky ostré a čitelné, a zkuste to prosím znovu.','margin-top:4px'):''}
+        <div class="seg" role="tablist" aria-label="Způsob ověření totožnosti">${tabs}</div>
+        <div id="verifyPanel" role="tabpanel" aria-labelledby="tab-${S.method}">${isDoc?docPanel:bankPanel}</div>
       </main>
     </div>`;
   },
+
+  docLoading: () => `${header(true)}
+    <div class="page">${sidebar(4)}
+      <main>${topbar('docLoading')}<h1>Ověřujeme vaši totožnost</h1><p class="sub">Porovnáváme doklad s fotografií a údaji z obchodního rejstříku…</p>${loadingBox(200)}</main>
+    </div>`,
 
   bankSite: () => {
     const name = S.bank || 'Raiffeisen Bank';
@@ -862,10 +939,10 @@ const VIEWS = {
         <div class="panel" style="align-items:flex-start"><div class="badge">${svgIcon(ICON.id)}</div><div style="flex:1">
           <dl>
             <dt>Jméno a příjmení</dt><dd>${PERSON.name}</dd><dt>Datum narození</dt><dd>${PERSON.born}</dd>
-            <dt>Ověřeno přes</dt><dd>Bank iD ✓</dd><dt>Role ve firmě</dt><dd><span class="role">Neověřeno</span></dd>
+            <dt>Ověřeno přes</dt><dd>${viaLabel()}</dd><dt>Role ve firmě</dt><dd><span class="role">Neověřeno</span></dd>
           </dl>
           <p class="hint" style="margin-top:16px">Nahrajte plnou moc, která vás opravňuje vystupovat za váš podnik v obchodních vztazích. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></p>
-          ${S.file ? `<div class="file"><span class="fi">🖼</span><b style="font-weight:500">${esc(S.file.name)}</b> · <a href="#" data-preview>Náhled</a><span class="sz">${(S.file.size/1048576).toFixed(1)}MB</span></div>`
+          ${S.file ? `<div class="file"><span class="fi">🖼</span><b style="font-weight:500">${esc(S.file.name)}</b> · <a href="#" data-preview>Náhled</a><span class="sz">${fmtSize(S.file.size)}</span></div>`
           : `<div class="drop" id="drop"><span class="up">⇪</span><div class="t"><b>Vyberte nebo přetáhněte soubor</b><small>JPG, PNG nebo PDF, velikost max 10 MB</small></div>
               <button class="btn soft sm" id="pick">Vybrat soubor</button><input type="file" id="fileIn" accept=".jpg,.jpeg,.png,.pdf" hidden></div>
               <div id="fileErr" class="hint" style="color:var(--err);margin-top:8px"></div>`}
@@ -888,7 +965,7 @@ const VIEWS = {
         <div class="panel green"><div class="badge">${svgIcon(ICON.company)}</div>${dataRows([['IČO',COMPANY.ico],['Název',COMPANY.name]])}<span class="bigcheck" style="width:28px;height:28px">✓</span></div>
         <h3 style="font-size:13px">Ověření totožnosti</h3>
         <div class="panel green"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([
-          ['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes','Bank iD ✓'],
+          ['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()],
           ['Role ve firmě', $('#sc-role').value==='poa'?'Ověřeno – plná moc ✓':'Jednatel, EREMITA COMPANY s.r.o. ✓']])}<span class="bigcheck" style="width:28px;height:28px">✓</span></div>
         <h3 style="font-size:13px;margin-top:28px">Přejete si přidat další uživatele? <span style="font-weight:400">(Nepovinné)</span></h3>
         <p class="hint">Dalším uživatelům pošleme pozvánku na e-mail a poté, co si vytvoří uživatelský účet, získají okamžitě přístup do služby.</p>
@@ -925,8 +1002,8 @@ function idDone(role, cur, next){
   return `${header(true)}
     <div class="page">${sidebar(4)}
       <main>${topbar(cur)}<h1>Ověření totožnosti dokončeno</h1>
-        ${alertBox('ok','Vaše totožnost byla úspěšně ověřena přes Bank iD a zkontrolovali jsme, že jste oprávnění jednat za tuto firmu.','margin-top:20px')}
-        <div class="panel"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes','Bank iD ✓'],['Role ve firmě',role]])}</div>
+        ${alertBox('ok',`Vaše totožnost byla úspěšně ověřena ${viaText()} a zkontrolovali jsme, že jste oprávnění jednat za tuto firmu.`,'margin-top:20px')}
+        <div class="panel"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()],['Role ve firmě',role]])}</div>
         <div class="actions" style="margin-top:36px"><button class="btn" data-go="${next}" style="padding:14px 8px">Pokračovat na dokončení registrace</button></div>
       </main>
     </div>`;
@@ -983,6 +1060,32 @@ function wire(){
     app.querySelector('[data-clear]').addEventListener('click',()=>{ S.ico=''; ico.value=''; ico.focus(); });
   }
 
+  // verification method tabs (Bank iD / Osobní doklad)
+  const tablist = app.querySelector('[role="tablist"]');
+  if(tablist){
+    const pick = m => { S.method=m; render(); app.querySelector('[role="tab"][aria-selected="true"]').focus(); };
+    tablist.querySelectorAll('[role="tab"]').forEach(t=>t.addEventListener('click',()=>pick(t.dataset.method)));
+    tablist.addEventListener('keydown',e=>{
+      if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key)) return;
+      e.preventDefault(); pick(S.method==='bankid'?'doc':'bankid');
+    });
+  }
+  // ID document + photo slots
+  app.querySelectorAll('[data-doc-pick]').forEach(b=>b.addEventListener('click',()=>b.parentElement.querySelector('input[type=file]').click()));
+  app.querySelectorAll('[data-doc-input]').forEach(i=>i.addEventListener('change',()=>setDoc(i.dataset.docInput,i.files[0])));
+  app.querySelectorAll('[data-doc-drop]').forEach(d=>{
+    ['dragenter','dragover'].forEach(ev=>d.addEventListener(ev,e=>{e.preventDefault();d.classList.add('over');}));
+    ['dragleave','drop'].forEach(ev=>d.addEventListener(ev,e=>{e.preventDefault();d.classList.remove('over');}));
+    d.addEventListener('drop',e=>setDoc(d.dataset.docDrop,e.dataTransfer.files[0]));
+  });
+  app.querySelectorAll('[data-doc-remove]').forEach(b=>b.addEventListener('click',()=>{
+    const k=b.dataset.docRemove; URL.revokeObjectURL(S.docs[k].url); S.docs[k]=null; render();
+  }));
+  const dc = $('#docConsent');
+  if(dc) dc.addEventListener('change',()=>{ S.docConsent=dc.checked; $('#docGo').disabled=!(S.docs.front&&S.docs.back&&S.docs.selfie&&S.docConsent); });
+  const dg = $('#docGo');
+  if(dg) dg.addEventListener('click',()=>{ S.via='doc'; S.docFail=false; go('docLoading'); });
+
   // bank
   app.querySelectorAll('[data-bank]').forEach(b=>b.addEventListener('click',()=>{ S.bank=b.dataset.bank; render(); }));
   const tb = app.querySelector('[data-toggle-banks]');
@@ -990,7 +1093,7 @@ function wire(){
   const cons = $('#consent');
   if(cons) cons.addEventListener('change',()=>{ S.consent=cons.checked; $('#bankGo').disabled=!(S.bank&&S.consent); });
   const bg = $('#bankGo');
-  if(bg) bg.addEventListener('click',()=>go('bankSite'));
+  if(bg) bg.addEventListener('click',()=>{ S.via='bankid'; S.docFail=false; go('bankSite'); });
 
   const bv = $('#bsVerify');
   if(bv) bv.addEventListener('click',()=>go('bankLoading'));
@@ -1024,6 +1127,14 @@ function wire(){
 function verifyIco(){
   if(S.ico.length!==8){ S.icoErr=true; return go('icoNotFound'); }
   go('icoLoading');
+}
+function setDoc(key,f){
+  if(!f) return;
+  const ok = /\.(jpe?g|png)$/i.test(f.name) && /^image\/(jpeg|png)$/.test(f.type||'image/png') && f.size <= 10*1048576;
+  if(!ok){ S.docErr[key]='Soubor musí být obrázek JPG nebo PNG a nesmí být větší než 10 MB.'; render(); return; }
+  S.docErr[key]=null; S.docFail=false;
+  S.docs[key]={name:f.name,size:f.size,url:URL.createObjectURL(f)};
+  render();
 }
 function setFile(f){
   if(!f) return;
