@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>makro distribuce – online registrace</title>
+<title>makro distribuce – registrace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
@@ -91,7 +91,7 @@
   .panel{background:var(--panel);padding:20px;display:flex;gap:20px;margin-bottom:24px}
   .panel.green{background:var(--ok-panel);align-items:flex-start;position:relative}
   .panel .badge{flex:none;width:40px;height:40px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--navy);font-size:18px}
-  dl{display:grid;grid-template-columns:130px 1fr;gap:10px 0;margin:0;font-size:13px;flex:1}
+  dl{display:grid;grid-template-columns:180px 1fr;gap:10px 0;margin:0;font-size:13px;flex:1}
   dt{color:var(--ink)} dd{margin:0;font-weight:600;color:var(--ink-strong)}
   .info{background:var(--info);padding:12px;margin-bottom:8px;font-size:13px}
   .info .tag{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:#c5d6f2;color:var(--navy);font-size:9px;font-weight:700;margin-right:10px}
@@ -171,7 +171,7 @@
   .social button:hover{border-color:#9aa3b0;background:#fafafa}
   .social svg{width:20px;height:20px;display:block}
   .modal .how{display:block;text-align:right;font-size:11px;margin-bottom:12px}
-  .or{display:flex;align-items:center;gap:10px;font-size:10px;color:var(--muted);margin-bottom:14px}
+  .or{text-transform:uppercase;display:flex;align-items:center;gap:10px;font-size:10px;color:var(--muted);margin-bottom:14px}
   .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
   .btn-wide{width:100%;background:#0a3f78;color:#fff;border:0;border-radius:3px;padding:11px;font-weight:600;font-size:12px}
   .modal .have{border-top:1px solid var(--line);margin-top:16px;padding-top:14px;font-size:13px}
@@ -197,7 +197,7 @@
   .lp-hero::before{content:"";position:absolute;inset:0;z-index:-3;background:var(--tile) center/cover;opacity:.2}
   .lp-hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(0,45,114,.96) 52.4%,rgba(95,99,104,.33))}
   .lp-hero .truck{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover}
-  .lp-eyebrow{margin:0;color:#ffe61c;font-weight:700;font-size:13px;letter-spacing:1.56px}
+  .lp-eyebrow{text-transform:uppercase;margin:0;color:#ffe61c;font-weight:700;font-size:13px;letter-spacing:1.56px}
   .lp-hero h1{margin:0;color:#fff;font-size:60px;line-height:1.04;font-weight:900;letter-spacing:0}
   .lp-hero h1 span{color:#ffee00}
   .lp-hero p.lead{margin:0;max-width:650px;font-size:18px;line-height:1.4;color:rgba(255,255,255,.9)}
@@ -293,7 +293,7 @@
 
   /* ===== desktop defaults for elements that matter on mobile ===== */
   .rail{display:none}
-  .dic-row{display:grid;grid-template-columns:130px 1fr;margin-top:10px;align-items:center;font-size:13px}
+  .dic-row{display:grid;grid-template-columns:180px 1fr;margin-top:10px;align-items:center;font-size:13px}
   .acct-panel{width:480px;align-items:flex-start}
   .invite-field{width:280px;margin-bottom:8px}
   .sheet-ov{display:none}
@@ -563,7 +563,7 @@
     </label>
     <label>Role verified (Bank iD / ID + photo)
       <select id="sc-role">
-        <option value="auto">Statutory body (jednatel)</option>
+        <option value="auto">Authorised in the registry</option>
         <option value="poa">Power of attorney needed</option>
       </select>
     </label>
@@ -625,8 +625,8 @@ const COMPANY = { ico: VALID_ICO, name: 'EREMITA COMPANY s.r.o.', seat: 'Jičín
 const PERSON = { name: 'Jan Novák', born: '5. 1. 1988', email: 'jiri.novak@eremita.cz' };
 
 const STEPS = [
-  ['Úvod','Co je potřeba k online registraci'],
-  ['Registrace uživatele','Uživatelský účet pro přihlášení'],
+  ['Úvod','Co je potřeba k registraci'],
+  ['Přihlašovací účet','Účet pro přihlášení do služby'],
   ['Registrace firmy','IČO a fakturační údaje'],
   ['Ověření totožnosti','Oprávnění jednat za firmu'],
   ['Dokončení registrace','Shrnutí a potvrzení']
@@ -696,12 +696,12 @@ function go(id){
 let exitReturnFocus = null;
 const EXIT_COPY = {
   // step 1: nothing has been saved yet
-  confirm: { title:'Opravdu chcete ukončit online registraci?',
+  confirm: { title:'Opravdu chcete ukončit registraci?',
     text:'Váš postup se zatím neukládá. Pokud registraci ukončíte, budete ji muset začít znovu.',
     stay:'Pokračovat v registraci', leave:'Ukončit registraci' },
   // from step 2 on (user account created) progress is saved
   saved: { title:'Registraci jsme uložili',
-    text:'Svůj postup neztratíte. Až se příště přihlásíte svým uživatelským účtem, budete pokračovat tam, kde jste skončili.',
+    text:'Svůj postup neztratíte. Až se příště přihlásíte, budete pokračovat tam, kde jste skončili.',
     stay:'Pokračovat v registraci', leave:'Opustit registraci' }
 };
 let exitKind = 'confirm';
@@ -758,7 +758,7 @@ const header = (loggedIn, regTarget='auth') => `
     <div class="brand"><span class="logo">makro</span><span>distribuce</span></div>
     ${loggedIn
       ? `<div class="avatar">JN</div>`
-      : `<div class="hdr-actions"><button class="login">${svgIcon(ICON.user.replaceAll('#002D72','#fff'),20)} Přihlásit se</button><button class="btn-reg" data-go="${regTarget}">Zaregistrovat se</button></div>`}
+      : `<div class="hdr-actions"><button class="login">${svgIcon(ICON.user.replaceAll('#002D72','#fff'),20)} Přihlásit se</button><button class="btn-reg" data-go="${regTarget}">Registrovat se</button></div>`}
   </header>`;
 
 // where a completed step in the sidebar leads back to
@@ -806,7 +806,7 @@ const loadingBox = h => `<div class="loading" style="height:${h}px" role="status
 const dataRows = rows => `<dl>${rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
 const personPanel = (roleHtml, green) => `
   <div class="panel ${green?'green':''}"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([
-    ['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()],['Role ve firmě',roleHtml]
+    ['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()],['Oprávnění jednat za firmu',roleHtml]
   ])}${green?'<span class="bigcheck">✓</span>':''}</div>`;
 
 const svgIcon = (body, size=24) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">${body}</svg>`;
@@ -833,49 +833,49 @@ const VIEWS = {
       <div class="lp-wrap">
         <section class="lp-hero" style="--tile:url(${LP['hero-bg.png']})">
           <img class="truck" src="${LP['hero-truck.png']}" alt="">
-          <p class="lp-eyebrow">MAKRO DISTRIBUCE</p>
-          <h1>Míň starostí. <span>Víc byznysu.</span></h1>
-          <p class="lead">Makro distribuce doveze zboží přímo k vám — po celé ČR, nově i jako stávajícímu zákazníkovi makro. Vy rostete, my zásobujeme.</p>
-          <div class="row"><button class="lp-pill primary" data-go="intro">Zaregistrovat se online</button><button class="lp-pill ghost" data-soon>Ověřit dostupnost rozvozu</button></div>
+          <p class="lp-eyebrow">makro distribuce</p>
+          <h1>Míň starostí. <span>Víc času na podnikání.</span></h1>
+          <p class="lead">Makro distribuce doručí zboží přímo k vám – po celé ČR, nově i jako stávajícímu zákazníkovi makro. Vy rostete, my zásobujeme.</p>
+          <div class="row"><button class="lp-pill primary" data-go="intro">Registrovat se</button><button class="lp-pill ghost" data-soon>Ověřit dostupnost doručení</button></div>
         </section>
         <section class="lp-stats">
           <div class="lp-stat" style="--accent:#005ae0;background:#f2f4f8"><b style="color:#005ae0">95 %</b><span>garantovaná dostupnost produktů</span></div>
-          <div class="lp-stat" style="--accent:#990052;background:#f5e5ee"><b style="color:#990052">24/7</b><span>objednávejte kdykoli online</span></div>
+          <div class="lp-stat" style="--accent:#990052;background:#f5e5ee"><b style="color:#990052">24/7</b><span>objednávejte kdykoli přes internet</span></div>
           <div class="lp-stat" style="--accent:#faaf00;background:#fff7e6"><b style="color:#faaf00">365</b><span>dní v roce dostupná služba</span></div>
         </section>
         <section class="lp-why"><h2>Proč makro distribuce</h2>
           <div class="lp-cards">
-          <article class="lp-card" style="--bar:#005ae0"><img src="${LP['card-1.png']}" alt="" loading="lazy"><h3>Výhodné ceny</h3><p>Relevantní produkty pro váš byznys za nejvýhodnější ceny po celý rok.</p></article>
-          <article class="lp-card" style="--bar:#990052"><img src="${LP['card-2.png']}" alt="" loading="lazy"><h3>Jednoduchá objednávka</h3><p>24 hodin denně, 365 dní v roce — online, telefonicky nebo přes zástupce.</p></article>
-          <article class="lp-card" style="--bar:#faaf00"><img src="${LP['card-3.png']}" alt="" loading="lazy"><h3>Rychlé a flexibilní dodání</h3><p>Podle dohodnutých dní a časového úseku, který vám vyhovuje.</p></article>
-          <article class="lp-card" style="--bar:#005ae0"><img src="${LP['card-4.png']}" alt="" loading="lazy"><h3>Garantovaná dostupnost</h3><p>95% dostupnost produktů a výměna za stejnou nebo vyšší kvalitu.</p></article>
+          <article class="lp-card" style="--bar:#005ae0"><img src="${LP['card-1.png']}" alt="" loading="lazy"><h3>Výhodné ceny</h3><p>Relevantní produkty pro vaši firmu za nejvýhodnější ceny po celý rok.</p></article>
+          <article class="lp-card" style="--bar:#990052"><img src="${LP['card-2.png']}" alt="" loading="lazy"><h3>Jednoduchá objednávka</h3><p>24 hodin denně, 365 dní v roce – přes internet, telefonicky nebo přes zástupce.</p></article>
+          <article class="lp-card" style="--bar:#faaf00"><img src="${LP['card-3.png']}" alt="" loading="lazy"><h3>Rychlé a pružné doručení</h3><p>Doručíme vám v dohodnutých dnech a v čase, který vám vyhovuje.</p></article>
+          <article class="lp-card" style="--bar:#005ae0"><img src="${LP['card-4.png']}" alt="" loading="lazy"><h3>Garantovaná dostupnost</h3><p>95 % dostupnost produktů a výměna za stejnou nebo vyšší kvalitu.</p></article>
           <article class="lp-card" style="--bar:#990052"><img src="${LP['card-5.png']}" alt="" loading="lazy"><h3>Zaručená čerstvost</h3><p>Chladicí řetězec a plné dodržení bezpečnostních norem.</p></article>
           <article class="lp-card" style="--bar:#faaf00"><img src="${LP['card-6.png']}" alt="" loading="lazy"><h3>Nejlepší péče o zákazníky</h3><p>Obchodní zástupce vám pomůže optimalizovat nákupy na míru.</p></article>
           </div>
         </section>
         <section class="lp-cta">
           <div><h2>Staňte se zákazníkem ještě dnes</h2><p>Jediným požadavkem je minimální hodnota objednávky.</p></div>
-          <button class="lp-pill primary" data-go="intro">Zaregistrovat se online</button>
+          <button class="lp-pill primary" data-go="intro">Registrovat se</button>
         </section>
       </div>
-      <footer class="lp-foot"><div class="lp-wrap"><div class="cols"><div><b>Pro vaše podnikání</b><ul><li>Můj obchod</li><li>Vzor plné moci ke stažení</li><li>Vše pro maloobchod</li><li>Vše pro gastronomii</li><li>Track &amp; Trace</li><li>ProTrace</li><li>Kvalita a standardy</li><li>Compliance</li></ul></div><div><b>O nás</b><ul><li>O makro</li><li>Pro dodavatele</li><li>Pro novináře</li><li>Nejčastější otázky</li><li>Kariéra</li><li>Udržitelnost</li><li>Metro AG</li></ul></div><div><b>Užitečné odkazy</b><ul><li>Získat makro kartu</li><li>Bonusový program</li><li>Energetické štítky</li><li>Informace o stažení výrobku</li><li>makro akademie</li><li>makro newsletter</li></ul></div><div><b>Kontakty</b><ul><li>+420 271 005 005</li><li>Po - Pá: 7:00–19:00 Ne: 12:00–19:00</li><li>info@makro.cz</li></ul><b style="margin-top:16px">Sledujte nás</b><div class="soc"><img src="${LP['fb.svg']}" alt="Facebook" style="height:23px"><img src="${LP['ig.svg']}" alt="Instagram"><img src="${LP['yt.svg']}" alt="YouTube" style="height:18px"></div></div></div><div class="copy">© Makro Cash &amp; Carry ČR, s.r.o.</div></div></footer>
+      <footer class="lp-foot"><div class="lp-wrap"><div class="cols"><div><b>Pro vaše podnikání</b><ul><li>Můj obchod</li><li>Vzor plné moci ke stažení</li><li>Vše pro maloobchod</li><li>Vše pro gastronomii</li><li>Track &amp; Trace</li><li>ProTrace</li><li>Kvalita a standardy</li><li>Compliance</li></ul></div><div><b>O nás</b><ul><li>O makro</li><li>Pro dodavatele</li><li>Pro novináře</li><li>Nejčastější otázky</li><li>Kariéra</li><li>Udržitelnost</li><li>Metro AG</li></ul></div><div><b>Užitečné odkazy</b><ul><li>Získat makro kartu</li><li>Bonusový program</li><li>Energetické štítky</li><li>Informace o stažení výrobku</li><li>makro akademie</li><li>makro newsletter</li></ul></div><div><b>Kontakty</b><ul><li>+420 271 005 005</li><li>Po–Pá: 7:00–19:00, Ne: 12:00–19:00</li><li>info@makro.cz</li></ul><b style="margin-top:16px">Sledujte nás</b><div class="soc"><img src="${LP['fb.svg']}" alt="Facebook" style="height:23px"><img src="${LP['ig.svg']}" alt="Instagram"><img src="${LP['yt.svg']}" alt="YouTube" style="height:18px"></div></div></div><div class="copy">© Makro Cash &amp; Carry ČR, s.r.o.</div></div></footer>
     </div>`,
 
   intro: () => `${header(false)}
     <div class="page">${sidebar(1)}
       <main>
         ${topbar('intro',false)}
-        <h1>Vítejte v online registraci</h1>
-        <p class="sub">do služby <b>makro distribuce</b> – vytvoření firemního účtu je zcela zdarma!</p>
+        <h1>Vítejte při registraci</h1>
+        <p class="sub">do služby <b>makro distribuce</b> – vytvoření firemního účtu je zdarma.</p>
         <h3 style="font-size:14px">Co budete pro registraci potřebovat</h3>
-        <div class="info"><span class="tag">A</span>Identifikační číslo (IČO) vašeho podnikání</div>
+        <div class="info"><span class="tag">A</span>IČO vaší firmy</div>
         <div class="info"><span class="tag">B</span>Ověření vaší identity pomocí Bank iD, nebo osobního dokladu a fotografie</div>
-        <div class="info"><span class="tag">C</span>Právo vystupovat za váš podnik v obchodních vztazích
-          <ul><li>v obchodním rejstříku jste uveden(a) jako jednatel nebo statutární orgán, nebo</li>
+        <div class="info"><span class="tag">C</span>Oprávnění jednat za vaši firmu
+          <ul><li>v obchodním rejstříku jste zapsáni jako osoba oprávněná jednat za firmu, nebo</li>
           <li>máte plnou moc, kterou při registraci nahrajete. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></li></ul></div>
-        <p style="margin:16px 0 20px">Online registraci zahajte vytvořením uživatelského účtu, pomocí kterého se budete přihlašovat do služby <b>makro distribuce</b>.</p>
-        <button class="btn cta-intro" data-go="auth" style="padding:14px 8px">Začít online registraci</button>
-        <p style="margin:56px 0 0">Nechce se vám registraci řešit na internetu? Zavolejte nám a sjednejte si schůzku s obchodním zástupcem.</p>
+        <p style="margin:16px 0 20px">Nejdřív si vytvoříte přihlašovací účet. S ním se pak budete přihlašovat do služby <b>makro distribuce</b>.</p>
+        <button class="btn cta-intro" data-go="auth" style="padding:14px 8px">Začít registraci</button>
+        <p style="margin:56px 0 0">Raději registraci vyřídíte s člověkem? Zavolejte nám a domluvíme schůzku s obchodním zástupcem.</p>
         <div class="phone">📞 +420 271 005 005</div>
       </main>
     </div>`,
@@ -893,12 +893,12 @@ const VIEWS = {
           <button class="btn-wide" type="submit">Vytvořit účet</button>
         </form>`
       : `
-        <p>Nemáte na Košíku účet? Založíte si ho přes</p>
+        <p>Nemáte účet v makro? Založte si ho přes</p>
         <div class="social">${Object.entries(SOCIAL).map(([k,[n,svg]])=>`<button type="button" data-social="${k}" aria-label="Pokračovat přes ${n}">${svg}</button>`).join('')}</div>
         <a class="how" href="#">Jak to funguje?</a>
-        <div class="or">NEBO</div>
+        <div class="or">nebo</div>
         <button class="btn-wide" data-auth-mail>Registrovat se e-mailem</button>`}
-      <div class="have">Máte na Košíku účet? <a href="#" data-auth-login><b>Přihlaste se</b></a></div>
+      <div class="have">Máte účet v makro? <a href="#" data-auth-login><b>Přihlásit se</b></a></div>
 `;
     // desktop: centred modal on a blank page; mobile: bottom sheet over the intro screen
     return isMobile()
@@ -910,11 +910,11 @@ const VIEWS = {
     <div class="page">${sidebar(2)}
       <main>
         ${topbar('account')}
-        <h1>Registrace nového uživatele</h1>
-        ${alertBox('ok','Uživatelský účet byl úspěšně vytvořen','margin-top:24px')}
+        <h1>Přihlašovací účet</h1>
+        ${alertBox('ok','Přihlašovací účet byl vytvořen','margin-top:24px')}
         <div class="panel acct-panel">
           <div class="badge">${svgIcon(ICON.user)}</div>
-          <div style="font-size:13px"><div>Jste přihlášen(a) jako</div><b style="display:block;margin:6px 0 12px;color:var(--ink-strong)">${esc(S.authEmail||PERSON.email)}</b>
+          <div style="font-size:13px"><div>Přihlášeni jako</div><b style="display:block;margin:6px 0 12px;color:var(--ink-strong)">${esc(S.authEmail||PERSON.email)}</b>
           <button class="btn soft sm" data-go="intro">Přihlásit se jiným účtem</button></div>
         </div>
         <div class="actions" style="margin-top:96px"><button class="btn" data-go="ico">Pokračovat na registraci firmy</button>${later_btn}</div>
@@ -925,13 +925,13 @@ const VIEWS = {
   icoNotFound: () => icoScreen(true),
   icoLoading: () => `${header(true)}
     <div class="page">${sidebar(3)}
-      <main>${topbar('icoLoading')}<h1>Zadejte IČO vašeho podnikání</h1><p class="sub">a my doplníme ostatní údaje.</p>${loadingBox(240)}</main>
+      <main>${topbar('icoLoading')}<h1>Zadejte IČO vaší firmy</h1><p class="sub">a my doplníme ostatní údaje.</p>${loadingBox(240)}</main>
     </div>`,
 
   icoFound: () => `${header(true)}
     <div class="page">${sidebar(3)}
-      <main>${topbar('icoFound')}<h1>Zadejte IČO vašeho podnikání</h1><p class="sub">a my doplníme ostatní údaje.</p>
-        ${alertBox('ok','Nalezli jsme firmu dle zadaného IČO.')}
+      <main>${topbar('icoFound')}<h1>Zadejte IČO vaší firmy</h1><p class="sub">a my doplníme ostatní údaje.</p>
+        ${alertBox('ok',`Našli jsme firmu s IČO ${COMPANY.ico}.`)}
         <div class="panel" style="align-items:flex-start"><div class="badge">${svgIcon(ICON.company)}</div><div style="flex:1">
           ${dataRows([['IČO',COMPANY.ico],['Název',COMPANY.name],['Sídlo (fakturační adresa)',COMPANY.seat]])}
           <div class="dic-row"><label for="dic">DIČ (volitelné)</label>
@@ -962,7 +962,7 @@ const VIEWS = {
             <span class="lg"><img src="${b[1]}" alt=""></span><span class="name">${b[0]}</span><span class="radio"></span></button>`).join('')}
           <button class="toggle" data-toggle-banks>${S.bankAll?'Skrýt ⌃':`Zobrazit všechny banky (${BANKS.length}) ⌄`}</button>
         </div>
-        <label class="chk"><input type="checkbox" id="consent" ${S.consent?'checked':''}> <span>Potvrzuji přečtení <a href="#">Zásad zpracování klientských údajů</a></span></label>
+        <label class="chk"><input type="checkbox" id="consent" ${S.consent?'checked':''}> <span>Potvrzuji přečtení <a href="#">Zásad zpracování osobních údajů</a></span></label>
         <div class="actions" style="margin-top:36px"><button class="btn" id="bankGo" ${S.bank&&S.consent?'':'disabled'}>Ověřit se přes Bank iD</button>${later_btn}</div>`;
     const slot = ([k,title,desc]) => {
       const d = S.docs[k];
@@ -977,16 +977,16 @@ const VIEWS = {
     };
     const docsReady = S.docs.front && S.docs.back && S.docs.selfie;
     const docPanel = `
-        <p class="hint" style="margin:0 0 12px">Doklad musí být platný a čitelný. Jméno a datum narození z dokladu porovnáme s údaji statutárního orgánu firmy.</p>
+        <p class="hint" style="margin:0 0 12px">Doklad musí být platný a čitelný. Jméno a datum narození z dokladu porovnáme s osobami oprávněnými jednat za firmu podle obchodního rejstříku.</p>
         <div class="docpanel">${DOC_SLOTS.map(slot).join('')}</div>
-        <label class="chk"><input type="checkbox" id="docConsent" ${S.docConsent?'checked':''}> <span>Souhlasím se zpracováním údajů z dokladu a fotografie za účelem ověření totožnosti. <a href="#">Zásady zpracování klientských údajů</a></span></label>
+        <label class="chk"><input type="checkbox" id="docConsent" ${S.docConsent?'checked':''}> <span>Souhlasím se zpracováním údajů z dokladu a fotografie za účelem ověření totožnosti. <a href="#">Zásady zpracování osobních údajů</a></span></label>
         <div class="actions" style="margin-top:36px"><button class="btn" id="docGo" ${docsReady&&S.docConsent?'':'disabled'}>Zkontrolovat doklad a fotografii</button>${later_btn}</div>`;
     return `${header(true)}
     <div class="page">${sidebar(4)}
       <main>${topbar('bank')}
         <h1>Ověřte svou totožnost</h1>
-        <p class="sub">Pro dokončení registrace potřebujeme ověřit vaši totožnost. Zvolte buď ověření přes <a href="#">Bank iD</a>, nebo nahrajte svůj osobní doklad a svou fotografii.</p>
-        ${S.docFail?alertBox('warn','Doklad a fotografii se nepodařilo ověřit. Zkontrolujte, že jsou snímky ostré a čitelné, a zkuste to prosím znovu.','margin-top:4px'):''}
+        <p class="sub">Abychom ověřili, že za firmu jednáte oprávněně, potřebujeme ověřit vaši totožnost. Ověření trvá asi minutu. Ověřte se přes svou banku (<a href="#">Bank iD</a>), nebo nahrajte svůj osobní doklad a svou fotografii.</p>
+        ${S.docFail?alertBox('warn','Doklad a fotografii se nepodařilo ověřit. Zkontrolujte, že jsou snímky ostré a čitelné, a zkuste to znovu. Pokud to nepomůže, zavolejte nám na +420 271 005 005.','margin-top:4px'):''}
         <div class="seg" role="tablist" aria-label="Způsob ověření totožnosti">${tabs}</div>
         <div id="verifyPanel" role="tabpanel" aria-labelledby="tab-${S.method}">${isDoc?docPanel:bankPanel}</div>
       </main>
@@ -1022,19 +1022,19 @@ const VIEWS = {
       <main>${topbar('bankLoading')}<h1>Ověřujeme vaši totožnost</h1><p class="sub">Probíhá komunikace s ${esc(S.bank||'bankou')}…</p>${loadingBox(200)}</main>
     </div>`,
 
-  idOk: () => idDone('Jednatel, EREMITA COMPANY s.r.o. ✓','idOk','summary'),
+  idOk: () => idDone('Ověřeno v obchodním rejstříku ✓','idOk','summary'),
   poaOk: () => idDone('Ověřeno – plná moc ✓','poaOk','summary'),
 
   poa: () => `${header(true)}
     <div class="page">${sidebar(4)}
       <main>${topbar('poa')}<h1>Ověření totožnosti – poslední krok</h1>
-        ${S.poaFail?alertBox('warn','Plnou moc, kterou jste nahráli, se nepodařilo zkontrolovat. Zkuste to prosím znovu.','margin-top:20px'):'<div style="height:20px"></div>'}
+        ${S.poaFail?alertBox('warn','Plnou moc se nám nepodařilo přečíst. Nahrajte ji znovu, nebo nám zavolejte na +420 271 005 005.','margin-top:20px'):'<div style="height:20px"></div>'}
         <div class="panel" style="align-items:flex-start"><div class="badge">${svgIcon(ICON.id)}</div><div style="flex:1">
           <dl>
             <dt>Jméno a příjmení</dt><dd>${PERSON.name}</dd><dt>Datum narození</dt><dd>${PERSON.born}</dd>
-            <dt>Ověřeno přes</dt><dd>${viaLabel()}</dd><dt>Role ve firmě</dt><dd><span class="role">Neověřeno</span></dd>
+            <dt>Ověřeno přes</dt><dd>${viaLabel()}</dd><dt>Oprávnění jednat za firmu</dt><dd><span class="role">Zatím neověřeno</span></dd>
           </dl>
-          <p class="hint" style="margin-top:16px">Nahrajte plnou moc, která vás opravňuje vystupovat za váš podnik v obchodních vztazích. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></p>
+          <p class="hint" style="margin-top:16px">Nahrajte plnou moc, která vás opravňuje jednat za vaši firmu. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></p>
           ${S.file ? `<div class="file"><span class="fi">🖼</span><b style="font-weight:500">${esc(S.file.name)}</b> · <a href="#" data-preview>Náhled</a><span class="sz">${fmtSize(S.file.size)}</span></div>`
           : `<div class="drop" id="drop"><span class="up">⇪</span><div class="t"><b>Vyberte nebo přetáhněte soubor</b><small>JPG, PNG nebo PDF, velikost max 10 MB</small></div>
               <button class="btn soft sm" id="pick">Vybrat soubor</button><input type="file" id="fileIn" accept=".jpg,.jpeg,.png,.pdf" hidden></div>
@@ -1059,29 +1059,29 @@ const VIEWS = {
         <h3 style="font-size:13px">Ověření totožnosti</h3>
         <div class="panel green"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([
           ['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()],
-          ['Role ve firmě', $('#sc-role').value==='poa'?'Ověřeno – plná moc ✓':'Jednatel, EREMITA COMPANY s.r.o. ✓']])}<span class="bigcheck" style="width:28px;height:28px">✓</span></div>
-        <h3 style="font-size:13px;margin-top:28px">Přejete si přidat další uživatele? <span style="font-weight:400">(Nepovinné)</span></h3>
-        <p class="hint">Dalším uživatelům pošleme pozvánku na e-mail a poté, co si vytvoří uživatelský účet, získají okamžitě přístup do služby.</p>
+          ['Oprávnění jednat za firmu', $('#sc-role').value==='poa'?'Ověřeno – plná moc ✓':'Ověřeno v obchodním rejstříku ✓']])}<span class="bigcheck" style="width:28px;height:28px">✓</span></div>
+        <h3 style="font-size:13px;margin-top:28px">Chcete přidat další kolegy? <span style="font-weight:400">(nepovinné)</span></h3>
+        <p class="hint">Kolegům pošleme pozvánku e-mailem. Jakmile si vytvoří účet, budou mít přístup hned.</p>
         ${S.showInvite?`<div style="margin-top:12px"><label class="lbl">E-mail</label>
-          ${S.invites.map((v,i)=>`<div class="field invite-field"><input type="email" data-invite="${i}" value="${esc(v)}" placeholder="jmeno@domena.cz" aria-label="E-mail uživatele ${i+1}"></div>`).join('')}</div>`:''}
-        <button class="btn ${S.showInvite?'soft':'soft'} sm" id="addUser" style="margin-top:6px">＋&nbsp; Přidat uživatele</button>
-        <label class="chk terms"><input type="checkbox" id="terms" ${S.terms?'checked':''}><span>Souhlasím s <a href="#">Všeobecnými obchodními podmínkami</a> služby makro distribuce a <a href="#">Zásadami zpracování osobních údajů</a> a zároveň se zříkám všech práv na cokoliv.</span></label>
-        <div class="actions" style="margin-top:24px"><button class="btn" id="finish" ${S.terms?'':'disabled'} style="padding:14px 8px">Dokončit registraci a přejít do online obchodu</button></div>
+          ${S.invites.map((v,i)=>`<div class="field invite-field"><input type="email" data-invite="${i}" value="${esc(v)}" placeholder="jmeno@domena.cz" aria-label="E-mail kolegy ${i+1}"></div>`).join('')}</div>`:''}
+        <button class="btn ${S.showInvite?'soft':'soft'} sm" id="addUser" style="margin-top:6px">＋&nbsp; Přidat kolegu</button>
+        <label class="chk terms"><input type="checkbox" id="terms" ${S.terms?'checked':''}><span>Souhlasím s <a href="#">Všeobecnými obchodními podmínkami</a> služby makro distribuce a se <a href="#">Zásadami zpracování osobních údajů</a>.</span></label>
+        <div class="actions" style="margin-top:24px"><button class="btn" id="finish" ${S.terms?'':'disabled'} style="padding:14px 8px">Dokončit registraci a přejít do obchodu</button></div>
       </main>
     </div>`,
 
   done: () => `${header(true)}
     <div class="center-note"><div class="badge" style="margin:0 auto 16px;width:56px;height:56px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;font-size:28px">✓</div>
       <h1>Registrace dokončena</h1>
-      <p>Firma <b>${COMPANY.name}</b> je zaregistrována.${S.invites.filter(Boolean).length?` Pozvánky jsme poslali na ${S.invites.filter(Boolean).map(esc).join(', ')}.`:''}</p>
+      <p>Registraci firmy <b>${COMPANY.name}</b> máme hotovou. Potvrzení jsme vám poslali e-mailem. Nakupovat můžete hned.${S.invites.filter(Boolean).length?` Pozvánky jsme poslali na ${S.invites.filter(Boolean).map(esc).join(', ')}.`:''}</p>
       <button class="btn" data-restart style="margin-top:16px">Začít znovu</button></div>`
 };
 
 function icoScreen(err){
   return `${header(true)}
     <div class="page">${sidebar(3)}
-      <main>${topbar(err?'icoNotFound':'ico')}<h1>Zadejte IČO vašeho podnikání</h1><p class="sub">a my doplníme ostatní údaje.</p>
-        ${err?alertBox('err','Nenalezli jsme žádné aktivní podnikání. Zkuste zadat jiné IČO.'):''}
+      <main>${topbar(err?'icoNotFound':'ico')}<h1>Zadejte IČO vaší firmy</h1><p class="sub">a my doplníme ostatní údaje.</p>
+        ${err?alertBox('err','Firmu s tímto IČO jsme nenašli. Zkontrolujte číslo, nebo nám zavolejte na +420 271 005 005.'):''}
         <label class="lbl" for="ico" style="margin-top:${err?0:20}px">IČO</label>
         <div class="ico-row"><div class="field ${err?'err':''}"><input id="ico" inputmode="numeric" maxlength="8" data-bind="ico" value="${esc(S.ico)}" autofocus aria-describedby="icoHelp">
           <button class="clear" data-clear aria-label="Smazat">✕</button></div>
@@ -1096,7 +1096,7 @@ function idDone(role, cur, next){
     <div class="page">${sidebar(4)}
       <main>${topbar(cur)}<h1>Ověření totožnosti dokončeno</h1>
         ${alertBox('ok',`Vaše totožnost byla úspěšně ověřena ${viaText()} a zkontrolovali jsme, že jste oprávnění jednat za tuto firmu.`,'margin-top:20px')}
-        <div class="panel"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()],['Role ve firmě',role]])}</div>
+        <div class="panel"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()],['Oprávnění jednat za firmu',role]])}</div>
         <div class="actions" style="margin-top:36px"><button class="btn" data-go="${next}" style="padding:14px 8px">Pokračovat na dokončení registrace</button></div>
       </main>
     </div>`;
@@ -1127,7 +1127,7 @@ function wire(){
     go(b);
   }));
   app.querySelectorAll('[data-restart]').forEach(el=>el.addEventListener('click',restart));
-  app.querySelectorAll('[data-soon]').forEach(el=>el.addEventListener('click',()=>toast('Ověření dostupnosti rozvozu není součástí tohoto prototypu.')));
+  app.querySelectorAll('[data-soon]').forEach(el=>el.addEventListener('click',()=>toast('Ověření dostupnosti doručení není součástí tohoto prototypu.')));
   app.querySelectorAll('[data-poa-sample]').forEach(el=>el.addEventListener('click',e=>{e.preventDefault();toast('Vzor plné moci by se zde stáhl (v prototypu nedostupné).');}));
   app.querySelectorAll('[data-preview]').forEach(el=>el.addEventListener('click',e=>{e.preventDefault();toast('Náhled souboru není v prototypu k dispozici.');}));
   app.querySelectorAll('a[href="#"]:not([data-go]):not([data-poa-sample]):not([data-preview]):not([data-auth-login])').forEach(a=>a.addEventListener('click',e=>e.preventDefault()));
@@ -1224,7 +1224,7 @@ function verifyIco(){
 function setDoc(key,f){
   if(!f) return;
   const ok = /\.(jpe?g|png)$/i.test(f.name) && /^image\/(jpeg|png)$/.test(f.type||'image/png') && f.size <= 10*1048576;
-  if(!ok){ S.docErr[key]='Soubor musí být obrázek JPG nebo PNG a nesmí být větší než 10 MB.'; render(); return; }
+  if(!ok){ S.docErr[key]='Nahrajte prosím obrázek JPG nebo PNG do velikosti 10 MB.'; render(); return; }
   S.docErr[key]=null; S.docFail=false;
   S.docs[key]={name:f.name,size:f.size,url:URL.createObjectURL(f)};
   render();
@@ -1232,7 +1232,7 @@ function setDoc(key,f){
 function setFile(f){
   if(!f) return;
   const ok = /\.(jpe?g|png|pdf)$/i.test(f.name) && f.size <= 10*1048576;
-  if(!ok){ const e=$('#fileErr'); if(e) e.textContent='Soubor musí být JPG, PNG nebo PDF a nesmí být větší než 10 MB.'; return; }
+  if(!ok){ const e=$('#fileErr'); if(e) e.textContent='Nahrajte prosím soubor JPG, PNG nebo PDF do velikosti 10 MB.'; return; }
   S.file = {name:f.name,size:f.size}; S.poaFail=false; render();
 }
 
