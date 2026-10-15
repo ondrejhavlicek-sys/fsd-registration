@@ -618,7 +618,7 @@ const BANK_SHORT = 6;
 const DOC_SLOTS = [
   ['front','Osobní doklad – přední strana','Občanský průkaz, cestovní pas nebo řidičský průkaz'],
   ['back','Osobní doklad – zadní strana','U dokladu bez zadní strany nahrajte stranu s osobními údaji'],
-  ['selfie','Vaše fotografie','Obličej dobře osvětlený, bez brýlí a čepice']
+  ['selfie','Vaše fotografie','Dobře osvětlený obličej, bez brýlí a čepice']
 ];
 const VALID_ICO = '03255654';
 const COMPANY = { ico: VALID_ICO, name: 'EREMITA COMPANY s.r.o.', seat: 'Jičínská 226/17, Žižkov, 13000 Praha 3' };
@@ -835,7 +835,7 @@ const VIEWS = {
           <img class="truck" src="${LP['hero-truck.png']}" alt="">
           <p class="lp-eyebrow">makro distribuce</p>
           <h1>Míň starostí. <span>Víc času na podnikání.</span></h1>
-          <p class="lead">Makro distribuce doručí zboží přímo k vám – po celé ČR, nově i jako stávajícímu zákazníkovi makro. Vy rostete, my zásobujeme.</p>
+          <p class="lead">Makro distribuce doručí zboží přímo k vám – po celé ČR. Nově i stávajícím zákazníkům makro. Vy rostete, my zásobujeme.</p>
           <div class="row"><button class="lp-pill primary" data-go="intro">Registrovat se</button><button class="lp-pill ghost" data-soon>Ověřit dostupnost doručení</button></div>
         </section>
         <section class="lp-stats">
@@ -846,11 +846,11 @@ const VIEWS = {
         <section class="lp-why"><h2>Proč makro distribuce</h2>
           <div class="lp-cards">
           <article class="lp-card" style="--bar:#005ae0"><img src="${LP['card-1.png']}" alt="" loading="lazy"><h3>Výhodné ceny</h3><p>Relevantní produkty pro vaši firmu za nejvýhodnější ceny po celý rok.</p></article>
-          <article class="lp-card" style="--bar:#990052"><img src="${LP['card-2.png']}" alt="" loading="lazy"><h3>Jednoduchá objednávka</h3><p>24 hodin denně, 365 dní v roce – přes internet, telefonicky nebo přes zástupce.</p></article>
+          <article class="lp-card" style="--bar:#990052"><img src="${LP['card-2.png']}" alt="" loading="lazy"><h3>Jednoduchá objednávka</h3><p>Objednávejte 24 hodin denně, 365 dní v roce – přes internet, telefonicky nebo u obchodního zástupce.</p></article>
           <article class="lp-card" style="--bar:#faaf00"><img src="${LP['card-3.png']}" alt="" loading="lazy"><h3>Rychlé a pružné doručení</h3><p>Doručíme vám v dohodnutých dnech a v čase, který vám vyhovuje.</p></article>
-          <article class="lp-card" style="--bar:#005ae0"><img src="${LP['card-4.png']}" alt="" loading="lazy"><h3>Garantovaná dostupnost</h3><p>95 % dostupnost produktů a výměna za stejnou nebo vyšší kvalitu.</p></article>
+          <article class="lp-card" style="--bar:#005ae0"><img src="${LP['card-4.png']}" alt="" loading="lazy"><h3>Garantovaná dostupnost</h3><p>Dostupnost produktů je 95 %. Co chybí, nahradíme zbožím stejné nebo vyšší kvality.</p></article>
           <article class="lp-card" style="--bar:#990052"><img src="${LP['card-5.png']}" alt="" loading="lazy"><h3>Zaručená čerstvost</h3><p>Chladicí řetězec a plné dodržení bezpečnostních norem.</p></article>
-          <article class="lp-card" style="--bar:#faaf00"><img src="${LP['card-6.png']}" alt="" loading="lazy"><h3>Nejlepší péče o zákazníky</h3><p>Obchodní zástupce vám pomůže optimalizovat nákupy na míru.</p></article>
+          <article class="lp-card" style="--bar:#faaf00"><img src="${LP['card-6.png']}" alt="" loading="lazy"><h3>Nejlepší péče o zákazníky</h3><p>Obchodní zástupce vám pomůže nastavit nákupy na míru.</p></article>
           </div>
         </section>
         <section class="lp-cta">
@@ -865,7 +865,7 @@ const VIEWS = {
     <div class="page">${sidebar(1)}
       <main>
         ${topbar('intro',false)}
-        <h1>Vítejte při registraci</h1>
+        <h1>Vítejte v registraci</h1>
         <p class="sub">do služby <b>makro distribuce</b> – vytvoření firemního účtu je zdarma.</p>
         <h3 style="font-size:14px">Co budete pro registraci potřebovat</h3>
         <div class="info"><span class="tag">A</span>IČO vaší firmy</div>
@@ -875,7 +875,7 @@ const VIEWS = {
           <li>máte plnou moc, kterou při registraci nahrajete. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></li></ul></div>
         <p style="margin:16px 0 20px">Nejdřív si vytvoříte přihlašovací účet. S ním se pak budete přihlašovat do služby <b>makro distribuce</b>.</p>
         <button class="btn cta-intro" data-go="auth" style="padding:14px 8px">Začít registraci</button>
-        <p style="margin:56px 0 0">Raději registraci vyřídíte s člověkem? Zavolejte nám a domluvíme schůzku s obchodním zástupcem.</p>
+        <p style="margin:56px 0 0">Chcete registraci raději vyřídit osobně? Zavolejte nám a domluvíme schůzku s obchodním zástupcem.</p>
         <div class="phone">📞 +420 271 005 005</div>
       </main>
     </div>`,
@@ -969,7 +969,7 @@ const VIEWS = {
       return `<div class="slot">
           <div class="slot-h"><b>${title}</b><span>${desc}</span></div>
           ${d ? `<div class="file"><img class="thumb" src="${d.url}" alt=""><b class="fname">${esc(d.name)}</b><span class="sz">${fmtSize(d.size)}</span><button type="button" class="link small" data-doc-remove="${k}" aria-label="Odebrat soubor ${esc(d.name)}">Odebrat</button></div>`
-          : `<div class="drop" data-doc-drop="${k}"><span class="up">⇪</span><div class="t"><b>Vyberte nebo přetáhněte soubor</b><small>JPG nebo PNG, velikost max 10 MB</small></div>
+          : `<div class="drop" data-doc-drop="${k}"><span class="up">⇪</span><div class="t"><b>Vyberte nebo přetáhněte soubor</b><small>JPG nebo PNG, velikost do 10 MB</small></div>
               <button type="button" class="btn soft sm" data-doc-pick="${k}">${k==='selfie'?'Vyfotit nebo vybrat':'Vybrat soubor'}</button>
               <input type="file" hidden accept="image/jpeg,image/png" data-doc-input="${k}" ${k==='selfie'?'capture="user"':''}></div>
             ${S.docErr[k]?`<div class="slot-err" role="alert">${S.docErr[k]}</div>`:''}`}
@@ -977,7 +977,7 @@ const VIEWS = {
     };
     const docsReady = S.docs.front && S.docs.back && S.docs.selfie;
     const docPanel = `
-        <p class="hint" style="margin:0 0 12px">Doklad musí být platný a čitelný. Jméno a datum narození z dokladu porovnáme s osobami oprávněnými jednat za firmu podle obchodního rejstříku.</p>
+        <p class="hint" style="margin:0 0 12px">Doklad musí být platný a čitelný. Jméno a datum narození z dokladu porovnáme s údaji o osobách oprávněných jednat za firmu v obchodním rejstříku.</p>
         <div class="docpanel">${DOC_SLOTS.map(slot).join('')}</div>
         <label class="chk"><input type="checkbox" id="docConsent" ${S.docConsent?'checked':''}> <span>Souhlasím se zpracováním údajů z dokladu a fotografie za účelem ověření totožnosti. <a href="#">Zásady zpracování osobních údajů</a></span></label>
         <div class="actions" style="margin-top:36px"><button class="btn" id="docGo" ${docsReady&&S.docConsent?'':'disabled'}>Zkontrolovat doklad a fotografii</button>${later_btn}</div>`;
@@ -985,7 +985,7 @@ const VIEWS = {
     <div class="page">${sidebar(4)}
       <main>${topbar('bank')}
         <h1>Ověřte svou totožnost</h1>
-        <p class="sub">Abychom ověřili, že za firmu jednáte oprávněně, potřebujeme ověřit vaši totožnost. Ověření trvá asi minutu. Ověřte se přes svou banku (<a href="#">Bank iD</a>), nebo nahrajte svůj osobní doklad a svou fotografii.</p>
+        <p class="sub">Abychom si byli jistí, že za firmu jednáte oprávněně, potřebujeme ověřit vaši totožnost. Ověření trvá asi minutu. Ověřte se přes svou banku (<a href="#">Bank iD</a>), nebo nahrajte svůj osobní doklad a svou fotografii.</p>
         ${S.docFail?alertBox('warn','Doklad a fotografii se nepodařilo ověřit. Zkontrolujte, že jsou snímky ostré a čitelné, a zkuste to znovu. Pokud to nepomůže, zavolejte nám na +420 271 005 005.','margin-top:4px'):''}
         <div class="seg" role="tablist" aria-label="Způsob ověření totožnosti">${tabs}</div>
         <div id="verifyPanel" role="tabpanel" aria-labelledby="tab-${S.method}">${isDoc?docPanel:bankPanel}</div>
@@ -1036,7 +1036,7 @@ const VIEWS = {
           </dl>
           <p class="hint" style="margin-top:16px">Nahrajte plnou moc, která vás opravňuje jednat za vaši firmu. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></p>
           ${S.file ? `<div class="file"><span class="fi">🖼</span><b style="font-weight:500">${esc(S.file.name)}</b> · <a href="#" data-preview>Náhled</a><span class="sz">${fmtSize(S.file.size)}</span></div>`
-          : `<div class="drop" id="drop"><span class="up">⇪</span><div class="t"><b>Vyberte nebo přetáhněte soubor</b><small>JPG, PNG nebo PDF, velikost max 10 MB</small></div>
+          : `<div class="drop" id="drop"><span class="up">⇪</span><div class="t"><b>Vyberte nebo přetáhněte soubor</b><small>JPG, PNG nebo PDF, velikost do 10 MB</small></div>
               <button class="btn soft sm" id="pick">Vybrat soubor</button><input type="file" id="fileIn" accept=".jpg,.jpeg,.png,.pdf" hidden></div>
               <div id="fileErr" class="hint" style="color:var(--err);margin-top:8px"></div>`}
         </div></div>
@@ -1095,7 +1095,7 @@ function idDone(role, cur, next){
   return `${header(true)}
     <div class="page">${sidebar(4)}
       <main>${topbar(cur)}<h1>Ověření totožnosti dokončeno</h1>
-        ${alertBox('ok',`Vaše totožnost byla úspěšně ověřena ${viaText()} a zkontrolovali jsme, že jste oprávnění jednat za tuto firmu.`,'margin-top:20px')}
+        ${alertBox('ok',`Vaše totožnost byla úspěšně ověřena ${viaText()} a zkontrolovali jsme, že jste oprávněni jednat za tuto firmu.`,'margin-top:20px')}
         <div class="panel"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()],['Oprávnění jednat za firmu',role]])}</div>
         <div class="actions" style="margin-top:36px"><button class="btn" data-go="${next}" style="padding:14px 8px">Pokračovat na dokončení registrace</button></div>
       </main>
