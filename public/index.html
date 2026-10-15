@@ -6,7 +6,7 @@
 <title>makro distribuce – online registrace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
   :root{
     --navy:#002f6c;
@@ -443,6 +443,93 @@
   .file .sz{margin-left:auto;flex:none}
   .file .link.small{margin-left:12px;flex:none}
 
+
+  /* ===== Typography theme: "makro.cz" (larger text) =====
+     Sizes measured on makro.cz: Lato; UI/body text 16/24, buttons 18/27 bold, small 14, headings 32/41 and 26/33
+     (the site uses the proprietary CAMetro for headings; Lato Bold stands in for it here).
+     Switch it in "Prototype scenarios" → Typography, or open the page with ?type=makro. */
+  html[data-type="makro"] body{font-family:Lato,Inter,system-ui,sans-serif;font-size:16px;line-height:1.5;color:#33435b}
+  html[data-type="makro"] button,html[data-type="makro"] input,html[data-type="makro"] select{font-family:inherit}
+  html[data-type="makro"] h1,html[data-type="makro"] h2,html[data-type="makro"] h3{color:#002d72;font-weight:700}
+  html[data-type="makro"] h1{font-size:32px;line-height:41px;margin-bottom:12px}
+  html[data-type="makro"] h3{font-size:20px;line-height:28px}
+  html[data-type="makro"] h3[style*="font-size"]{font-size:16px !important;line-height:24px}
+  html[data-type="makro"] dl{grid-template-columns:180px 1fr}
+  html[data-type="makro"] .sub,html[data-type="makro"] .hint,html[data-type="makro"] p{font-size:16px;line-height:24px}
+  html[data-type="makro"] .hint{font-size:15px}
+  html[data-type="makro"] b,html[data-type="makro"] strong{font-weight:700}
+  html[data-type="makro"] .lbl,html[data-type="makro"] label,html[data-type="makro"] dt,html[data-type="makro"] dd,html[data-type="makro"] .info,html[data-type="makro"] .chk,html[data-type="makro"] .dic-row{font-size:16px}
+  html[data-type="makro"] dd,html[data-type="makro"] .lbl{font-weight:700}
+  html[data-type="makro"] .info .tag{font-size:11px;width:20px;height:20px}
+  html[data-type="makro"] .alert{font-size:16px;line-height:24px}
+  html[data-type="makro"] .alert svg{width:24px;height:24px}
+
+  /* step list, step label */
+  html[data-type="makro"] .step b{font-size:16px;font-weight:700}
+  html[data-type="makro"] .step span{font-size:14px}
+  html[data-type="makro"] .step .dot{font-size:14px}
+  html[data-type="makro"] .topbar,html[data-type="makro"] .crumb{font-size:16px}
+  html[data-type="makro"] .saved{font-size:14px}
+
+  /* buttons and links */
+  html[data-type="makro"] .btn,html[data-type="makro"] .btn-wide,html[data-type="makro"] .lp-pill{font-size:18px !important;line-height:27px;font-weight:700}
+  html[data-type="makro"] .btn{padding:11px 16px}
+  html[data-type="makro"] .btn.sm{font-size:15px !important;line-height:22px;padding:7px 12px !important}
+  html[data-type="makro"] .actions .btn{padding:10px 16px !important}
+  html[data-type="makro"] .link,html[data-type="makro"] .toggle{font-size:16px;font-weight:700}
+  html[data-type="makro"] .link.small{font-size:14px}
+  html[data-type="makro"] .btn-reg,html[data-type="makro"] .hdr-actions{font-size:16px}
+  html[data-type="makro"] .btn-reg{padding:10px 14px}
+  html[data-type="makro"] .lp-pill{padding:15px 28px}
+
+  /* fields, tiles, tabs, uploads */
+  html[data-type="makro"] .field{height:48px}
+  html[data-type="makro"] .field input{font-size:16px}
+  html[data-type="makro"] .ico-row .field{width:280px}
+  html[data-type="makro"] .bank .name{font-size:18px;font-weight:700;line-height:24px}
+  html[data-type="makro"] .seg button{font-size:14px;height:32px;min-width:132px;line-height:20px}
+  html[data-type="makro"] .slot-h b{font-size:16px}
+  html[data-type="makro"] .slot-h span,html[data-type="makro"] .slot-err{font-size:14px}
+  html[data-type="makro"] .drop .t b{font-size:16px;font-weight:700}
+  html[data-type="makro"] .drop small,html[data-type="makro"] .file,html[data-type="makro"] .file .sz{font-size:14px}
+  html[data-type="makro"] .role{font-size:13px;padding:3px 8px}
+
+  /* dialogs and registration modal */
+  html[data-type="makro"] .dialog h2{font-size:24px;line-height:32px}
+  html[data-type="makro"] .dialog p{font-size:16px;line-height:24px}
+  html[data-type="makro"] .modal h2{font-size:22px}
+  html[data-type="makro"] .modal p,html[data-type="makro"] .modal .have{font-size:14px}
+  html[data-type="makro"] .modal .how,html[data-type="makro"] .or{font-size:13px}
+  html[data-type="makro"] .bsite-card h1{font-size:28px;line-height:36px}
+  html[data-type="makro"] .bsite-note,html[data-type="makro"] .bsite-env{font-size:16px}
+
+  /* landing page */
+  html[data-type="makro"] .lp-hero h1{font-size:64px;line-height:1.04;font-weight:900;color:#fff;margin-bottom:0}
+  html[data-type="makro"] .lp-hero p.lead{font-size:20px;line-height:30px;color:rgba(255,255,255,.95)}
+  html[data-type="makro"] .lp-eyebrow{font-size:14px}
+  html[data-type="makro"] .lp-stat b{font-size:40px}
+  html[data-type="makro"] .lp-stat span,html[data-type="makro"] .lp-card p{font-size:16px;line-height:24px}
+  html[data-type="makro"] .lp-card h3{font-size:20px;line-height:26px}
+  html[data-type="makro"] .lp-why h2{font-size:36px;line-height:44px}
+  html[data-type="makro"] .lp-cta h2{font-size:30px;line-height:38px}
+  html[data-type="makro"] .lp-cta p{font-size:18px;line-height:27px}
+  html[data-type="makro"] .lp-foot{font-size:14px;line-height:22px}
+  html[data-type="makro"] .lp-foot ul{gap:6px}
+
+  @media (max-width:768px){
+    html[data-type="makro"] h1{font-size:28px;line-height:36px}
+    html[data-type="makro"] dl{grid-template-columns:1fr}
+    html[data-type="makro"] .topbar .crumb{font-size:18px;line-height:24px}
+    html[data-type="makro"] .topbar .saved{font-size:14px}
+    html[data-type="makro"] .actions .btn,html[data-type="makro"] .actions .link{font-size:18px !important;min-height:52px}
+    html[data-type="makro"] .rdot{font-size:14px}
+    html[data-type="makro"] .lp-hero h1{font-size:40px}
+    html[data-type="makro"] .lp-hero p.lead{font-size:18px;line-height:27px}
+    html[data-type="makro"] .lp-why h2{font-size:30px;line-height:38px}
+    html[data-type="makro"] .seg button{height:36px;min-width:0}
+    html[data-type="makro"] .sheet .btn-wide{font-size:18px !important}
+  }
+
   /* prototype controls */
   .proto{position:fixed;right:12px;bottom:12px;background:#fff;border:1px solid var(--line);box-shadow:0 2px 12px rgba(0,0,0,.12);font-size:12px;width:230px;z-index:10}
   .proto summary{padding:8px 10px;font-weight:600;cursor:pointer;color:var(--muted)}
@@ -468,6 +555,12 @@
 <details class="proto" id="proto">
   <summary>Prototype scenarios</summary>
   <div>
+    <label>Typography
+      <select id="sc-type">
+        <option value="default">Default (Figma, 14px base)</option>
+        <option value="makro">makro.cz (larger text)</option>
+      </select>
+    </label>
     <label>Role verified (Bank iD / ID + photo)
       <select id="sc-role">
         <option value="auto">Statutory body (jednatel)</option>
@@ -1144,6 +1237,19 @@ function setFile(f){
 }
 
 matchMedia('(max-width:768px)').addEventListener('change',()=>render());
+
+/* typography theme: default (Figma) or makro.cz; remembered in localStorage when available, ?type=makro also works */
+function applyType(t){
+  document.documentElement.dataset.type = t;
+  $('#sc-type').value = t;
+  try{ localStorage.setItem('fsd-type',t); }catch(e){}
+}
+$('#sc-type').addEventListener('change',e=>applyType(e.target.value));
+(function initType(){
+  let t = new URLSearchParams(location.search).get('type');
+  if(!t){ try{ t = localStorage.getItem('fsd-type'); }catch(e){} }
+  applyType(t==='makro' ? 'makro' : 'default');
+})();
 
 /* prototype panel */
 $('#sc-jump').innerHTML = Object.entries(SCREENS).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('');
