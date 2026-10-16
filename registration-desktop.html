@@ -94,9 +94,11 @@
   .panel .badge{flex:none;width:40px;height:40px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--navy);font-size:18px}
   dl{display:grid;grid-template-columns:180px 1fr;gap:10px 0;margin:0;font-size:13px;flex:1}
   dt{color:var(--ink)} dd{margin:0;font-weight:600;color:var(--ink-strong)}
-  .info{background:var(--info);padding:12px;margin-bottom:8px;font-size:13px}
-  .info .tag{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:#c5d6f2;color:var(--navy);font-size:9px;font-weight:700;margin-right:10px}
-  .info ul{margin:6px 0 0 26px;padding-left:12px}
+  .info{background:var(--info);padding:12px;margin-bottom:8px;font-size:13px;display:flex;gap:8px;align-items:flex-start}
+  .info .ib{flex:1;min-width:0;padding-top:3px}
+  .info .tag{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#fff}
+  .info .tag svg{width:16px;height:16px;display:block}
+  .info ul{margin:6px 0 0;padding-left:18px}
   .bigcheck{position:absolute;right:20px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;background:#0a8a0a;color:#fff;display:grid;place-items:center;font-size:15px}
 
   /* buttons */
@@ -182,6 +184,7 @@
   .center-note{max-width:520px;margin:0 auto;padding-top:60px;text-align:center}
   .invite-add{margin-top:10px}
   .terms{margin-top:24px}
+  .phone svg{width:20px;height:20px;flex:none}
   .phone{display:flex;align-items:center;gap:10px;margin:20px 0 0;font-weight:600;color:var(--navy)}
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2b2b2d;color:#fff;padding:10px 16px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
   .toast.show{opacity:1}
@@ -462,7 +465,9 @@
   html[data-type="makro"] b,html[data-type="makro"] strong{font-weight:700}
   html[data-type="makro"] .lbl,html[data-type="makro"] label,html[data-type="makro"] dt,html[data-type="makro"] dd,html[data-type="makro"] .info,html[data-type="makro"] .chk,html[data-type="makro"] .dic-row{font-size:16px}
   html[data-type="makro"] dd,html[data-type="makro"] .lbl{font-weight:700}
-  html[data-type="makro"] .info .tag{font-size:11px;width:20px;height:20px}
+  html[data-type="makro"] .info .tag{width:30px;height:30px}
+  html[data-type="makro"] .info .tag svg{width:18px;height:18px}
+  html[data-type="makro"] .info .ib{padding-top:5px}
   html[data-type="makro"] .alert{font-size:16px;line-height:24px}
   html[data-type="makro"] .alert svg{width:24px;height:24px}
 
@@ -961,6 +966,12 @@ const avMatches = q => { const n=normTxt(q.trim()); return n.length<2 ? [] : AV_
 const avText = x => x.a+', '+x.z;
 const lpFooter = () => `<footer class="lp-foot"><div class="lp-wrap"><div class="cols"><div><b>Pro vaše podnikání</b><ul><li>Můj obchod</li><li>Vzor plné moci ke stažení</li><li>Vše pro maloobchod</li><li>Vše pro gastronomii</li><li>Track &amp; Trace</li><li>ProTrace</li><li>Kvalita a standardy</li><li>Compliance</li></ul></div><div><b>O nás</b><ul><li>O makro</li><li>Pro dodavatele</li><li>Pro novináře</li><li>Nejčastější otázky</li><li>Kariéra</li><li>Udržitelnost</li><li>Metro AG</li></ul></div><div><b>Užitečné odkazy</b><ul><li>Získat makro kartu</li><li>Bonusový program</li><li>Energetické štítky</li><li>Informace o stažení výrobku</li><li>makro akademie</li><li>makro newsletter</li></ul></div><div><b>Kontakty</b><ul><li>+420 271 005 005</li><li>Po–Pá: 7:00–19:00, Ne: 12:00–19:00</li><li>info@makro.cz</li></ul><b style="margin-top:16px">Sledujte nás</b><div class="soc"><img src="${LP['fb.svg']}" alt="Facebook" style="height:23px"><img src="${LP['ig.svg']}" alt="Instagram"><img src="${LP['yt.svg']}" alt="YouTube" style="height:18px"></div></div></div><div class="copy">© Makro Cash &amp; Carry ČR, s.r.o.</div></div></footer>`;
 
+const INTRO_ICON = {
+  company:'<svg viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.12031 1.2C10.4458 1.2 11.5203 2.27452 11.5203 3.6V13.2C11.5203 14.0837 10.804 14.8 9.92031 14.8H2.72031C1.83666 14.8 1.12031 14.0837 1.12031 13.2V3.6C1.12031 2.27452 2.19483 1.2 3.52031 1.2H9.12031ZM5.12031 9.27969C4.72267 9.27969 4.4 9.60235 4.4 10C4.4 10.3976 4.72267 10.7203 5.12031 10.7203H7.68047C8.07804 10.7202 8.4 10.3976 8.4 10C8.4 9.60241 8.07804 9.27977 7.68047 9.27969H5.12031ZM5.12031 5.27969C4.72267 5.27969 4.4 5.60235 4.4 6C4.4 6.39764 4.72267 6.72031 5.12031 6.72031H7.68047C8.07804 6.72023 8.4 6.39759 8.4 6C8.4 5.60241 8.07804 5.27977 7.68047 5.27969H5.12031Z" fill="#9DBDF0"/><path d="M13.1203 6.8C14.004 6.8 14.7203 7.51634 14.7203 8.4V13.2C14.7203 14.0837 14.004 14.8 13.1203 14.8H9.92031C10.804 14.8 11.5203 14.0837 11.5203 13.2V6.8H13.1203Z" fill="#002D72"/><path d="M7.68047 9.27969C8.07804 9.27977 8.4 9.60241 8.4 10C8.4 10.3976 8.07804 10.7202 7.68047 10.7203H5.12031C4.72267 10.7203 4.4 10.3976 4.4 10C4.4 9.60235 4.72267 9.27969 5.12031 9.27969H7.68047Z" fill="#002D72"/><path d="M7.68047 5.27969C8.07804 5.27977 8.4 5.60241 8.4 6C8.4 6.39759 8.07804 6.72023 7.68047 6.72031H5.12031C4.72267 6.72031 4.4 6.39764 4.4 6C4.4 5.60235 4.72267 5.27969 5.12031 5.27969H7.68047Z" fill="#002D72"/></svg>',
+  bank:'<svg viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.95 3.10376C9.33017 2.96541 6.70491 2.96541 4.08512 3.10376C3.52748 3.12958 2.99841 3.35797 2.59715 3.74608C2.19589 4.13419 1.95001 4.65536 1.90563 5.21184C1.76496 7.0252 1.76496 8.84673 1.90563 10.6601C1.95019 11.2161 2.19589 11.7368 2.59673 12.1246C2.99757 12.5125 3.52606 12.741 4.08322 12.7672C6.75307 12.9053 9.2801 12.9053 11.95 12.7672C12.5073 12.7412 13.036 12.5128 13.437 12.125C13.8381 11.7371 14.0839 11.2162 14.1285 10.6601C14.2685 8.82052 14.2685 7.05141 14.1285 5.21184C14.0839 4.65569 13.8381 4.13487 13.437 3.74698C13.036 3.35909 12.5073 3.13074 11.95 3.10472V3.10376Z" fill="#9DBDF0"/><path fill-rule="evenodd" clip-rule="evenodd" d="M7.72418 6.53914C7.72418 7.45893 7.20716 7.97595 6.28832 7.97595C5.36854 7.97595 4.85152 7.45893 4.85152 6.53914C4.85152 5.62031 5.36854 5.10329 6.28832 5.10329C7.20716 5.10329 7.72418 5.62031 7.72418 6.53914ZM10.0522 6.14209C9.89438 6.14209 9.74301 6.20479 9.63141 6.3164C9.5198 6.428 9.45711 6.57936 9.45711 6.73719C9.45711 6.89502 9.5198 7.04639 9.63141 7.15799C9.74301 7.26959 9.89438 7.33229 10.0522 7.33229H11.4909C11.6487 7.33229 11.8001 7.26959 11.9117 7.15799C12.0233 7.04639 12.086 6.89502 12.086 6.73719C12.086 6.57936 12.0233 6.428 11.9117 6.3164C11.8001 6.20479 11.6487 6.14209 11.4909 6.14209H10.0522ZM10.0522 8.53772C9.97406 8.53772 9.89667 8.55312 9.82447 8.58302C9.75227 8.61293 9.68667 8.65676 9.63141 8.71202C9.57615 8.76728 9.53231 8.83289 9.50241 8.90509C9.4725 8.97729 9.45711 9.05467 9.45711 9.13282C9.45711 9.21097 9.4725 9.28836 9.50241 9.36056C9.53231 9.43276 9.57615 9.49836 9.63141 9.55362C9.68667 9.60888 9.75227 9.65272 9.82447 9.68262C9.89667 9.71253 9.97406 9.72792 10.0522 9.72792H11.4909C11.6487 9.72792 11.8001 9.66522 11.9117 9.55362C12.0233 9.44202 12.086 9.29065 12.086 9.13282C12.086 8.97499 12.0233 8.82363 11.9117 8.71202C11.8001 8.60042 11.6487 8.53772 11.4909 8.53772H10.0522ZM6.28832 8.68912C7.5109 8.68912 8.42497 9.39943 8.6154 10.3897C8.65539 10.6011 8.47638 10.7782 8.2612 10.7782H4.31545C4.10027 10.7782 3.92126 10.6011 3.96125 10.3897C4.15168 9.39943 5.06575 8.68912 6.28832 8.68912Z" fill="#002D72"/></svg>',
+  authority:'<svg viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.36521 9.46669C4.86727 9.464 3.40228 9.91576 2.15596 10.7647C1.75821 11.0347 1.49686 11.3913 1.38812 11.7957C1.28129 12.1962 1.33662 12.6046 1.50258 12.9573C1.83165 13.659 2.59853 14.1667 3.5247 14.1667H9.20572C10.1309 14.1667 10.8978 13.6599 11.2278 12.9573C11.3928 12.6036 11.4482 12.1972 11.3413 11.7957C11.2326 11.3913 10.9713 11.0356 10.5735 10.7647C9.3273 9.91627 7.86277 9.46454 6.36521 9.46669Z" fill="#9DBDF0"/><path d="M6.36616 8.33726C8.09069 8.33726 9.05978 7.3462 9.05978 5.5853C9.05978 3.82439 8.09069 2.83333 6.36616 2.83333C4.64259 2.83333 3.67255 3.82439 3.67255 5.5853C3.67255 7.3462 4.64259 8.33726 6.36616 8.33726Z" fill="#9DBDF0"/><path fill-rule="evenodd" clip-rule="evenodd" d="M9 8.38075C9.40301 8.57678 9.89696 8.67817 10.4756 8.67817C12.2107 8.67817 13.1862 7.7666 13.1862 6.14623C13.1862 4.52491 12.2107 3.61333 10.4756 3.61333C10.2586 3.61333 10.054 3.62782 9.86182 3.65582C10.1078 4.20045 10.2183 4.80688 10.2183 5.43648C10.2183 6.53153 9.88456 7.55705 9.08164 8.30833L9 8.38075Z" fill="#002D72"/><path fill-rule="evenodd" clip-rule="evenodd" d="M11.9668 13.94H12.9051C13.7907 13.94 14.5233 13.4958 14.8375 12.8816C14.9966 12.5726 15.0503 12.2173 14.947 11.8658C14.8437 11.5124 14.5936 11.2004 14.2133 10.9648C13.4959 10.5176 12.6987 10.1938 11.8593 10.0088C12.2315 10.3605 12.5012 10.7953 12.6426 11.2719C12.8503 11.9817 12.7356 12.6827 12.438 13.264C12.3127 13.5074 12.1543 13.7346 11.9668 13.94Z" fill="#002D72"/></svg>',
+  phone:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M13.0177 2.96378C13.8689 2.2614 15.1367 2.35664 15.782 3.25069C15.9927 3.54117 16.2189 3.87331 16.6677 4.43521C17.3056 5.23991 17.6522 6.23696 17.6509 7.26384C17.6496 8.29072 17.3005 9.28689 16.6606 10.09C15.6867 11.2983 14.6653 12.5162 13.5225 13.659C12.3808 14.8007 11.1617 15.8221 9.9546 16.7971C9.15161 17.4373 8.1554 17.7865 7.12847 17.7878C6.10153 17.7891 5.10445 17.4424 4.29984 16.8043C3.70698 16.3305 3.37365 16.1078 3.07365 15.89C2.21174 15.2638 2.09389 14.0447 2.76412 13.215C3.3927 12.4352 4.10817 11.6959 4.7915 10.9745C5.01465 10.7434 5.31765 10.6063 5.63853 10.5913C5.9594 10.5762 6.2739 10.6844 6.5177 10.8935C6.83317 11.1626 7.08198 11.365 7.64865 11.8971C9.52722 10.7816 10.6653 9.62926 11.7617 7.78521C11.226 7.21497 11.0236 6.96617 10.7522 6.64712C10.5433 6.40444 10.4354 6.09083 10.4509 5.77097C10.4664 5.45111 10.6041 5.14939 10.8356 4.92807C11.5439 4.26617 12.2653 3.58402 13.0177 2.96378Z" fill="#002D72"/></svg>'
+};
 const later_btn = `<button class="link" data-go="later">Dokončit registraci později</button>`;
 
 /* ---------- screens ---------- */
@@ -1075,15 +1086,15 @@ const VIEWS = {
         <h1>Vítejte v registraci</h1>
         <p class="sub">do služby <b>makro distribuce</b> – vytvoření firemního účtu je zdarma.</p>
         <h3 style="font-size:14px">Co budete pro registraci potřebovat</h3>
-        <div class="info"><span class="tag">A</span>IČO vaší firmy</div>
-        <div class="info"><span class="tag">B</span>Ověření vaší identity pomocí Bank iD, nebo osobního dokladu a fotografie</div>
-        <div class="info"><span class="tag">C</span>Oprávnění jednat za vaši firmu
+        <div class="info"><span class="tag">${INTRO_ICON.company}</span><div class="ib">IČO vaší firmy</div></div>
+        <div class="info"><span class="tag">${INTRO_ICON.bank}</span><div class="ib">Ověření vaší identity pomocí Bank iD, nebo osobního dokladu a fotografie</div></div>
+        <div class="info"><span class="tag">${INTRO_ICON.authority}</span><div class="ib">Oprávnění jednat za vaši firmu
           <ul><li>v obchodním rejstříku jste zapsáni jako osoba oprávněná jednat za firmu, nebo</li>
-          <li>máte plnou moc, kterou při registraci nahrajete. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></li></ul></div>
+          <li>máte plnou moc, kterou při registraci nahrajete. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></li></ul></div></div>
         <p style="margin:16px 0 20px">Nejdřív si vytvoříte přihlašovací účet. S ním se pak budete přihlašovat do služby <b>makro distribuce</b>.</p>
         <button class="btn cta-intro" data-go="auth" style="padding:14px 8px">Začít registraci</button>
         <p style="margin:56px 0 0">Chcete registraci raději vyřídit osobně? Zavolejte nám a domluvíme schůzku s obchodním zástupcem.</p>
-        <div class="phone">📞 +420 271 005 005</div>
+        <div class="phone">${INTRO_ICON.phone}<span>+420 271 005 005</span></div>
       </main>
     </div>`,
 
