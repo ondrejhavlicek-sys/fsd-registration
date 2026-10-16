@@ -283,6 +283,7 @@
 
   .link:hover,.toggle:hover{color:#0043a6;text-decoration:underline;text-underline-offset:3px}
   .link:active,.toggle:active{color:#003380}
+  .iconbtn.back svg{width:20px;height:20px;color:#005ae0;display:block}
   .iconbtn:hover,.dialog .x:hover{background:#e2e2e4}
   .iconbtn:active,.dialog .x:active{background:#d4d4d7}
   .modal .x:hover,.clear:hover{opacity:.6}
@@ -347,7 +348,7 @@
     .ico-row{align-items:flex-end}
     .ico-row .field{flex:1;width:auto}
     .ico-row .btn{min-height:48px;font-size:16px !important;padding:12px !important}
-    .iconbtn.back{font-size:22px}
+    .iconbtn.back svg{width:22px;height:22px}
     .field{height:48px}
     .stack{max-width:none}
     .prefix{width:119px}
@@ -875,7 +876,7 @@ const rail = cur => `<nav class="rail" aria-label="Kroky registrace">${STEPS.map
 const topbar = (id, saved=true) => {
   const sc = SCREENS[id];
   return `<div class="topbar">
-    <button class="iconbtn back" data-back aria-label="Zpět">‹</button>
+    <button class="iconbtn back" data-back aria-label="Zpět"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M20 12H4.5M11 5.5L4.5 12l6.5 6.5"/></svg></button>
     <span class="crumb">Krok ${sc.step} z 5 · ${STEPS[sc.step-1][0]}</span>
     ${saved?'<span class="saved">Uloženo</span>':''}
     <span class="grow"></span>
