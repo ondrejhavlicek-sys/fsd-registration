@@ -94,9 +94,10 @@
   .panel .badge{flex:none;width:40px;height:40px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--navy);font-size:18px}
   dl{display:grid;grid-template-columns:180px 1fr;gap:10px 0;margin:0;font-size:13px;flex:1}
   dt{color:var(--ink)} dd{margin:0;font-weight:600;color:var(--ink-strong)}
-  .info{background:var(--info);padding:12px;margin-bottom:8px;font-size:13px;display:flex;gap:8px;align-items:flex-start}
-  .info .ib{flex:1;min-width:0;padding-top:3px}
-  .info .tag{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#fff}
+  .info{--tag:26px;background:var(--info);padding:12px;margin-bottom:8px;font-size:13px;display:flex;gap:8px;align-items:flex-start}
+  /* centre the FIRST line of text on the icon, whatever the font or line height: offset = (icon height - 1 line) / 2 */
+  .info .ib{flex:1;min-width:0;line-height:1.5;padding-top:3px;padding-top:calc((var(--tag) - 1lh) / 2)}
+  .info .tag{flex:none;display:grid;place-items:center;width:var(--tag);height:var(--tag);border-radius:50%;background:#fff}
   .info .tag svg{width:16px;height:16px;display:block}
   .info ul{margin:6px 0 0;padding-left:18px}
   .bigcheck{position:absolute;right:20px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;background:#0a8a0a;color:#fff;display:grid;place-items:center;font-size:15px}
@@ -465,9 +466,8 @@
   html[data-type="makro"] b,html[data-type="makro"] strong{font-weight:700}
   html[data-type="makro"] .lbl,html[data-type="makro"] label,html[data-type="makro"] dt,html[data-type="makro"] dd,html[data-type="makro"] .info,html[data-type="makro"] .chk,html[data-type="makro"] .dic-row{font-size:16px}
   html[data-type="makro"] dd,html[data-type="makro"] .lbl{font-weight:700}
-  html[data-type="makro"] .info .tag{width:30px;height:30px}
+  html[data-type="makro"] .info{--tag:30px}
   html[data-type="makro"] .info .tag svg{width:18px;height:18px}
-  html[data-type="makro"] .info .ib{padding-top:5px}
   html[data-type="makro"] .alert{font-size:16px;line-height:24px}
   html[data-type="makro"] .alert svg{width:24px;height:24px}
 
