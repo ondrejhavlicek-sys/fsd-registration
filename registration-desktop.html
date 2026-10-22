@@ -752,6 +752,7 @@ const S = {
   ico:VALID_ICO, dic:'', email:'', phone:'', icoErr:false,
   method:'bankid', via:'bankid', docs:{front:null,back:null,selfie:null}, docErr:{}, docConsent:false, docFail:false,
   av:{q:'',sel:null,zoom:1,pin:null,restr:[],menu:false,pop:false},
+  completedUpTo:0, lastIco:null,
   idScreen:null, bank:null, bankAll:false, consent:false,
   file:null, poaFail:false,
   invites:[], showInvite:false, terms:false,
@@ -768,6 +769,7 @@ function go(id){
   const prev = S.screen;
   if(id==='idOk'||id==='poaOk') S.idScreen = id;
   S.screen = id;
+  { const k = SCREENS[id].step; if(k>=2) S.completedUpTo = Math.max(S.completedUpTo, k-1); }
   if(location.hash.slice(1)!==id) history.replaceState(null,'','#'+id);
   const swap = () => { render(); window.scrollTo(0,0); };
   if(prev!==id && !firstPaint && document.startViewTransition && !REDUCED.matches) document.startViewTransition(swap);
@@ -815,6 +817,7 @@ function closeExit(){
   if(exitReturnFocus && document.contains(exitReturnFocus)) exitReturnFocus.focus();
 }
 function restart(){
+  S.completedUpTo=0; S.lastIco=null;
   S.av={q:'',sel:null,zoom:1,pin:null,restr:[],menu:false,pop:false};
   Object.values(S.docs).forEach(d=>d&&URL.revokeObjectURL(d.url));
   Object.assign(S,{method:'bankid',via:'bankid',docs:{front:null,back:null,selfie:null},docErr:{},docConsent:false,docFail:false,idScreen:null,ico:VALID_ICO,dic:'',email:'',phone:'',bank:null,bankAll:false,consent:false,file:null,poaFail:false,invites:[],showInvite:false,terms:false,authForm:false,authEmail:''});
@@ -862,10 +865,11 @@ const isMobile = () => matchMedia('(max-width:768px)').matches;
 const STEP_TARGET = n => ({1:'intro', 2:'account', 3:'icoFound', 4:S.idScreen||'idOk'})[n];
 const sidebar = (cur, done) => `
   <nav class="steps" aria-label="Kroky registrace">${STEPS.map((s,i)=>{
-    const n=i+1, st = done||n<cur?'done':n===cur?'active':'';
+    // completed steps (in any direction) are navigable; the current one is highlighted, later ones stay inert
+    const n=i+1, st = n===cur?'active':(n<=S.completedUpTo?'done':'');
     const inner = `<div class="dot">${st==='done'?'✓':n}</div><div class="txt"><b>${s[0]}</b><span>${s[1]}</span></div>`;
     return st==='done'
-      ? `<button type="button" class="step done" data-step-go="${STEP_TARGET(n)}" aria-label="Krok ${n}: ${s[0]} (dokončeno) – vrátit se">${inner}</button>`
+      ? `<button type="button" class="step done" data-step-go="${STEP_TARGET(n)}" aria-label="Krok ${n}: ${s[0]} (dokončeno) – ${n<cur?'vrátit se':'přejít na tento krok'}">${inner}</button>`
       : `<div class="step ${st}"${st==='active'?' aria-current="step"':''}>${inner}</div>`;
   }).join('')}</nav>`;
 
@@ -1335,6 +1339,7 @@ function wire(){
     e.preventDefault();
     const t = el.dataset.go;
     if(t==='later') return openExit();
+    if(t==='ico' && S.screen==='icoFound') S.completedUpTo=Math.min(S.completedUpTo,2); // "Zadat jiné IČO"
     if(t==='auth') S.authForm=false;
     go(t);
   }));
@@ -1396,7 +1401,7 @@ function wire(){
   const dc = $('#docConsent');
   if(dc) dc.addEventListener('change',()=>{ S.docConsent=dc.checked; $('#docGo').disabled=!(S.docs.front&&S.docs.back&&S.docs.selfie&&S.docConsent); });
   const dg = $('#docGo');
-  if(dg) dg.addEventListener('click',()=>{ S.via='doc'; S.docFail=false; go('docLoading'); });
+  if(dg) dg.addEventListener('click',()=>{ S.completedUpTo=Math.min(S.completedUpTo,3); S.via='doc'; S.docFail=false; go('docLoading'); });
 
   // bank
   app.querySelectorAll('[data-bank]').forEach(b=>b.addEventListener('click',()=>{ S.bank=b.dataset.bank; render(); }));
@@ -1405,7 +1410,7 @@ function wire(){
   const cons = $('#consent');
   if(cons) cons.addEventListener('change',()=>{ S.consent=cons.checked; $('#bankGo').disabled=!(S.bank&&S.consent); });
   const bg = $('#bankGo');
-  if(bg) bg.addEventListener('click',()=>{ S.via='bankid'; S.docFail=false; go('bankSite'); });
+  if(bg) bg.addEventListener('click',()=>{ S.completedUpTo=Math.min(S.completedUpTo,3); S.via='bankid'; S.docFail=false; go('bankSite'); });
 
   const bv = $('#bsVerify');
   if(bv) bv.addEventListener('click',()=>go('bankLoading'));
@@ -1421,7 +1426,7 @@ function wire(){
     drop.addEventListener('drop',e=>setFile(e.dataTransfer.files[0]));
   }
   const pg = $('#poaGo');
-  if(pg) pg.addEventListener('click',()=>{ S.poaFail=false; go('poaLoading'); });
+  if(pg) pg.addEventListener('click',()=>{ S.completedUpTo=Math.min(S.completedUpTo,3); S.poaFail=false; go('poaLoading'); });
 
   // summary
   const au = $('#addUser');
@@ -1517,6 +1522,8 @@ document.addEventListener('click',e=>{ if(S.screen==='availSchedule' && S.av.men
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && S.screen==='availSchedule' && S.av.menu){ S.av.menu=false; render(); $('#avAddBtn')?.focus(); } });
 
 function verifyIco(){
+  if(S.ico!==S.lastIco) S.completedUpTo=Math.min(S.completedUpTo,2); // a different company: later steps no longer valid
+  S.lastIco=S.ico;
   if(S.ico.length!==8){ S.icoErr=true; return go('icoNotFound'); }
   go('icoLoading');
 }
