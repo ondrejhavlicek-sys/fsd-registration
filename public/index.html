@@ -669,6 +669,92 @@
   html[data-type="makro"] .rc-name{font-size:18px;line-height:26px}
   html[data-type="makro"] .rc-sub{font-size:14px}
 
+  /* ===== user menu (initials) and profile pages ===== */
+  .um-wrap{position:relative}
+  .um-btn{border:0;cursor:pointer;padding:0;transition:background-color .15s ease,box-shadow .15s ease}
+  .um-btn:hover{background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.25)}
+  .um-btn[aria-expanded="true"]{background:#fff;box-shadow:0 0 0 3px var(--yellow)}
+  .um-btn:focus-visible{outline:2px solid var(--yellow);outline-offset:3px}
+  .um{position:absolute;right:0;top:calc(100% + 8px);width:320px;background:#fff;color:#002f6c;box-shadow:2px 4px 8px rgba(0,0,0,.08),-2px 4px 8px rgba(0,0,0,.08);z-index:40;padding:0 0 4px;font-size:14px;line-height:21px}
+  .um[hidden]{display:none}
+  .um-title{padding:12px 16px 10px;font-weight:700}
+  .um-user{display:flex;gap:12px;align-items:center;padding:8px 16px 12px;background:#dbe8fb}
+  .um-user .avatar{background:#002f6c;color:#fff;font-size:14px;flex:none}
+  .um-user b{display:block;font-weight:700}
+  .um-user small{display:block;font-size:12px;color:#33435b;word-break:break-all}
+  .um-links{padding:6px 0}
+  .um-links a,.um-support{display:block;padding:7px 16px;color:#002f6c;text-decoration:none}
+  .um-links a:hover,.um-support:hover{background:#f3f5fe}
+  .um-act{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 16px;background:#efefef;border-top:1px solid #fff;color:#002f6c;font-weight:700;text-decoration:none}
+  .um-act:hover{background:#e6e6e6}
+  .cnt{min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#dbe8fb;color:#002f6c;font-size:12px;font-weight:700;display:inline-grid;place-items:center}
+  .um-support{margin-top:6px}
+  .um-out{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:9px 16px;margin-top:6px;border:0;border-top:1px solid #d5d8dd;background:#fff;color:#002f6c;font-size:14px;cursor:pointer}
+  .um-out:hover{background:#f3f5fe}
+  .um-out svg{width:20px;height:20px;flex:none}
+  .um a:focus-visible,.um button:focus-visible{outline:2px solid #005ae0;outline-offset:-2px}
+
+  .ac{background:#fff;padding:16px 10px 56px}
+  .ac-col{width:min(1128px,100%);margin:0 auto;padding:32px 16px;display:grid;grid-template-columns:280px minmax(0,640px);gap:40px;align-items:start}
+  .ac-back,.ac-me,.ac-list{display:none}
+  .ac-nav{display:flex;flex-direction:column;gap:4px}
+  .ac-nav a{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;color:#002f6c;font-weight:600;text-decoration:none}
+  .ac-nav a:hover{background:#f6f6f6}
+  .ac-nav a.on{background:#f3f5fe}
+  .ac-main h1{margin:0 0 20px}
+  .ac-card{background:#f6f6f6;padding:16px;margin-bottom:16px}
+  .ac-card-h{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
+  .ac-card-h h2{margin:0;font-size:16px;color:#002d72}
+  .kv{display:grid;grid-template-columns:180px 1fr;gap:10px 8px;margin:0;font-size:14px}
+  .kv dt{color:#444} .kv dd{margin:0;font-weight:600;color:#1f1f21;word-break:break-word}
+  .ac-note{margin:12px 0 0;font-size:13px;color:#555;line-height:20px}
+  .ac-form{display:flex;flex-direction:column;gap:14px;margin-top:12px}
+  .ac-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .ac-actions{display:flex;align-items:center;gap:24px}
+  .tgl{display:flex;align-items:center;gap:12px;padding:10px 0;font-size:14px;cursor:pointer;border-top:1px solid #e5e7eb}
+  .tgl:first-of-type{border-top:0}
+  .tgl input{position:absolute;opacity:0;width:1px;height:1px}
+  .tgl .trk{flex:none;width:40px;height:22px;background:#b9b9bd;position:relative;transition:background-color .15s}
+  .tgl .trk::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;background:#fff;transition:transform .15s}
+  .tgl input:checked + .trk{background:#005ae0}
+  .tgl input:checked + .trk::after{transform:translateX(18px)}
+  .tgl input:focus-visible + .trk{outline:2px solid #005ae0;outline-offset:2px}
+  .ac-nav .cnt,.ac-list .cnt{margin-left:auto}
+
+  @media (max-width:768px){
+    .um{display:none !important}
+    .avatar.um-btn{width:40px;height:40px}
+    .ac{padding:0}
+    .ac-col{display:flex;flex-direction:column;align-items:stretch;gap:16px;padding:12px}
+    .ac-back{align-self:flex-start}
+    .ac-nav{display:none}
+    .ac-back{display:inline-flex;align-self:flex-start}
+    .ac-main h1{font-size:24px;line-height:28px;margin-bottom:16px}
+    .kv{grid-template-columns:1fr;gap:2px}
+    .kv dd{margin-bottom:10px}
+    .ac-row2{grid-template-columns:1fr}
+    .ac-actions{flex-direction:column;align-items:stretch;gap:8px}
+    .ac-actions .btn,.ac-card .btn{width:100%;min-height:48px;font-size:16px;padding:12px !important}
+    .ac-actions .link{min-height:44px;display:flex;align-items:center;justify-content:center;font-size:16px}
+    /* the profile page itself (hub of the account menu) */
+    [data-um-page] {display:none}
+    .ac-me{display:flex;gap:12px;align-items:center;padding:4px 0 8px}
+    .ac-me b{display:block;font-size:18px;color:#002d72}
+    .ac-me small{display:block;font-size:13px;color:#555}
+    .avatar.big{width:56px;height:56px;font-size:18px;background:#002f6c;color:#fff;flex:none}
+    .ac-list{display:flex;flex-direction:column}
+    .ac-cap{margin:20px 0 4px;font-size:13px;font-weight:400;color:#666}
+    .ac-list a,.ac-out{display:flex;align-items:center;gap:8px;min-height:52px;padding:12px 4px;border-bottom:1px solid #e5e7eb;color:#002d72;font-size:16px;font-weight:600;text-decoration:none;background:none;border-left:0;border-right:0;border-top:0;width:100%;text-align:left}
+    .ac-list a span:first-child{flex:1}
+    .ac-list a i{font-style:normal;font-size:22px;color:#6b6f76}
+    .ac-out svg{width:22px;height:22px;flex:none}
+  }
+  html[data-type="makro"] .um,html[data-type="makro"] .um-out{font-size:16px;line-height:24px}
+  html[data-type="makro"] .um-user small{font-size:14px}
+  html[data-type="makro"] .kv,html[data-type="makro"] .tgl,html[data-type="makro"] .ac-nav a{font-size:16px}
+  html[data-type="makro"] .ac-note{font-size:15px;line-height:22px}
+  html[data-type="makro"] .ac-card-h h2{font-size:18px}
+
   /* prototype controls */
   .proto{position:fixed;right:12px;bottom:12px;background:#fff;border:1px solid var(--line);box-shadow:0 2px 12px rgba(0,0,0,.12);font-size:12px;width:230px;z-index:10}
   .proto summary{padding:8px 10px;font-weight:600;cursor:pointer;color:var(--muted)}
@@ -768,7 +854,7 @@ const DOC_SLOTS = [
   ['selfie','Vaše fotografie','Dobře osvětlený obličej, bez brýlí a čepice']
 ];
 const VALID_ICO = '03255654';
-const PERSON = { name: 'Jan Novák', born: '5. 1. 1988', email: 'jiri.novak@eremita.cz' };
+const PERSON = { name: 'Jan Novák', born: '5. 1. 1988', email: 'jan.novak@eremita.cz' };
 
 const STEPS = [
   ['Úvod','Co je potřeba k registraci'],
@@ -785,6 +871,11 @@ const SCREENS = {
   availLoading:{ step:0, label:'(kontrola adresy)' },
   availSchedule:{ step:0, label:'C2 – Dostupné časy doručení' },
   availNone:   { step:0, label:'C3 – Doručení nedostupné' },
+  profile:     { step:0, label:'P0 – Uživatelský účet (mobil)' },
+  profPersonal:{ step:0, label:'P1 – Osobní údaje' },
+  profSecurity:{ step:0, label:'P2 – Přihlášení a zabezpečení' },
+  profPrivacy: { step:0, label:'P3 – Souhlasy a soukromí' },
+  profNotify:  { step:0, label:'P4 – Oznámení' },
   login:       { step:0, label:'L1 – Přihlášení', bare:true },
   hub:         { step:0, label:'L2 – Vaše registrace (rozpracované)' },
   reminder:    { step:0, label:'(e-mail s připomínkou)', bare:true },
@@ -813,6 +904,7 @@ const S = {
   ico:VALID_ICO, dic:'', email:'', phone:'', icoErr:false,
   method:'bankid', via:'bankid', docs:{front:null,back:null,selfie:null}, docErr:{}, docConsent:false, docFail:false,
   av:{q:'',sel:null,zoom:1,pin:null,restr:[],menu:false,pop:false},
+  user:{first:'Jan',last:'Novák',phone:'+420 777 123 456'}, prefs:{mkEmail:false,mkSms:false,nReg:true,nRemind:true,nNews:false}, prof:{edit:false,pw:false,err:{}},
   acct:null, completedUpTo:0, lastIco:null, drafts:[], regId:null, company:null, dup:null,
   idScreen:null, bank:null, bankAll:false, consent:false,
   file:null, poaFail:false,
@@ -827,6 +919,7 @@ let firstPaint = true;
 
 function go(id){
   timers.splice(0).forEach(clearTimeout);
+  if(id==='profile' && !isMobile()) id='profPersonal';   // the profile hub is a mobile page; desktop opens the first section
   const prev = S.screen;
   if(id==='idOk'||id==='poaOk') S.idScreen = id;
   S.screen = id;
@@ -870,7 +963,13 @@ const EXIT_COPY = {
     stay:'Pokračovat v registraci', leave:'Opustit registraci' }
 };
 EXIT_COPY.delete = { title:'Smazat rozpracovanou registraci?', text:'', stay:'Ponechat', leave:'Smazat registraci' };
-let exitKind = 'confirm', pendingDelete = null;
+let exitKind = 'confirm', pendingDelete = null, pendingLeave = null;
+const inRegistration = () => S.screen!=='done' && (((SCREENS[S.screen]||{}).step||0)>=1 || S.screen==='auth');
+function doSignOut(){ S.acct=null; S.authEmail=''; toast('Odhlásili jste se.'); go('landing'); }
+function leaveTo(target){   // ask first when an unfinished registration is open
+  if(inRegistration()){ pendingLeave=target; openExit(); return; }
+  if(target==='@signout') doSignOut(); else go(target);
+}
 function openExit(kind, extra){
   // nothing is saved until the user account exists: step 1 and the account-creation modal
   exitKind = kind || ((SCREENS[S.screen].step <= 1 || S.screen==='auth') ? 'confirm' : 'saved');
@@ -882,6 +981,7 @@ function openExit(kind, extra){
   $('#exitContinue').focus();
 }
 function closeExit(){
+  pendingLeave=null;
   const o=$('#exitOverlay'); o.classList.remove('open'); o.setAttribute('aria-hidden','true'); document.body.classList.remove('noscroll');
   if(exitReturnFocus && document.contains(exitReturnFocus)) exitReturnFocus.focus();
 }
@@ -901,10 +1001,12 @@ function restart(){
 $('#exitContinue').addEventListener('click',closeExit);
 $('#exitX').addEventListener('click',closeExit);
 $('#exitRestart').addEventListener('click',()=>{
+  const to=pendingLeave||'landing'; pendingLeave=null;
   closeExit();
-  if(exitKind==='confirm') restart();                       // nothing saved yet: discard and leave
+  const go2=()=>{ if(to==='@signout') doSignOut(); else go(to); };
+  if(exitKind==='confirm'){ resetRegistration(VALID_ICO); go2(); }  // nothing saved yet: discard and leave
   else if(exitKind==='delete'){ S.drafts=S.drafts.filter(d=>d.id!==pendingDelete); render(); }
-  else { saveDraft(); go('landing'); }                      // progress is saved: keep it and leave
+  else { saveDraft(); go2(); }                                       // progress is saved: keep it and leave
 });
 $('#exitOverlay').addEventListener('mousedown',e=>{ if(e.target.id==='exitOverlay') closeExit(); });
 document.addEventListener('keydown',e=>{
@@ -919,11 +1021,30 @@ function later(ms,fn){ timers.push(setTimeout(fn,ms)); }
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
 
 /* ---------- pieces ---------- */
+const ACCT_NAV = [['profPersonal','Osobní údaje'],['profSecurity','Přihlášení a zabezpečení'],['profPrivacy','Souhlasy a soukromí'],['profNotify','Oznámení']];
+const userInitials = () => (S.user.first[0]+S.user.last[0]).toUpperCase();
+const userFull = () => S.user.first+' '+S.user.last;
+const userEmail = () => S.authEmail || PERSON.email;
+const OUT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/></svg>';
+// desktop: dropdown under the initials; mobile: the same button opens the profile page (like the account menu in the eshop prototype)
+const userMenu = () => {
+  const n=S.drafts.length;
+  return `<div class="um-wrap">
+    <button type="button" class="avatar um-btn" data-um aria-haspopup="true" aria-expanded="false" aria-controls="userMenu" aria-label="Uživatelský účet: ${esc(userFull())}">${userInitials()}</button>
+    <div class="um" id="userMenu" hidden>
+      <div class="um-title">Uživatelský účet</div>
+      <div class="um-user"><span class="avatar" aria-hidden="true">${userInitials()}</span><span><b>${esc(userFull())}</b><small>${esc(userEmail())}</small></span></div>
+      <nav class="um-links" aria-label="Uživatelský účet">${ACCT_NAV.map(([id,l])=>`<a href="#" data-leave="${id}">${l}</a>`).join('')}</nav>
+      <a href="#" class="um-act" data-leave="hub"><span>Rozpracované registrace</span>${n?`<span class="cnt" aria-label="${n}">${n}</span>`:''}</a>
+      <a class="um-support" href="tel:+420271005005">Zákaznická podpora</a>
+      <button type="button" class="um-out" data-signout>${OUT_ICON}Odhlásit se</button>
+    </div></div>`;
+};
 const header = (loggedIn, regTarget='auth') => `
   <header class="hdr">
     <a class="brand" href="#landing" data-logo aria-label="makro distribuce – úvodní stránka"><span class="logo">makro</span><span>distribuce</span></a>
-    ${loggedIn
-      ? `<div class="avatar">JN</div>`
+    ${(loggedIn || S.acct)
+      ? userMenu()
       : `<div class="hdr-actions"><button class="login" data-go="login" aria-label="Přihlásit se">${svgIcon(ICON.user.replaceAll('#002D72','#fff'),20)}<span class="lt"> Přihlásit se</span></button><button class="btn-reg" data-go="${regTarget}">Registrovat se</button></div>`}
   </header>`;
 
@@ -1114,6 +1235,19 @@ const avShell = content => `${header(false,'intro')}
   </div></div>
   ${lpFooter()}`;
 
+// switch row used on the profile pages (saved at once, like in the eshop prototype)
+const tgl = (key,label) => `<label class="tgl"><input type="checkbox" role="switch" data-pref="${key}" ${S.prefs[key]?'checked':''}><span class="trk" aria-hidden="true"></span><span>${label}</span></label>`;
+// profile pages: section list on the left (desktop); on mobile a back link to the profile page replaces it
+const acctShell = (id,title,content) => `${header(true)}
+  <div class="ac"><div class="ac-col">
+    <button type="button" class="av-back ac-back" data-go="profile">${AV_ICON.chev}Uživatelský účet</button>
+    <nav class="ac-nav" aria-label="Uživatelský účet">
+      ${ACCT_NAV.map(([k,l])=>`<a href="#" data-go="${k}" ${k===id?'aria-current="page" class="on"':''}>${l}</a>`).join('')}
+      <a href="#" data-go="hub"><span>Rozpracované registrace</span>${S.drafts.length?`<span class="cnt">${S.drafts.length}</span>`:''}</a>
+    </nav>
+    <main class="ac-main"><h1>${title}</h1>${content}</main>
+  </div></div>`;
+
 const VIEWS = {
   landing: () => `${header(false,'intro')}
     <div class="lp">
@@ -1147,6 +1281,62 @@ const VIEWS = {
       </div>
       ${lpFooter()}
     </div>`,
+
+  profile: () => `${header(true)}
+    <div class="ac"><div class="ac-col">
+      <div class="ac-me"><span class="avatar big" aria-hidden="true">${userInitials()}</span><div><b>${esc(userFull())}</b><small>${esc(userEmail())}</small></div></div>
+      <nav class="ac-list" aria-label="Uživatelský účet"><h2 class="ac-cap">Uživatelský účet</h2>
+        ${ACCT_NAV.map(([id,l])=>`<a href="#" data-go="${id}"><span>${l}</span><i aria-hidden="true">›</i></a>`).join('')}
+        <h2 class="ac-cap">Registrace</h2>
+        <a href="#" data-go="hub"><span>Rozpracované registrace</span>${S.drafts.length?`<span class="cnt">${S.drafts.length}</span>`:''}<i aria-hidden="true">›</i></a>
+        <h2 class="ac-cap">Pomoc</h2>
+        <a href="tel:+420271005005"><span>Zákaznická podpora</span><i aria-hidden="true">›</i></a>
+        <button type="button" class="ac-out" data-signout>${OUT_ICON}Odhlásit se</button>
+      </nav></div></div>`,
+
+  profPersonal: () => {
+    const f=S.prof, e=f.err||{}, u=f.vals||S.user;   // keep what the user typed when validation fails
+    return acctShell('profPersonal','Osobní údaje',`
+      <section class="ac-card"><div class="ac-card-h"><h2>Jméno a kontakt</h2>${f.edit?'':'<button type="button" class="link" id="pfEdit">Upravit</button>'}</div>
+      ${f.edit?`<form id="pfForm" novalidate class="ac-form">
+          <div class="ac-row2"><div><label class="lbl" for="pfFirst">Jméno</label><div class="field ${e.name?'err':''}"><input id="pfFirst" value="${esc(u.first)}" autocomplete="given-name"></div></div>
+            <div><label class="lbl" for="pfLast">Příjmení</label><div class="field ${e.name?'err':''}"><input id="pfLast" value="${esc(u.last)}" autocomplete="family-name"></div></div></div>
+          ${e.name?`<div class="slot-err" role="alert">${e.name}</div>`:''}
+          <div><label class="lbl" for="pfPhone">Telefon</label><div class="field ${e.phone?'err':''}"><input id="pfPhone" type="tel" value="${esc(u.phone)}" placeholder="+420 777 000 111" autocomplete="tel"></div>${e.phone?`<div class="slot-err" role="alert">${e.phone}</div>`:''}</div>
+          <div class="ac-actions"><button class="btn" type="submit">Uložit změny</button><button class="link" type="button" id="pfCancel">Zrušit</button></div>
+        </form>`
+      :`<dl class="kv"><dt>Jméno</dt><dd>${esc(userFull())}</dd><dt>Telefon</dt><dd>${esc(S.user.phone||'—')}</dd><dt>Přihlašovací e-mail</dt><dd>${esc(userEmail())}</dd></dl>`}
+      <p class="ac-note">Tyto údaje patří k vašemu přihlašovacímu účtu. Údaje o firmě spravujete zvlášť.</p></section>`);
+  },
+
+  profSecurity: () => {
+    const f=S.prof, e=f.err||{};
+    return acctShell('profSecurity','Přihlášení a zabezpečení',`
+      <section class="ac-card"><div class="ac-card-h"><h2>Přihlašovací údaje</h2>${f.pw?'':'<button type="button" class="link" id="pwOpen">Změnit heslo</button>'}</div>
+      <dl class="kv"><dt>E-mail</dt><dd>${esc(userEmail())}</dd><dt>Heslo</dt><dd>••••••••</dd></dl>
+      ${f.pw?`<form id="pwForm" novalidate class="ac-form">
+        <div><label class="lbl" for="pwCur">Současné heslo</label><div class="field ${e.cur?'err':''}"><input id="pwCur" type="password" autocomplete="current-password"></div>${e.cur?`<div class="slot-err" role="alert">${e.cur}</div>`:''}</div>
+        <div><label class="lbl" for="pwNew">Nové heslo</label><div class="field ${e.n1?'err':''}"><input id="pwNew" type="password" autocomplete="new-password"></div>${e.n1?`<div class="slot-err" role="alert">${e.n1}</div>`:''}</div>
+        <div><label class="lbl" for="pwNew2">Nové heslo znovu</label><div class="field ${e.n2?'err':''}"><input id="pwNew2" type="password" autocomplete="new-password"></div>${e.n2?`<div class="slot-err" role="alert">${e.n2}</div>`:''}</div>
+        <div class="ac-actions"><button class="btn" type="submit">Změnit heslo</button><button class="link" type="button" id="pwCancel">Zrušit</button></div>
+      </form>`:''}</section>
+      <section class="ac-card"><div class="ac-card-h"><h2>Přihlášená zařízení</h2></div>
+        <p class="ac-note" style="margin-top:0">Pokud jste se přihlásili na cizím zařízení, můžete se odhlásit všude najednou.</p>
+        <button type="button" class="btn soft" id="signAll">Odhlásit se ze všech zařízení</button></section>`);
+  },
+
+  profPrivacy: () => acctShell('profPrivacy','Souhlasy a soukromí',`
+      <section class="ac-card"><div class="ac-card-h"><h2>Obchodní sdělení</h2></div>
+        ${tgl('mkEmail','Novinky a nabídky e-mailem')}${tgl('mkSms','Nabídky formou SMS')}
+        <p class="ac-note">Souhlas můžete kdykoli odvolat. Ke zpracování nutných údajů pro vaši registraci souhlas nepotřebujeme.</p></section>
+      <section class="ac-card"><div class="ac-card-h"><h2>Vaše údaje</h2></div>
+        <p class="ac-note" style="margin-top:0">Více o tom, jak údaje používáme, najdete v <a href="#" data-soon-msg="Zásady zpracování osobních údajů nejsou součástí tohoto prototypu.">Zásadách zpracování osobních údajů</a>.</p>
+        <button type="button" class="btn soft" data-soon-msg="Stažení údajů není součástí tohoto prototypu.">Stáhnout moje údaje</button></section>`),
+
+  profNotify: () => acctShell('profNotify','Oznámení',`
+      <section class="ac-card"><div class="ac-card-h"><h2>Oznámení e-mailem</h2></div>
+        ${tgl('nReg','Stav vaší registrace')}${tgl('nRemind','Připomínky dokončení registrace')}${tgl('nNews','Novinky z makro distribuce')}
+        <p class="ac-note">Oznámení posíláme na ${esc(userEmail())}.</p></section>`),
 
   login: () => {
     const content = `
@@ -1332,7 +1522,7 @@ const VIEWS = {
         <div class="panel acct-panel">
           <div class="badge">${svgIcon(ICON.user)}</div>
           <div style="font-size:13px"><div>Přihlášeni jako</div><b style="display:block;margin:6px 0 12px;color:var(--ink-strong)">${esc(S.authEmail||PERSON.email)}</b>
-          <button class="btn soft sm" data-go="intro">Přihlásit se jiným účtem</button></div>
+          <button class="btn soft sm" data-go="login">Přihlásit se jiným účtem</button></div>
         </div>
         <div class="actions" style="margin-top:96px"><button class="btn" data-go="ico">Pokračovat na registraci firmy</button>${later_btn}</div>
       </main>
@@ -1532,6 +1722,7 @@ function wire(){
   const app = $('#app');
   wireAvail(app);
   wireResume(app);
+  wireProfile(app);
   app.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',e=>{
     e.preventDefault();
     const t = el.dataset.go;
@@ -1543,9 +1734,7 @@ function wire(){
   }));
   app.querySelectorAll('[data-logo]').forEach(a=>a.addEventListener('click',e=>{
     e.preventDefault();
-    const st=(SCREENS[S.screen]||{}).step||0;
-    if(S.screen!=='done' && (st>=1 || S.screen==='auth')) openExit();   // same prompt as the close button: nothing saved yet / progress saved
-    else go('landing');
+    leaveTo('landing');   // asks first inside an unfinished registration (same prompt as the close button)
   }));
   app.querySelectorAll('[data-step-go]').forEach(el=>el.addEventListener('click',()=>go(el.dataset.stepGo)));
   app.querySelectorAll('[data-back]').forEach(el=>el.addEventListener('click',()=>{
@@ -1751,6 +1940,43 @@ function wireResume(app){
   }));
   app.querySelectorAll('[data-new]').forEach(b=>b.addEventListener('click',newRegistration));
   $('#dupResume')?.addEventListener('click',()=>loadDraft(S.dup.id));
+}
+
+/* ---- user menu and profile pages ---- */
+function closeUserMenu(){ document.querySelectorAll('#userMenu').forEach(m=>{ m.hidden=true; }); document.querySelectorAll('[data-um]').forEach(b=>b.setAttribute('aria-expanded','false')); }
+document.addEventListener('click',e=>{ if(!e.target.closest('.um-wrap')) closeUserMenu(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const b=document.querySelector('[data-um][aria-expanded="true"]'); if(b){ closeUserMenu(); b.focus(); } } });
+function wireProfile(app){
+  app.querySelectorAll('[data-um]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(isMobile()){ leaveTo('profile'); return; }          // mobile: the profile page instead of a dropdown
+    const m=$('#userMenu'), open=m.hidden; m.hidden=!open; btn.setAttribute('aria-expanded',open);
+  }));
+  app.querySelectorAll('[data-leave]').forEach(a=>a.addEventListener('click',e=>{ e.preventDefault(); closeUserMenu(); leaveTo(a.dataset.leave); }));
+  app.querySelectorAll('[data-signout]').forEach(b=>b.addEventListener('click',()=>{ closeUserMenu(); leaveTo('@signout'); }));
+  app.querySelectorAll('[data-pref]').forEach(i=>i.addEventListener('change',()=>{ S.prefs[i.dataset.pref]=i.checked; toast('Nastavení je uložené.'); }));
+  app.querySelectorAll('[data-soon-msg]').forEach(b=>b.addEventListener('click',e=>{ e.preventDefault(); toast(b.dataset.soonMsg); }));
+  $('#signAll')?.addEventListener('click',()=>toast('Odhlášení ze všech zařízení není součástí tohoto prototypu.'));
+  // personal data
+  $('#pfEdit')?.addEventListener('click',()=>{ S.prof={edit:true,pw:false,err:{}}; render(); $('#pfFirst')?.focus(); });
+  $('#pfCancel')?.addEventListener('click',()=>{ S.prof={edit:false,pw:false,err:{}}; render(); });
+  $('#pfForm')?.addEventListener('submit',e=>{
+    e.preventDefault(); const first=$('#pfFirst').value.trim(), last=$('#pfLast').value.trim(), phone=$('#pfPhone').value.trim(); const err={};
+    if(!first||!last) err.name='Zadejte jméno i příjmení.';
+    if(phone && !/^\+?[\d\s]{9,16}$/.test(phone)) err.phone='Zadejte telefon ve tvaru +420 777 000 111.';
+    if(err.name||err.phone){ S.prof={edit:true,pw:false,err,vals:{first,last,phone}}; render(); (err.name?$('#pfFirst'):$('#pfPhone'))?.focus(); return; }
+    Object.assign(S.user,{first,last,phone}); S.prof={edit:false,pw:false,err:{}}; render(); toast('Změny jsou uložené.');
+  });
+  // password
+  $('#pwOpen')?.addEventListener('click',()=>{ S.prof={edit:false,pw:true,err:{}}; render(); $('#pwCur')?.focus(); });
+  $('#pwCancel')?.addEventListener('click',()=>{ S.prof={edit:false,pw:false,err:{}}; render(); });
+  $('#pwForm')?.addEventListener('submit',e=>{
+    e.preventDefault(); const c=$('#pwCur').value, n1=$('#pwNew').value, n2=$('#pwNew2').value, err={};
+    if(!c) err.cur='Zadejte současné heslo.';
+    if(n1.length<8) err.n1='Nové heslo musí mít aspoň 8 znaků.';
+    else if(n1!==n2) err.n2='Hesla se neshodují.';
+    if(Object.keys(err).length){ S.prof={edit:false,pw:true,err}; render(); const k=err.cur?'#pwCur':err.n1?'#pwNew':'#pwNew2'; $(k)?.focus(); return; }
+    S.prof={edit:false,pw:false,err:{}}; render(); toast('Heslo je změněné.');
+  });
 }
 
 function verifyIco(){
