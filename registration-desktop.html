@@ -768,6 +768,48 @@
     .done-actions .btn{min-width:0;width:100%;min-height:48px;font-size:16px;padding:12px !important}
   }
 
+  /* ===== "About this flow" drawer (prototype documentation) ===== */
+  .about-btn{position:fixed;right:254px;bottom:12px;z-index:10;display:inline-flex;gap:6px;align-items:center;height:30px;padding:0 12px;background:#fff;border:1px solid var(--line);box-shadow:0 2px 12px rgba(0,0,0,.12);font-size:12px;font-weight:600;color:#002d72;cursor:pointer}
+  .about-btn:hover{background:#f3f5fe}
+  .about-btn span:first-child{font-size:14px}
+  .about-ov{position:fixed;inset:0;z-index:95;background:rgba(0,20,48,.5)}
+  .about{position:fixed;top:0;right:0;bottom:0;z-index:96;width:min(520px,100vw);background:#fff;box-shadow:-8px 0 32px rgba(0,0,0,.2);display:flex;flex-direction:column;font-size:14px;line-height:22px;color:#222;animation:aboutIn .25s ease both}
+  .about[hidden],.about-ov[hidden]{display:none}
+  @keyframes aboutIn{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+  .about-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:20px 24px 16px;border-bottom:1px solid #e5e7eb;background:#002d72;color:#fff}
+  .about-h small{display:block;font-size:12px;color:#ffe500;font-weight:600;letter-spacing:.4px;text-transform:uppercase}
+  .about-h h2{margin:2px 0 0;font-size:22px;line-height:28px;color:#fff}
+  .about-x{width:32px;height:32px;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:14px;cursor:pointer;flex:none}
+  .about-x:hover{background:rgba(255,255,255,.28)}
+  .about-b{overflow:auto;padding:20px 24px 40px}
+  .about-b h3{margin:28px 0 8px;font-size:16px;color:#002d72;padding-top:12px;border-top:1px solid #e5e7eb}
+  .about-b h4{margin:16px 0 4px;font-size:14px;color:#002d72}
+  .about-b p{margin:0 0 10px}
+  .about-b ul{margin:0 0 10px;padding-left:20px}
+  .about-b li{margin-bottom:4px}
+  .about-b code{background:#f3f5fe;padding:1px 5px;font-size:12px}
+  .about-lead{font-size:15px;color:#33435b}
+  .journey{list-style:none;margin:16px 0 4px;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:12px;counter-reset:j}
+  .journey li{background:#f3f5fe;border-top:4px solid #005ae0;padding:12px;display:flex;flex-direction:column;gap:6px;margin:0}
+  .journey li:nth-child(2){border-top-color:#990052}
+  .journey li:nth-child(3){border-top-color:#faaf00}
+  .journey li:nth-child(4){border-top-color:#108133}
+  .journey b{color:#002d72}
+  .journey span{font-size:13px;line-height:19px;flex:1}
+  .journey button,.about-try button{align-self:flex-start;border:0;background:#005ae0;color:#fff;font-size:13px;font-weight:600;padding:6px 12px;cursor:pointer}
+  .journey button:hover,.about-try button:hover{background:#004fc4}
+  .about-try{display:flex;gap:8px;flex-wrap:wrap}
+  .about-try button{background:#dbe8fb;color:#062a66}
+  .about-try button:hover{background:#c8dcf8}
+  @media (max-width:768px){
+    .about-btn{right:auto;left:208px;bottom:4px;padding:0 10px}
+    .about-btn .lbl-t{display:none}
+    .about{top:auto;left:0;width:100%;height:88vh;box-shadow:0 -8px 32px rgba(0,0,0,.25);animation:sheetUp .3s ease both}
+    .journey{grid-template-columns:1fr}
+  }
+  html[data-type="makro"] .about{font-size:16px;line-height:24px}
+  html[data-type="makro"] .journey span{font-size:15px;line-height:22px}
+
   /* prototype controls */
   .proto{position:fixed;right:12px;bottom:12px;background:#fff;border:1px solid var(--line);box-shadow:0 2px 12px rgba(0,0,0,.12);font-size:12px;width:230px;z-index:10}
   .proto summary{padding:8px 10px;font-weight:600;cursor:pointer;color:var(--muted)}
@@ -781,6 +823,75 @@
 <body>
 <div id="app"></div>
 <div class="toast" id="toast"></div>
+<button type="button" class="about-btn" id="aboutBtn" aria-haspopup="dialog" aria-controls="aboutDrawer"><span aria-hidden="true">ⓘ</span><span class="lbl-t">About this flow</span></button>
+<div class="about-ov" id="aboutOv" hidden></div>
+<aside class="about" id="aboutDrawer" role="dialog" aria-modal="true" aria-labelledby="aboutTitle" hidden>
+  <header class="about-h"><div><small>Prototype documentation</small><h2 id="aboutTitle">Unfinished registration</h2></div><button type="button" class="about-x" id="aboutClose" aria-label="Close">✕</button></header>
+  <div class="about-b">
+    <p class="about-lead">How a user leaves a registration and comes back to it. The prototype keeps everything in memory; in production a draft is a server-side record tied to the user account.</p>
+
+    <ol class="journey" aria-label="The flow in four steps">
+      <li><b>1 · Leave</b><span>Close button, logo, "Dokončit registraci později" or sign-out. From step 2 the draft is saved.</span><button type="button" data-about="leave">Show me</button></li>
+      <li><b>2 · Come back</b><span>Header "Přihlásit se", the hint on step 1, or the reminder e-mail, then sign-in.</span><button type="button" data-about="come">Open the e-mail</button></li>
+      <li><b>3 · Hub</b><span>"Vaše registrace": one card per draft, with progress and actions.</span><button type="button" data-about="hub">Open the hub</button></li>
+      <li><b>4 · Continue</b><span>The draft reopens on the last step, or a new registration starts.</span><button type="button" data-about="resume">Resume a draft</button></li>
+    </ol>
+
+    <h3>Rules</h3>
+    <ul>
+      <li><b>Saving starts at step 2.</b> Until the user account exists (step 1 and the account modal) nothing is stored. Leaving there asks for confirmation and discards the registration.</li>
+      <li><b>One draft per company.</b> Up to <b>5</b> drafts per user (<code>MAX_DRAFTS</code>, easy to change).</li>
+      <li><b>A draft stores</b> that registration only: IČO, company, contact, identity-check choice and uploads, consents and the last opened step. It is saved on leave, not on every keystroke.</li>
+      <li><b>Loading screens are not resume points.</b> A draft saved on a loading or in-progress screen reopens on its parent step.</li>
+      <li><b>A draft is removed</b> when the registration is finished (step 5) or the user deletes it.</li>
+    </ul>
+
+    <h3>Flows</h3>
+    <h4>1 · Leave</h4>
+    <ul>
+      <li>Step 1 / account modal → <i>"Opravdu chcete ukončit registraci?"</i> → leaving discards it.</li>
+      <li>Step 2 and later → <i>"Registraci jsme uložili"</i> → leaving saves the draft.</li>
+    </ul>
+    <h4>2 · Come back</h4>
+    <p>Three entry points, all lead to sign-in and then the hub: the hint <i>"Máte rozpracovanou registraci? Přihlásit se"</i> on step 1, <i>"Přihlásit se"</i> in the header, and the <b>reminder e-mail</b> (<i>"Dokončit registraci"</i>, link valid 30 days).</p>
+    <p>Sign-in is e-mail and password or a social account. Errors: invalid e-mail or empty password; wrong credentials (same message for an unknown e-mail, so accounts are not revealed); temporary lock after repeated failures (15 min); a social account without a registration (links to sign-up).</p>
+    <h4>3 · Hub "Vaše registrace"</h4>
+    <p>One card per draft: company (or <i>"Firma zatím nezadána"</i>), IČO, a 5-segment progress bar and <i>"Krok X z 5 · název · uloženo datum"</i>.</p>
+    <ul>
+      <li><b>Pokračovat v registraci</b> restores the draft and opens the last step.</li>
+      <li><b>Smazat</b> asks for confirmation, then removes the draft with its data (not undoable).</li>
+      <li><b>Registrovat další firmu</b> starts a fresh registration at step 1; a signed-in user skips account creation. Disabled at 5 drafts, with a hint.</li>
+      <li>No drafts → empty state with <i>"Registrovat firmu"</i>.</li>
+    </ul>
+    <h4>4 · Duplicate IČO</h4>
+    <p>On step 3 a company that already has a draft shows <i>"Registraci firmy X už máte rozpracovanou"</i> with <b>Pokračovat v této registraci</b> or <b>Zadat jiné IČO</b>. A company that is already a customer shows a message with the phone number instead.</p>
+    <h4>5 · Start at the limit</h4>
+    <p>"Registrovat se" on public pages with 5 drafts sends a signed-in user to the hub with the limit notice instead of step 1.</p>
+    <h4>6 · Where the user lands after leaving</h4>
+    <p>Back to where the registration started: the hub if it was started from there, otherwise the landing page.</p>
+
+    <h3>User menu</h3>
+    <p><i>"Rozpracované registrace (n)"</i> appears in the user menu and on the mobile profile page only when n &gt; 0. Profile forms with unsaved changes ask <i>"Zahodit neuložené změny?"</i> before navigating away.</p>
+
+    <h3>Try it</h3>
+    <p>Use <b>Prototype scenarios</b> (bottom right):</p>
+    <ul>
+      <li><b>Saved registrations</b>: none / one / two / five (after sign-in).</li>
+      <li><b>Sign-in result</b>: success, wrong e-mail or password, locked, social login without an account.</li>
+      <li><b>Jump to screen</b>: <i>L1 – Přihlášení</i>, <i>L2 – Vaše registrace</i>, the reminder e-mail.</li>
+    </ul>
+    <p class="about-try"><button type="button" data-about="limit">Hit the 5-draft limit</button><button type="button" data-about="locked">Try a locked sign-in</button></p>
+
+    <h3>Open points for implementation</h3>
+    <ul>
+      <li>Draft storage, retention and cleanup (the e-mail link is valid 30 days) are not defined here.</li>
+      <li>Reminder e-mail trigger and timing; the prototype only shows the e-mail itself.</li>
+      <li>Password reset is not part of the prototype ("Zapomněli jste heslo?" only shows a toast).</li>
+      <li>Uploaded documents in a draft need server-side storage and the same retention rules.</li>
+    </ul>
+  </div>
+</aside>
+
 <div class="overlay" id="exitOverlay" aria-hidden="true">
   <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="exitTitle" aria-describedby="exitText">
     <button class="x" id="exitX" aria-label="Zavřít">✕</button>
@@ -2120,6 +2231,30 @@ $('#sc-type').addEventListener('change',e=>applyType(e.target.value));
   let t = new URLSearchParams(location.search).get('type');
   if(!t){ try{ t = localStorage.getItem('fsd-type'); }catch(e){} }
   applyType(t==='makro' ? 'makro' : 'default');
+})();
+
+
+/* ---- "About this flow" drawer ---- */
+(function aboutDrawer(){
+  const btn=$('#aboutBtn'), dr=$('#aboutDrawer'), ov=$('#aboutOv');
+  const open=()=>{ dr.hidden=false; ov.hidden=false; document.body.classList.add('noscroll'); $('#aboutClose').focus(); };
+  const close=()=>{ dr.hidden=true; ov.hidden=true; document.body.classList.remove('noscroll'); btn.focus(); };
+  btn.addEventListener('click',open); $('#aboutClose').addEventListener('click',close); ov.addEventListener('click',close);
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !dr.hidden) close(); });
+  const sel=$('#sc-drafts');
+  const seed=k=>{ sel.value=k; seedDrafts(k); };
+  const ACT={
+    leave:()=>{ S.acct='created'; S.company=COMPANIES['03255654']; S.origin='public'; S.completedUpTo=Math.max(S.completedUpTo,2); go('ico'); toast('Click ✕ or the logo to see the leave dialog.'); },
+    come:()=>go('reminder'),
+    hub:()=>{ S.acct='existing'; if(!S.drafts.length) seed('two'); go('hub'); },
+    resume:()=>{ S.acct='existing'; if(!S.drafts.length) seed('two'); go('hub'); toast('Press "Pokračovat v registraci" on a card.'); },
+    limit:()=>{ S.acct='existing'; seed('five'); go('landing'); toast('Click "Registrovat se" to see the limit notice.'); },
+    locked:()=>{ $('#sc-login').value='locked'; S.acct=null; go('login'); toast('Enter any e-mail and password.'); }
+  };
+  dr.addEventListener('click',e=>{ const b=e.target.closest('[data-about]'); if(!b) return; close(); ACT[b.dataset.about](); });
+  // simple focus trap while the drawer is open
+  dr.addEventListener('keydown',e=>{ if(e.key!=='Tab') return; const f=[...dr.querySelectorAll('button,a[href]')]; const i=f.indexOf(document.activeElement);
+    if(e.shiftKey && i<=0){ e.preventDefault(); f[f.length-1].focus(); } else if(!e.shiftKey && i===f.length-1){ e.preventDefault(); f[0].focus(); } });
 })();
 
 /* saved registrations scenario */
