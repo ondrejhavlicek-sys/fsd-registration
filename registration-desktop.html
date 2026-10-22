@@ -1035,7 +1035,7 @@ const userMenu = () => {
       <div class="um-title">Uživatelský účet</div>
       <div class="um-user"><span class="avatar" aria-hidden="true">${userInitials()}</span><span><b>${esc(userFull())}</b><small>${esc(userEmail())}</small></span></div>
       <nav class="um-links" aria-label="Uživatelský účet">${ACCT_NAV.map(([id,l])=>`<a href="#" data-leave="${id}">${l}</a>`).join('')}</nav>
-      <a href="#" class="um-act" data-leave="hub"><span>Rozpracované registrace</span>${n?`<span class="cnt" aria-label="${n}">${n}</span>`:''}</a>
+      ${n?`<a href="#" class="um-act" data-leave="hub"><span>Rozpracované registrace</span><span class="cnt" aria-label="${n}">${n}</span></a>`:''}
       <a class="um-support" href="tel:+420271005005">Zákaznická podpora</a>
       <button type="button" class="um-out" data-signout>${OUT_ICON}Odhlásit se</button>
     </div></div>`;
@@ -1243,7 +1243,7 @@ const acctShell = (id,title,content) => `${header(true)}
     <button type="button" class="av-back ac-back" data-go="profile">${AV_ICON.chev}Uživatelský účet</button>
     <nav class="ac-nav" aria-label="Uživatelský účet">
       ${ACCT_NAV.map(([k,l])=>`<a href="#" data-go="${k}" ${k===id?'aria-current="page" class="on"':''}>${l}</a>`).join('')}
-      <a href="#" data-go="hub"><span>Rozpracované registrace</span>${S.drafts.length?`<span class="cnt">${S.drafts.length}</span>`:''}</a>
+      ${S.drafts.length?`<a href="#" data-go="hub"><span>Rozpracované registrace</span><span class="cnt">${S.drafts.length}</span></a>`:''}
     </nav>
     <main class="ac-main"><h1>${title}</h1>${content}</main>
   </div></div>`;
@@ -1287,8 +1287,8 @@ const VIEWS = {
       <div class="ac-me"><span class="avatar big" aria-hidden="true">${userInitials()}</span><div><b>${esc(userFull())}</b><small>${esc(userEmail())}</small></div></div>
       <nav class="ac-list" aria-label="Uživatelský účet"><h2 class="ac-cap">Uživatelský účet</h2>
         ${ACCT_NAV.map(([id,l])=>`<a href="#" data-go="${id}"><span>${l}</span><i aria-hidden="true">›</i></a>`).join('')}
-        <h2 class="ac-cap">Registrace</h2>
-        <a href="#" data-go="hub"><span>Rozpracované registrace</span>${S.drafts.length?`<span class="cnt">${S.drafts.length}</span>`:''}<i aria-hidden="true">›</i></a>
+        ${S.drafts.length?`<h2 class="ac-cap">Registrace</h2>
+        <a href="#" data-go="hub"><span>Rozpracované registrace</span><span class="cnt">${S.drafts.length}</span><i aria-hidden="true">›</i></a>`:''}
         <h2 class="ac-cap">Pomoc</h2>
         <a href="tel:+420271005005"><span>Zákaznická podpora</span><i aria-hidden="true">›</i></a>
         <button type="button" class="ac-out" data-signout>${OUT_ICON}Odhlásit se</button>
