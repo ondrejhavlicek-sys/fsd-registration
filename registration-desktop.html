@@ -41,7 +41,8 @@
 
   /* header */
   .hdr{background:var(--navy);height:88px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(16px,5vw,96px)}
-  .brand{display:flex;align-items:center;gap:12px;color:#fff;font-size:22px;font-weight:500}
+  .brand{display:flex;align-items:center;gap:12px;color:#fff;font-size:22px;font-weight:500;text-decoration:none}
+  .brand:focus-visible{outline:2px solid var(--yellow);outline-offset:4px}
   .logo{font-size:38px;font-weight:800;letter-spacing:-1.5px;color:var(--yellow);line-height:1}
   .hdr-actions{display:flex;align-items:center;gap:28px;color:#fff;font-size:14px;font-weight:600}
   .hdr-actions .login{display:flex;align-items:center;gap:8px;background:none;border:0;color:#fff;font-weight:600}
@@ -812,7 +813,7 @@ const S = {
   ico:VALID_ICO, dic:'', email:'', phone:'', icoErr:false,
   method:'bankid', via:'bankid', docs:{front:null,back:null,selfie:null}, docErr:{}, docConsent:false, docFail:false,
   av:{q:'',sel:null,zoom:1,pin:null,restr:[],menu:false,pop:false},
-  completedUpTo:0, lastIco:null, drafts:[], regId:null, company:null, dup:null,
+  acct:null, completedUpTo:0, lastIco:null, drafts:[], regId:null, company:null, dup:null,
   idScreen:null, bank:null, bankAll:false, consent:false,
   file:null, poaFail:false,
   invites:[], showInvite:false, terms:false,
@@ -920,7 +921,7 @@ function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('sh
 /* ---------- pieces ---------- */
 const header = (loggedIn, regTarget='auth') => `
   <header class="hdr">
-    <div class="brand"><span class="logo">makro</span><span>distribuce</span></div>
+    <a class="brand" href="#landing" data-logo aria-label="makro distribuce – úvodní stránka"><span class="logo">makro</span><span>distribuce</span></a>
     ${loggedIn
       ? `<div class="avatar">JN</div>`
       : `<div class="hdr-actions"><button class="login" data-go="login" aria-label="Přihlásit se">${svgIcon(ICON.user.replaceAll('#002D72','#fff'),20)}<span class="lt"> Přihlásit se</span></button><button class="btn-reg" data-go="${regTarget}">Registrovat se</button></div>`}
@@ -1086,10 +1087,10 @@ function resetRegistration(ico){
   S.av={q:'',sel:null,zoom:1,pin:null,restr:[],menu:false,pop:false};
   Object.assign(S,{completedUpTo:0,lastIco:null,regId:null,company:null,dup:null,method:'bankid',via:'bankid',docs:{front:null,back:null,selfie:null},docErr:{},docConsent:false,docFail:false,idScreen:null,ico:ico,dic:'',email:'',phone:'',bank:null,bankAll:false,consent:false,file:null,poaFail:false,invites:[],showInvite:false,terms:false,authForm:false,authEmail:''});
 }
-function newRegistration(){          // another company; the user account already exists, so start at step 3
+function newRegistration(){          // another company: a fresh registration from step 1 (signed-in users skip creating an account)
   const email=S.authEmail;
-  resetRegistration(''); S.authEmail=email; S.completedUpTo=2;
-  go('ico');
+  resetRegistration(''); S.authEmail=email;
+  go('intro');
 }
 function seedDrafts(kind){           // prototype scenarios: what the user has saved
   const mk=(id,ico,screen,done,saved,extra={})=>({id,screen,saved,snap:Object.assign({ico,dic:'',email:'',phone:'',method:'bankid',via:'bankid',docs:{front:null,back:null,selfie:null},docConsent:false,bank:'Raiffeisen Bank',bankAll:false,consent:true,file:null,idScreen:'idOk',lastIco:ico,completedUpTo:done,company:COMPANIES[ico]||null},extra)});
@@ -1290,7 +1291,7 @@ const VIEWS = {
           <li>máte plnou moc, kterou při registraci nahrajete. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></li></ul></div></div>
         <p style="margin:16px 0 20px">Nejdřív si vytvoříte přihlašovací účet. S ním se pak budete přihlašovat do služby <b>makro distribuce</b>.</p>
         <button class="btn cta-intro" data-go="auth" style="padding:14px 8px">Začít registraci</button>
-        <p class="resume-hint">Máte rozpracovanou registraci? <button type="button" class="link" data-go="login">Přihlásit se</button></p>
+        <p class="resume-hint" ${S.acct?'hidden':''}>Máte rozpracovanou registraci? <button type="button" class="link" data-go="login">Přihlásit se</button></p>
         <p style="margin:56px 0 0">Chcete registraci raději vyřídit osobně? Zavolejte nám a domluvíme schůzku s obchodním zástupcem.</p>
         <div class="phone">${INTRO_ICON.phone}<span>+420 271 005 005</span></div>
       </main>
@@ -1327,7 +1328,7 @@ const VIEWS = {
       <main>
         ${topbar('account')}
         <h1>Přihlašovací účet</h1>
-        ${alertBox('ok','Přihlašovací účet byl vytvořen','margin-top:24px')}
+        ${alertBox('ok',S.acct==='existing'?'Jste přihlášeni, přihlašovací účet už máte':'Přihlašovací účet byl vytvořen','margin-top:24px')}
         <div class="panel acct-panel">
           <div class="badge">${svgIcon(ICON.user)}</div>
           <div style="font-size:13px"><div>Přihlášeni jako</div><b style="display:block;margin:6px 0 12px;color:var(--ink-strong)">${esc(S.authEmail||PERSON.email)}</b>
@@ -1535,9 +1536,16 @@ function wire(){
     e.preventDefault();
     const t = el.dataset.go;
     if(t==='later') return openExit();
+    if(t==='auth' && S.acct) return go('account');   // already has an account: step 2 is just confirmed
     if(t==='ico' && S.screen==='icoFound') S.completedUpTo=Math.min(S.completedUpTo,2); // "Zadat jiné IČO"
     if(t==='auth') S.authForm=false;
     go(t);
+  }));
+  app.querySelectorAll('[data-logo]').forEach(a=>a.addEventListener('click',e=>{
+    e.preventDefault();
+    const st=(SCREENS[S.screen]||{}).step||0;
+    if(S.screen!=='done' && (st>=1 || S.screen==='auth')) openExit();   // same prompt as the close button: nothing saved yet / progress saved
+    else go('landing');
   }));
   app.querySelectorAll('[data-step-go]').forEach(el=>el.addEventListener('click',()=>go(el.dataset.stepGo)));
   app.querySelectorAll('[data-back]').forEach(el=>el.addEventListener('click',()=>{
@@ -1561,8 +1569,8 @@ function wire(){
   const al = app.querySelector('[data-auth-login]');
   if(al) al.addEventListener('click',e=>{ e.preventDefault(); go('login'); });
   const af = $('#authForm');
-  if(af) af.addEventListener('submit',e=>{ e.preventDefault(); S.authEmail=$('#aemail').value.trim(); go('account'); });
-  app.querySelectorAll('[data-social]').forEach(b=>b.addEventListener('click',()=>{ S.authEmail=PERSON.email; go('account'); }));
+  if(af) af.addEventListener('submit',e=>{ e.preventDefault(); S.authEmail=$('#aemail').value.trim(); S.acct='created'; go('account'); });
+  app.querySelectorAll('[data-social]').forEach(b=>b.addEventListener('click',()=>{ S.authEmail=PERSON.email; S.acct='created'; go('account'); }));
 
   // ICO
   const ico = $('#ico');
@@ -1725,7 +1733,7 @@ function wireResume(app){
       e.preventDefault();
       const em=$('#lemail').value.trim(), pw=$('#lpass').value, err=$('#loginErr');
       if(!/^\S+@\S+\.\S+$/.test(em) || !pw){ err.textContent='Zadejte e-mail a heslo.'; return; }
-      S.authEmail=em; go('hub');
+      S.authEmail=em; S.acct='existing'; go('hub');
     });
     $('#pwToggle').addEventListener('click',e=>{
       const i=$('#lpass'), show=i.type==='password'; i.type=show?'text':'password';
@@ -1733,7 +1741,7 @@ function wireResume(app){
     });
     $('#forgot').addEventListener('click',e=>{ e.preventDefault(); toast('Obnovení hesla není součástí tohoto prototypu.'); });
   }
-  app.querySelectorAll('[data-lsocial]').forEach(b=>b.addEventListener('click',()=>{ S.authEmail=S.authEmail||PERSON.email; go('hub'); }));
+  app.querySelectorAll('[data-lsocial]').forEach(b=>b.addEventListener('click',()=>{ S.authEmail=S.authEmail||PERSON.email; S.acct='existing'; go('hub'); }));
   app.querySelectorAll('[data-to-auth]').forEach(a=>a.addEventListener('click',e=>{ e.preventDefault(); S.authForm=false; go('auth'); }));
   app.querySelectorAll('[data-resume]').forEach(b=>b.addEventListener('click',()=>loadDraft(b.dataset.resume)));
   app.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
