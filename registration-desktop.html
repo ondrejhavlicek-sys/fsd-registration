@@ -755,6 +755,19 @@
   html[data-type="makro"] .ac-note{font-size:15px;line-height:22px}
   html[data-type="makro"] .ac-card-h h2{font-size:18px}
 
+  /* fixes after the test pass */
+  .later-mob{display:none}
+  .invite-wrap{margin-bottom:8px}
+  .invite-wrap .invite-field{margin-bottom:4px}
+  .done-actions{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:20px}
+  .done-actions .btn{min-width:260px}
+  [tabindex="-1"]:focus{outline:none}
+  @media (max-width:768px){
+    .actions .later-mob{display:flex}
+    .done-actions{align-items:stretch}
+    .done-actions .btn{min-width:0;width:100%;min-height:48px;font-size:16px;padding:12px !important}
+  }
+
   /* prototype controls */
   .proto{position:fixed;right:12px;bottom:12px;background:#fff;border:1px solid var(--line);box-shadow:0 2px 12px rgba(0,0,0,.12);font-size:12px;width:230px;z-index:10}
   .proto summary{padding:8px 10px;font-weight:600;cursor:pointer;color:var(--muted)}
@@ -780,6 +793,14 @@
 <details class="proto" id="proto">
   <summary>Prototype scenarios</summary>
   <div>
+    <label>Sign-in result
+      <select id="sc-login">
+        <option value="ok">Success</option>
+        <option value="wrong">Wrong e-mail or password</option>
+        <option value="locked">Account temporarily locked</option>
+        <option value="nosocial">Social login: no account</option>
+      </select>
+    </label>
     <label>Saved registrations (after sign-in)
       <select id="sc-drafts">
         <option value="one">One (step 4)</option>
@@ -905,6 +926,7 @@ const S = {
   method:'bankid', via:'bankid', docs:{front:null,back:null,selfie:null}, docErr:{}, docConsent:false, docFail:false,
   av:{q:'',sel:null,zoom:1,pin:null,restr:[],menu:false,pop:false},
   user:{first:'Jan',last:'Novák',phone:'+420 777 123 456'}, prefs:{mkEmail:false,mkSms:false,nReg:true,nRemind:true,nNews:false}, prof:{edit:false,pw:false,err:{}},
+  icoFormat:'', touch:{}, inviteErr:{}, origin:null, hubNotice:'',
   acct:null, completedUpTo:0, lastIco:null, drafts:[], regId:null, company:null, dup:null,
   idScreen:null, bank:null, bankAll:false, consent:false,
   file:null, poaFail:false,
@@ -917,15 +939,23 @@ const timers = [];
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)');
 let firstPaint = true;
 
+function focusPage(){    // after a screen change keyboard and screen-reader users start at the new page, not on <body>
+  const t=document.querySelector('#app [autofocus], #app h1, #app .modal h2'); if(!t) return;
+  if(!t.matches('input,button,a,select,textarea')) t.setAttribute('tabindex','-1');
+  t.focus({preventScroll:true});
+}
 function go(id){
   timers.splice(0).forEach(clearTimeout);
+  if(id!=='hub') S.hubNotice='';
   if(id==='profile' && !isMobile()) id='profPersonal';   // the profile hub is a mobile page; desktop opens the first section
   const prev = S.screen;
+  if(prev!==id) S.prof={edit:false,pw:false,err:{}};   // an open profile form does not survive leaving the page
   if(id==='idOk'||id==='poaOk') S.idScreen = id;
   S.screen = id;
   { const k = SCREENS[id].step; if(k>=2) S.completedUpTo = Math.max(S.completedUpTo, k-1); }
   if(location.hash.slice(1)!==id) history.replaceState(null,'','#'+id);
-  const swap = () => { render(); window.scrollTo(0,0); };
+  const wasFirst = firstPaint;
+  const swap = () => { render(); window.scrollTo(0,0); if(prev!==id && !wasFirst) focusPage(); };
   if(prev!==id && !firstPaint && document.startViewTransition && !REDUCED.matches) document.startViewTransition(swap);
   else if(prev!==id && !firstPaint && !REDUCED.matches){ swap(); const a=$('#app'); a.classList.remove('fade'); void a.offsetWidth; a.classList.add('fade'); }
   else swap();
@@ -962,11 +992,20 @@ const EXIT_COPY = {
     text:'Svůj postup neztratíte. Až se příště přihlásíte, budete pokračovat tam, kde jste skončili.',
     stay:'Pokračovat v registraci', leave:'Opustit registraci' }
 };
+EXIT_COPY.unsaved = { title:'Zahodit neuložené změny?', text:'Změny, které jste zatím neuložili, se ztratí.', stay:'Zůstat na stránce', leave:'Zahodit změny' };
 EXIT_COPY.delete = { title:'Smazat rozpracovanou registraci?', text:'', stay:'Ponechat', leave:'Smazat registraci' };
 let exitKind = 'confirm', pendingDelete = null, pendingLeave = null;
 const inRegistration = () => S.screen!=='done' && (((SCREENS[S.screen]||{}).step||0)>=1 || S.screen==='auth');
 function doSignOut(){ S.acct=null; S.authEmail=''; toast('Odhlásili jste se.'); go('landing'); }
-function leaveTo(target){   // ask first when an unfinished registration is open
+function isDirty(){      // a profile form is open and differs from what is saved
+  if(S.screen==='profPersonal' && S.prof.edit && $('#pfFirst'))
+    return $('#pfFirst').value.trim()!==S.user.first || $('#pfLast').value.trim()!==S.user.last || $('#pfPhone').value.trim()!==S.user.phone;
+  if(S.screen==='profSecurity' && S.prof.pw && $('#pwCur')) return ['#pwCur','#pwNew','#pwNew2'].some(i=>$(i).value);
+  return false;
+}
+window.addEventListener('beforeunload',e=>{ if(isDirty()){ e.preventDefault(); e.returnValue=''; } });
+function leaveTo(target){   // ask first when a profile form has unsaved changes or an unfinished registration is open
+  if(isDirty()){ pendingLeave=target; openExit('unsaved'); return; }
   if(inRegistration()){ pendingLeave=target; openExit(); return; }
   if(target==='@signout') doSignOut(); else go(target);
 }
@@ -1001,9 +1040,10 @@ function restart(){
 $('#exitContinue').addEventListener('click',closeExit);
 $('#exitX').addEventListener('click',closeExit);
 $('#exitRestart').addEventListener('click',()=>{
-  const to=pendingLeave||'landing'; pendingLeave=null;
+  const to=pendingLeave||exitTarget(); pendingLeave=null;
   closeExit();
   const go2=()=>{ if(to==='@signout') doSignOut(); else go(to); };
+  if(exitKind==='unsaved'){ S.prof={edit:false,pw:false,err:{}}; leaveTo(to); return; }   // discard the open form, then continue (may still ask about a registration)
   if(exitKind==='confirm'){ resetRegistration(VALID_ICO); go2(); }  // nothing saved yet: discard and leave
   else if(exitKind==='delete'){ S.drafts=S.drafts.filter(d=>d.id!==pendingDelete); render(); }
   else { saveDraft(); go2(); }                                       // progress is saved: keep it and leave
@@ -1035,7 +1075,7 @@ const userMenu = () => {
       <div class="um-title">Uživatelský účet</div>
       <div class="um-user"><span class="avatar" aria-hidden="true">${userInitials()}</span><span><b>${esc(userFull())}</b><small>${esc(userEmail())}</small></span></div>
       <nav class="um-links" aria-label="Uživatelský účet">${ACCT_NAV.map(([id,l])=>`<a href="#" data-leave="${id}">${l}</a>`).join('')}</nav>
-      <a href="#" class="um-act" data-leave="hub"><span>Rozpracované registrace</span>${n?`<span class="cnt" aria-label="${n}">${n}</span>`:''}</a>
+      ${n?`<a href="#" class="um-act" data-leave="hub"><span>Rozpracované registrace</span><span class="cnt" aria-label="${n}">${n}</span></a>`:''}
       <a class="um-support" href="tel:+420271005005">Zákaznická podpora</a>
       <button type="button" class="um-out" data-signout>${OUT_ICON}Odhlásit se</button>
     </div></div>`;
@@ -1201,17 +1241,22 @@ function saveDraft(){   // called when the user leaves after the user account ex
 function loadDraft(id){
   const d=S.drafts.find(x=>x.id===id); if(!d) return;
   REG_FIELDS.forEach(k=>{ S[k]=d.snap[k]; });
-  Object.assign(S,{regId:id,terms:false,invites:[],showInvite:false,docFail:false,poaFail:false,docErr:{}});
+  Object.assign(S,{origin:'hub',regId:id,terms:false,invites:[],showInvite:false,docFail:false,poaFail:false,docErr:{}});
   go(d.screen);   // the last opened step
 }
 function resetRegistration(ico){
   S.av={q:'',sel:null,zoom:1,pin:null,restr:[],menu:false,pop:false};
-  Object.assign(S,{completedUpTo:0,lastIco:null,regId:null,company:null,dup:null,method:'bankid',via:'bankid',docs:{front:null,back:null,selfie:null},docErr:{},docConsent:false,docFail:false,idScreen:null,ico:ico,dic:'',email:'',phone:'',bank:null,bankAll:false,consent:false,file:null,poaFail:false,invites:[],showInvite:false,terms:false,authForm:false,authEmail:''});
+  Object.assign(S,{icoFormat:'',touch:{},inviteErr:{},completedUpTo:0,lastIco:null,regId:null,company:null,dup:null,method:'bankid',via:'bankid',docs:{front:null,back:null,selfie:null},docErr:{},docConsent:false,docFail:false,idScreen:null,ico:ico,dic:'',email:'',phone:'',bank:null,bankAll:false,consent:false,file:null,poaFail:false,invites:[],showInvite:false,terms:false,authForm:false,authEmail:''});
 }
-function newRegistration(){          // another company: a fresh registration from step 1 (signed-in users skip creating an account)
+function newRegistration(origin){    // another company: a fresh registration from step 1 (signed-in users skip creating an account)
   const email=S.authEmail;
-  resetRegistration(''); S.authEmail=email;
+  resetRegistration(''); S.authEmail=email; S.origin=origin||'hub';
   go('intro');
+}
+const exitTarget = () => S.origin==='hub' ? 'hub' : 'landing';   // leave to where the registration was started from
+function startFromPublic(){          // "Registrovat se" on public pages
+  if(S.acct && S.drafts.length>=MAX_DRAFTS){ S.hubNotice='limit'; go('hub'); return; }
+  if(S.acct) newRegistration('public'); else { S.origin='public'; go('intro'); }
 }
 function seedDrafts(kind){           // prototype scenarios: what the user has saved
   const mk=(id,ico,screen,done,saved,extra={})=>({id,screen,saved,snap:Object.assign({ico,dic:'',email:'',phone:'',method:'bankid',via:'bankid',docs:{front:null,back:null,selfie:null},docConsent:false,bank:'Raiffeisen Bank',bankAll:false,consent:true,file:null,idScreen:'idOk',lastIco:ico,completedUpTo:done,company:COMPANIES[ico]||null},extra)});
@@ -1222,6 +1267,15 @@ function seedDrafts(kind){           // prototype scenarios: what the user has s
               mk('s5','08123456','poa',3,'2026-10-22') ];
   S.drafts = kind==='none' ? [] : all.slice(0,{one:1,two:2,five:5}[kind]);
 }
+
+// ---- validation helpers ----
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const PHONE_RE = /^\d{3}\s?\d{3}\s?\d{3}$/;      // 9 digits after the +420 prefix
+const contactErr = () => ({
+  email: !S.email.trim() ? 'Zadejte e-mail firmy.' : !EMAIL_RE.test(S.email.trim()) ? 'Zadejte e-mail ve tvaru jmeno@domena.cz.' : '',
+  phone: !S.phone.trim() ? 'Zadejte telefon firmy.' : !PHONE_RE.test(S.phone.trim()) ? 'Zadejte telefon ve tvaru 777 000 111.' : ''
+});
+const contactOk = () => { const e=contactErr(); return !e.email && !e.phone; };
 const later_btn = `<button class="link" data-go="later">Dokončit registraci později</button>`;
 
 /* ---------- screens ---------- */
@@ -1243,7 +1297,7 @@ const acctShell = (id,title,content) => `${header(true)}
     <button type="button" class="av-back ac-back" data-go="profile">${AV_ICON.chev}Uživatelský účet</button>
     <nav class="ac-nav" aria-label="Uživatelský účet">
       ${ACCT_NAV.map(([k,l])=>`<a href="#" data-go="${k}" ${k===id?'aria-current="page" class="on"':''}>${l}</a>`).join('')}
-      <a href="#" data-go="hub"><span>Rozpracované registrace</span>${S.drafts.length?`<span class="cnt">${S.drafts.length}</span>`:''}</a>
+      ${S.drafts.length?`<a href="#" data-go="hub"><span>Rozpracované registrace</span><span class="cnt">${S.drafts.length}</span></a>`:''}
     </nav>
     <main class="ac-main"><h1>${title}</h1>${content}</main>
   </div></div>`;
@@ -1287,8 +1341,8 @@ const VIEWS = {
       <div class="ac-me"><span class="avatar big" aria-hidden="true">${userInitials()}</span><div><b>${esc(userFull())}</b><small>${esc(userEmail())}</small></div></div>
       <nav class="ac-list" aria-label="Uživatelský účet"><h2 class="ac-cap">Uživatelský účet</h2>
         ${ACCT_NAV.map(([id,l])=>`<a href="#" data-go="${id}"><span>${l}</span><i aria-hidden="true">›</i></a>`).join('')}
-        <h2 class="ac-cap">Registrace</h2>
-        <a href="#" data-go="hub"><span>Rozpracované registrace</span>${S.drafts.length?`<span class="cnt">${S.drafts.length}</span>`:''}<i aria-hidden="true">›</i></a>
+        ${S.drafts.length?`<h2 class="ac-cap">Registrace</h2>
+        <a href="#" data-go="hub"><span>Rozpracované registrace</span><span class="cnt">${S.drafts.length}</span><i aria-hidden="true">›</i></a>`:''}
         <h2 class="ac-cap">Pomoc</h2>
         <a href="tel:+420271005005"><span>Zákaznická podpora</span><i aria-hidden="true">›</i></a>
         <button type="button" class="ac-out" data-signout>${OUT_ICON}Odhlásit se</button>
@@ -1345,6 +1399,7 @@ const VIEWS = {
       <h2>Přihlášení</h2>
       <p>Už máte účet v makro? Přihlaste se přes</p>
       ${socialRow('data-lsocial')}
+      <div id="socialErr" role="alert" style="margin:0 0 8px"></div>
       <a class="how" href="#">Jak to funguje?</a>
       <div class="or">nebo</div>
       <p>Pokud jste se registrovali e-mailem</p>
@@ -1354,7 +1409,7 @@ const VIEWS = {
         <label class="lbl" for="lpass" style="margin:6px 0 0">Heslo</label>
         <div class="field"><input id="lpass" type="password" autocomplete="current-password"><button type="button" class="clear" id="pwToggle" aria-label="Zobrazit heslo" aria-pressed="false">${EYE.on}</button></div>
         <a class="how" href="#" id="forgot" style="margin:0">Zapomněli jste heslo?</a>
-        <div class="slot-err" id="loginErr" role="alert" style="margin:0"></div>
+        <div id="loginErr" role="alert"></div>
         <button class="btn-wide" type="submit">Přihlásit se</button>
         <label class="chk" style="margin:4px 0 0;justify-content:center"><input type="checkbox" checked> <span>Zapamatovat si přihlášení</span></label>
       </form>
@@ -1379,6 +1434,7 @@ const VIEWS = {
     };
     return `${header(true)}
     <div class="hub"><div class="hub-col">
+      ${S.hubNotice==='limit'&&full?alertBox('warn',`Máte rozpracováno ${MAX_DRAFTS} registrací. Dokončete nebo smažte některou, než začnete další.`):''}
       <h1>${ds.length?'Vaše registrace':'Zatím nemáte rozpracovanou registraci'}</h1>
       <p class="sub">${ds.length?'Údaje, které jste vyplnili, máme uložené. Pokračujte tam, kde jste skončili, nebo zaregistrujte další firmu.':'Můžete zaregistrovat firmu a dokončit registraci kdykoli později.'}</p>
       <div class="hub-list">${ds.map(card).join('')}</div>
@@ -1548,13 +1604,15 @@ const VIEWS = {
         <h3 style="margin-top:32px">Kontaktní údaje firmy</h3>
         <div class="stack">
           <label class="lbl" for="email" style="margin-top:16px">E-mail</label>
-          <div class="field"><input id="email" type="email" data-bind="email" value="${esc(S.email)}"></div>
+          <div class="field ${S.touch.email&&contactErr().email?'err':''}"><input id="email" type="email" data-bind="email" value="${esc(S.email)}" autocomplete="email" aria-required="true" aria-describedby="emailErr"></div>
+          <div class="slot-err" id="emailErr" role="alert" style="margin:4px 0 0">${S.touch.email?contactErr().email:''}</div>
           <div class="phone-row">
             <div class="prefix"><label class="lbl">Předvolba</label><div class="field"><span><svg class="flag" viewBox="0 0 3 2" aria-hidden="true"><rect width="3" height="1" fill="#fff"/><rect y="1" width="3" height="1" fill="#d7141a"/><path d="M0 0L1.5 1L0 2z" fill="#11457e"/></svg>+420</span>⌄</div></div>
-            <div style="flex:1"><label class="lbl" for="phone">Telefon</label><div class="field"><input id="phone" inputmode="tel" data-bind="phone" value="${esc(S.phone)}"></div></div>
+            <div style="flex:1"><label class="lbl" for="phone">Telefon</label><div class="field ${S.touch.phone&&contactErr().phone?'err':''}"><input id="phone" inputmode="tel" data-bind="phone" value="${esc(S.phone)}" placeholder="777 000 111" autocomplete="tel-national" aria-required="true" aria-describedby="phoneErr"></div></div>
           </div>
+          <div class="slot-err" id="phoneErr" role="alert" style="margin:4px 0 0">${S.touch.phone?contactErr().phone:''}</div>
         </div>
-        <div class="actions"><button class="btn" id="icoNext" data-go="bank">Pokračovat na ověření totožnosti</button>${later_btn}</div>
+        <div class="actions"><button class="btn" id="icoNext" data-go="bank" ${contactOk()?'':'disabled'}>Pokračovat na ověření totožnosti</button>${later_btn}</div>
       </main>
     </div>`,
 
@@ -1666,23 +1724,30 @@ const VIEWS = {
         <h3 style="font-size:13px">Ověření totožnosti</h3>
         <div class="panel green"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([
           ['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()],
-          ['Oprávnění jednat za firmu', $('#sc-role').value==='poa'?'Ověřeno – plná moc ✓':'Ověřeno v obchodním rejstříku ✓']])}<span class="bigcheck" style="width:28px;height:28px">✓</span></div>
+          ['Oprávnění jednat za firmu', S.idScreen==='poaOk'?'Ověřeno – plná moc ✓':'Ověřeno v obchodním rejstříku ✓']])}<span class="bigcheck" style="width:28px;height:28px">✓</span></div>
         <h3 style="font-size:13px;margin-top:28px">Chcete přidat další kolegy? <span style="font-weight:400">(nepovinné)</span></h3>
         <p class="hint">Kolegům pošleme pozvánku e-mailem. Jakmile si vytvoří účet, budou mít přístup hned.</p>
         ${S.showInvite?`<div style="margin-top:12px"><label class="lbl">E-mail</label>
-          ${S.invites.map((v,i)=>`<div class="field invite-field"><input type="email" data-invite="${i}" value="${esc(v)}" placeholder="jmeno@domena.cz" aria-label="E-mail kolegy ${i+1}"></div>`).join('')}</div>`:''}
+          ${S.invites.map((v,i)=>`<div class="invite-wrap"><div class="field invite-field ${S.inviteErr[i]?'err':''}"><input type="email" data-invite="${i}" value="${esc(v)}" placeholder="jmeno@domena.cz" aria-label="E-mail kolegy ${i+1}" ${S.inviteErr[i]?'aria-invalid="true"':''}></div>${S.inviteErr[i]?`<div class="slot-err" role="alert">${S.inviteErr[i]}</div>`:''}</div>`).join('')}</div>`:''}
         <button class="btn ${S.showInvite?'soft':'soft'} sm" id="addUser" style="margin-top:6px">＋&nbsp; Přidat kolegu</button>
         <label class="chk terms"><input type="checkbox" id="terms" ${S.terms?'checked':''}><span>Souhlasím s <a href="#">Všeobecnými obchodními podmínkami</a> služby makro distribuce a se <a href="#">Zásadami zpracování osobních údajů</a>.</span></label>
-        <div class="actions" style="margin-top:24px"><button class="btn" id="finish" ${S.terms?'':'disabled'} style="padding:14px 8px">Dokončit registraci a přejít do obchodu</button></div>
+        <div class="actions" style="margin-top:24px"><button class="btn" id="finish" ${S.terms?'':'disabled'} style="padding:14px 8px">Dokončit registraci a přejít do obchodu</button><button class="link later-mob" data-go="later">Dokončit registraci později</button></div>
       </main>
     </div>`,
 
-  done: () => `${header(true)}
+  done: () => {
+    const n=S.drafts.length, full=n>=MAX_DRAFTS, inv=S.invites.filter(Boolean);
+    return `${header(true)}
     <div class="center-note"><div class="badge" style="margin:0 auto 16px;width:56px;height:56px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;font-size:28px">✓</div>
       <h1>Registrace dokončena</h1>
-      <p>Registraci firmy <b>${cur().name}</b> máme hotovou. Potvrzení jsme vám poslali e-mailem. Nakupovat můžete hned.${S.invites.filter(Boolean).length?` Pozvánky jsme poslali na ${S.invites.filter(Boolean).map(esc).join(', ')}.`:''}</p>
-      ${S.drafts.length?`<p>Máte ještě ${S.drafts.length===1?'jednu rozpracovanou registraci':S.drafts.length+' rozpracované registrace'}.</p><button class="btn" data-go="hub" style="margin-top:8px">Zobrazit rozpracované registrace</button>`:''}
-      <button class="${S.drafts.length?'link':'btn'}" data-restart style="margin-top:16px">Začít znovu</button></div>`
+      <p>Registraci firmy <b>${esc(cur().name)}</b> máme hotovou. Potvrzení jsme vám poslali e-mailem. Nakupovat můžete hned.${inv.length?` Pozvánky jsme poslali na ${inv.map(esc).join(', ')}.`:''}</p>
+      <div class="done-actions">
+        <button class="btn" data-soon-msg="Obchod zatím není součástí tohoto prototypu.">Přejít do obchodu</button>
+        <button class="btn soft" data-new ${full?'disabled':''}>Registrovat další firmu</button>
+        ${full?`<p class="hint" style="margin:0">Máte rozpracováno ${MAX_DRAFTS} registrací. Dokončete nebo smažte některou.</p>`:''}
+        ${n?`<button class="link" data-go="hub">Rozpracované registrace (${n})</button>`:''}
+      </div></div>`;
+  }
 };
 
 function icoScreen(err){
@@ -1691,9 +1756,10 @@ function icoScreen(err){
       <main>${topbar(err?'icoNotFound':'ico')}<h1>Zadejte IČO vaší firmy</h1><p class="sub">a my doplníme ostatní údaje.</p>
         ${err?alertBox('err','Firmu s tímto IČO jsme nenašli. Zkontrolujte číslo, nebo nám zavolejte na +420 271 005 005.'):''}
         <label class="lbl" for="ico" style="margin-top:${err?0:20}px">IČO</label>
-        <div class="ico-row"><div class="field ${err?'err':''}"><input id="ico" inputmode="numeric" maxlength="8" data-bind="ico" value="${esc(S.ico)}" autofocus aria-describedby="icoHelp">
+        <div class="ico-row"><div class="field ${(err||S.icoFormat)?'err':''}"><input id="ico" inputmode="numeric" maxlength="8" data-bind="ico" value="${esc(S.ico)}" autofocus aria-describedby="icoHelp" ${S.icoFormat?'aria-invalid="true"':''}>
           <button class="clear" data-clear aria-label="Smazat">✕</button></div>
           <button class="btn soft" id="icoVerify" style="padding:13px 10px;font-size:13px">Ověřit IČO</button></div>
+        ${S.icoFormat?`<div class="slot-err" role="alert" style="margin-top:6px">${S.icoFormat}</div>`:''}
         <div id="icoHelp" class="hint" style="color:var(--muted);margin-top:6px;font-size:12px">8 číslic. Pro ukázku použijte ${VALID_ICO} nebo 27082440 (25596641 je už registrovaná firma); jiné IČO skončí chybou „nenalezeno“.</div>
         <div class="actions" style="margin-top:${err?96:112}px"><button class="btn" disabled>Pokračovat na ověření totožnosti</button>${later_btn}</div>
       </main>
@@ -1705,7 +1771,7 @@ function idDone(role, cur, next){
       <main>${topbar(cur)}<h1>Ověření totožnosti dokončeno</h1>
         ${alertBox('ok',`Vaše totožnost byla úspěšně ověřena ${viaText()} a zkontrolovali jsme, že jste oprávněni jednat za tuto firmu.`,'margin-top:20px')}
         <div class="panel"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()],['Oprávnění jednat za firmu',role]])}</div>
-        <div class="actions" style="margin-top:36px"><button class="btn" data-go="${next}" style="padding:14px 8px">Pokračovat na dokončení registrace</button></div>
+        <div class="actions" style="margin-top:36px"><button class="btn" data-go="${next}" style="padding:14px 8px">Pokračovat na dokončení registrace</button><button class="link later-mob" data-go="later">Dokončit registraci později</button></div>
       </main>
     </div>`;
 }
@@ -1713,7 +1779,8 @@ function idDone(role, cur, next){
 /* ---------- render + events ---------- */
 function render(){
   $('#app').innerHTML = VIEWS[S.screen]();
-  document.title = 'makro distribuce – ' + SCREENS[S.screen].label;
+  { let t=SCREENS[S.screen].label.replace(/^\S+(\s\S+)?\s–\s/,'').replace(/\s*\([^)]*\)\s*$/,'');   // drop internal codes such as "3.1 –"
+    document.title = t && !/^\(/.test(t) ? 'makro distribuce – '+t : 'makro distribuce'; }
   $('#sc-jump').value = S.screen;
   wire();
 }
@@ -1727,6 +1794,8 @@ function wire(){
     e.preventDefault();
     const t = el.dataset.go;
     if(t==='later') return openExit();
+    if(isDirty() && t!==S.screen) return leaveTo(t);   // unsaved profile form
+    if(t==='intro' && !inRegistration()) return startFromPublic();   // public "Registrovat se": new registration, limit applies
     if(t==='auth' && S.acct) return go('account');   // already has an account: step 2 is just confirmed
     if(t==='ico' && S.screen==='icoFound') S.completedUpTo=Math.min(S.completedUpTo,2); // "Zadat jiné IČO"
     if(t==='auth') S.authForm=false;
@@ -1739,7 +1808,8 @@ function wire(){
   app.querySelectorAll('[data-step-go]').forEach(el=>el.addEventListener('click',()=>go(el.dataset.stepGo)));
   app.querySelectorAll('[data-back]').forEach(el=>el.addEventListener('click',()=>{
     if(SCREENS[S.screen].step<=1) return openExit(); // step 1: back = exit flow
-    const b = SCREENS[S.screen].back || 'intro';
+    let b = SCREENS[S.screen].back || 'intro';
+    if(S.screen==='summary') b = S.idScreen || 'idOk';   // back to the result that was actually reached (registry or power of attorney)
     if(b==='ico'){ S.icoErr=false; }
     go(b);
   }));
@@ -1748,7 +1818,16 @@ function wire(){
   app.querySelectorAll('[data-poa-sample]').forEach(el=>el.addEventListener('click',e=>{e.preventDefault();toast('Vzor plné moci by se zde stáhl (v prototypu nedostupné).');}));
   app.querySelectorAll('[data-preview]').forEach(el=>el.addEventListener('click',e=>{e.preventDefault();toast('Náhled souboru není v prototypu k dispozici.');}));
   app.querySelectorAll('a[href="#"]:not([data-go]):not([data-poa-sample]):not([data-preview]):not([data-auth-login])').forEach(a=>a.addEventListener('click',e=>e.preventDefault()));
-  app.querySelectorAll('[data-bind]').forEach(el=>el.addEventListener('input',()=>{ S[el.dataset.bind]=el.value; }));
+  app.querySelectorAll('[data-bind]').forEach(el=>el.addEventListener('input',()=>{
+    S[el.dataset.bind]=el.value;
+    const nx=$('#icoNext'); if(nx){                      // contact details are required: live check, errors after the first blur
+      const e=contactErr(); nx.disabled=!!(e.email||e.phone);
+      ['email','phone'].forEach(k=>{ if(S.touch[k]){ $('#'+k+'Err').textContent=e[k]; $('#'+k).closest('.field').classList.toggle('err',!!e[k]); } });
+    }
+  }));
+  ['email','phone'].forEach(k=>$('#'+k)?.addEventListener('blur',()=>{
+    S.touch[k]=true; const e=contactErr()[k]; $('#'+k+'Err').textContent=e; $('#'+k).closest('.field').classList.toggle('err',!!e);
+  }));
 
   // auth modal
   const sov = app.querySelector('.sheet-ov');
@@ -1764,7 +1843,7 @@ function wire(){
   // ICO
   const ico = $('#ico');
   if(ico){
-    ico.addEventListener('input',()=>{ ico.value=ico.value.replace(/\D/g,''); S.ico=ico.value; });
+    ico.addEventListener('input',()=>{ ico.value=ico.value.replace(/\D/g,''); S.ico=ico.value; if(S.icoFormat){ S.icoFormat=''; $('#icoVerify').parentElement.parentElement.querySelectorAll('.slot-err').forEach(e=>e.remove()); ico.closest('.field').classList.remove('err'); } });
     ico.addEventListener('keydown',e=>{ if(e.key==='Enter') verifyIco(); });
     $('#icoVerify').addEventListener('click',verifyIco);
     app.querySelector('[data-clear]').addEventListener('click',()=>{ S.ico=''; ico.value=''; ico.focus(); });
@@ -1827,11 +1906,24 @@ function wire(){
     if(!S.showInvite){ S.showInvite=true; S.invites=['']; } else S.invites.push('');
     render(); app.querySelector(`[data-invite="${S.invites.length-1}"]`)?.focus();
   });
-  app.querySelectorAll('[data-invite]').forEach(el=>el.addEventListener('input',()=>{ S.invites[+el.dataset.invite]=el.value.trim(); }));
+  app.querySelectorAll('[data-invite]').forEach(el=>el.addEventListener('input',()=>{ S.invites[+el.dataset.invite]=el.value.trim(); if(S.inviteErr[el.dataset.invite]){ delete S.inviteErr[el.dataset.invite]; el.closest('.invite-wrap').querySelector('.slot-err')?.remove(); el.closest('.field').classList.remove('err'); } }));
   const tm = $('#terms');
   if(tm) tm.addEventListener('change',()=>{ S.terms=tm.checked; $('#finish').disabled=!S.terms; });
   const fin = $('#finish');
-  if(fin) fin.addEventListener('click',()=>{ S.drafts=S.drafts.filter(d=>d.id!==S.regId); go('done'); });
+  if(fin) fin.addEventListener('click',()=>{
+    // optional invitations: empty fields are ignored, the rest must be valid, unique and not the user's own address
+    const seen=new Set([userEmail().toLowerCase()]), err={};
+    S.invites.forEach((v,i)=>{
+      const m=v.trim().toLowerCase(); if(!m) return;
+      if(!EMAIL_RE.test(m)) err[i]='Zadejte e-mail ve tvaru jmeno@domena.cz.';
+      else if(m===userEmail().toLowerCase()) err[i]='Na vlastní adresu pozvánku neposíláme.';
+      else if(seen.has(m)) err[i]='Tuto adresu už jste zadali.';
+      seen.add(m);
+    });
+    if(Object.keys(err).length){ S.inviteErr=err; render(); app.querySelector(`[data-invite="${Object.keys(err)[0]}"]`)?.focus(); return; }
+    S.inviteErr={}; S.invites=S.invites.map(v=>v.trim()).filter(Boolean);
+    S.drafts=S.drafts.filter(d=>d.id!==S.regId); go('done');
+  });
 }
 
 
@@ -1920,8 +2012,12 @@ function wireResume(app){
   if(lf){
     lf.addEventListener('submit',e=>{
       e.preventDefault();
-      const em=$('#lemail').value.trim(), pw=$('#lpass').value, err=$('#loginErr');
-      if(!/^\S+@\S+\.\S+$/.test(em) || !pw){ err.textContent='Zadejte e-mail a heslo.'; return; }
+      const em=$('#lemail').value.trim(), pw=$('#lpass').value, err=$('#loginErr'), res=$('#sc-login').value;
+      const show=(msg,focus)=>{ err.innerHTML=alertBox('err',msg,'margin:0'); $('#lemail').closest('.field').classList.toggle('err',focus==='#lemail'); $('#lpass').closest('.field').classList.toggle('err',focus==='#lpass'); $(focus).focus(); };
+      if(!EMAIL_RE.test(em)) return show('Zadejte e-mail ve tvaru jmeno@domena.cz.','#lemail');
+      if(!pw) return show('Zadejte heslo.','#lpass');
+      if(res==='locked') return show('Přihlášení je dočasně zablokované kvůli opakovaným neúspěšným pokusům. Zkuste to za 15 minut, nebo nám zavolejte na +420 271 005 005.','#lpass');
+      if(res==='wrong'){ $('#lpass').value=''; return show('E-mail nebo heslo nesedí. Zkuste to znovu, nebo si nechte heslo obnovit.','#lpass'); }   // same message for an unknown e-mail: we do not reveal which accounts exist
       S.authEmail=em; S.acct='existing'; go('hub');
     });
     $('#pwToggle').addEventListener('click',e=>{
@@ -1930,7 +2026,14 @@ function wireResume(app){
     });
     $('#forgot').addEventListener('click',e=>{ e.preventDefault(); toast('Obnovení hesla není součástí tohoto prototypu.'); });
   }
-  app.querySelectorAll('[data-lsocial]').forEach(b=>b.addEventListener('click',()=>{ S.authEmail=S.authEmail||PERSON.email; S.acct='existing'; go('hub'); }));
+  app.querySelectorAll('[data-lsocial]').forEach(b=>b.addEventListener('click',()=>{
+    if($('#sc-login').value==='nosocial'){      // the social account is not registered with makro
+      $('#socialErr').innerHTML=alertBox('err','S tímto účtem zatím nemáte registraci. <a href="#" data-to-auth><b>Registrovat se</b></a>','margin:0');
+      app.querySelectorAll('#socialErr [data-to-auth]').forEach(a=>a.addEventListener('click',e=>{ e.preventDefault(); S.authForm=false; go('auth'); }));
+      return;
+    }
+    S.authEmail=S.authEmail||PERSON.email; S.acct='existing'; go('hub');
+  }));
   app.querySelectorAll('[data-to-auth]').forEach(a=>a.addEventListener('click',e=>{ e.preventDefault(); S.authForm=false; go('auth'); }));
   app.querySelectorAll('[data-resume]').forEach(b=>b.addEventListener('click',()=>loadDraft(b.dataset.resume)));
   app.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
@@ -1938,7 +2041,7 @@ function wireResume(app){
     const who = d.snap.company ? `firmy ${d.snap.company.name}` : 'bez vyplněné firmy';
     openExit('delete',{text:`Registraci ${who} smažeme i s uloženými údaji. Tento krok nejde vrátit zpět.`});
   }));
-  app.querySelectorAll('[data-new]').forEach(b=>b.addEventListener('click',newRegistration));
+  app.querySelectorAll('[data-new]').forEach(b=>b.addEventListener('click',()=>newRegistration('hub')));
   $('#dupResume')?.addEventListener('click',()=>loadDraft(S.dup.id));
 }
 
@@ -1982,7 +2085,11 @@ function wireProfile(app){
 function verifyIco(){
   if(S.ico!==S.lastIco) S.completedUpTo=Math.min(S.completedUpTo,2); // a different company: later steps no longer valid
   S.lastIco=S.ico;
-  if(S.ico.length!==8){ S.icoErr=true; return go('icoNotFound'); }
+  if(!/^\d{8}$/.test(S.ico)){          // malformed: explain, do not pretend a lookup happened
+    S.icoFormat = S.ico ? 'IČO má 8 číslic.' : 'Zadejte IČO vaší firmy.';
+    render(); $('#ico')?.focus(); return;
+  }
+  S.icoFormat='';
   go('icoLoading');
 }
 function setDoc(key,f){
