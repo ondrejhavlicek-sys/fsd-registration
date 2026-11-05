@@ -1479,8 +1479,7 @@ const poaSection = () => {
   if(st==='checking') body=`<div class="file"><span class="fi">🖼</span><b style="font-weight:500">${esc(S.file.name)}</b></div>${loadingBox(110)}`;
   else if(st==='ok') body=`${alertBox('ok','Plnou moc jsme zkontrolovali. Jste oprávněni jednat za tuto firmu.','margin:0 0 12px')}
       <div class="file"><span class="fi">🖼</span><b style="font-weight:500">${esc(S.file.name)}</b><span class="sz">${fmtSize(S.file.size)}</span><button type="button" class="link small" data-poa-remove aria-label="Odebrat plnou moc">Odebrat</button></div>`;
-  else if(S.file) body=`<div class="file"><span class="fi">🖼</span><b style="font-weight:500">${esc(S.file.name)}</b> · <a href="#" data-preview>Náhled</a><span class="sz">${fmtSize(S.file.size)}</span><button type="button" class="link small" data-poa-remove aria-label="Odebrat plnou moc">Odebrat</button></div>
-      <div style="margin-top:12px"><button class="btn soft sm" id="poaGo">Zkontrolovat plnou moc</button></div>`;
+  else if(S.file) body=`<div class="file"><span class="fi">🖼</span><b style="font-weight:500">${esc(S.file.name)}</b> · <a href="#" data-preview>Náhled</a><span class="sz">${fmtSize(S.file.size)}</span><button type="button" class="link small" data-poa-remove aria-label="Odebrat plnou moc">Odebrat</button></div>`;
   else body=`<div class="drop" id="drop"><span class="up">⇪</span><div class="t"><b>Vyberte nebo přetáhněte soubor</b><small>JPG, PNG nebo PDF, velikost do 10 MB</small></div>
       <button class="btn soft sm" id="pick">Vybrat soubor</button><input type="file" id="fileIn" accept=".jpg,.jpeg,.png,.pdf" hidden></div>
       <div id="fileErr" class="slot-err" role="alert" style="margin-top:6px"></div>`;
@@ -2136,14 +2135,7 @@ function wire(){
   const pg = $('#poaGo');
   if(pg) pg.addEventListener('click',()=>{
     S.completedUpTo=Math.min(S.completedUpTo,stepNo('poa')-1); S.poaFail=false;
-    if(S.variant==='B'){                                  // flow B checks the power of attorney on the company step
-      S.poaState='checking'; render();
-      later(1800,()=>{
-        if($('#sc-poa').value==='fail'){ S.file=null; S.poaFail=true; S.poaState='none'; } else S.poaState='ok';
-        render();
-      });
-      return;
-    }
+    if(S.variant==='B'){ checkPoaB(); return; }          // flow B checks the power of attorney on the company step
     go('poaLoading');
   });
   app.querySelectorAll('[data-poa-remove]').forEach(b=>b.addEventListener('click',()=>{ S.file=null; S.poaState='none'; S.poaFail=false; S.completedUpTo=Math.min(S.completedUpTo,stepNo('company')-1); render(); }));
@@ -2336,7 +2328,16 @@ function setFile(f){
   if(!f) return;
   const ok = /\.(jpe?g|png|pdf)$/i.test(f.name) && f.size <= 10*1048576;
   if(!ok){ const e=$('#fileErr'); if(e) e.textContent='Nahrajte prosím soubor JPG, PNG nebo PDF do velikosti 10 MB.'; return; }
-  S.file = {name:f.name,size:f.size}; S.poaFail=false; S.poaState='none'; render();
+  S.file = {name:f.name,size:f.size}; S.poaFail=false; S.poaState='none';
+  if(S.variant==='B' && S.needPoa){ S.completedUpTo=Math.min(S.completedUpTo,stepNo('poa')-1); checkPoaB(); return; }   // flow B starts the check right after upload
+  render();
+}
+function checkPoaB(){
+  S.poaState='checking'; render();
+  later(1800,()=>{
+    if($('#sc-poa').value==='fail'){ S.file=null; S.poaFail=true; S.poaState='none'; } else S.poaState='ok';
+    render();
+  });
 }
 
 matchMedia('(max-width:768px)').addEventListener('change',()=>render());
