@@ -926,7 +926,13 @@
         <option value="makro">makro.cz (larger text)</option>
       </select>
     </label>
-    <label>Role verified (Bank iD / ID + photo)
+    <label>Flow version
+      <select id="sc-flow">
+        <option value="A">A – company first (current)</option>
+        <option value="B">B – identity first</option>
+      </select>
+    </label>
+    <label>Role verified (Bank iD / ID + photo) – flow A only
       <select id="sc-role">
         <option value="auto">Authorised in the registry</option>
         <option value="poa">Power of attorney needed</option>
@@ -986,14 +992,14 @@ const DOC_SLOTS = [
   ['selfie','Vaše fotografie','Dobře osvětlený obličej, bez brýlí a čepice']
 ];
 const VALID_ICO = '03255654';
-const PERSON = { name: 'Jan Novák', born: '5. 1. 1988', email: 'jan.novak@eremita.cz' };
+const PERSON = { name: 'Jan Novák', born: '5. 1. 1988', bornIso: '1988-01-05', email: 'jan.novak@eremita.cz' };
 
 const STEPS = [
-  ['Úvod','Co je potřeba k registraci'],
-  ['Přihlašovací účet','Účet pro přihlášení do služby'],
-  ['Registrace firmy','IČO a fakturační údaje'],
-  ['Ověření totožnosti','Oprávnění jednat za firmu'],
-  ['Dokončení registrace','Shrnutí a potvrzení']
+  ['Úvod','Co je potřeba k registraci','intro'],
+  ['Přihlašovací účet','Účet pro přihlášení do služby','account'],
+  ['Registrace firmy','IČO a fakturační údaje','company'],
+  ['Ověření totožnosti','Oprávnění jednat za firmu','identity'],
+  ['Dokončení registrace','Shrnutí a potvrzení','finish']
 ];
 
 // screen id -> { step, title, back }
@@ -1030,6 +1036,40 @@ const SCREENS = {
   summary:     { step:5, label:'5.1 – Shrnutí', back:'idOk' },
   done:        { step:5, label:'Hotovo', bare:true }
 };
+// ---- flow variants: A = company first (original), B = identity first ----
+const SCREENS_A = JSON.parse(JSON.stringify(SCREENS)), STEPS_A = STEPS.map(x=>x.slice());
+function flowDef(v, poa){
+  if(v!=='B') return {steps:STEPS_A, screens:{}};
+  const steps=[['Úvod','Co je potřeba k registraci','intro'],['Přihlašovací účet','Účet pro přihlášení do služby','account'],
+    ['Ověření totožnosti','Ověření osoby, než zaregistrujete firmu','identity'],['Registrace firmy','IČO a fakturační údaje','company']];
+  if(poa) steps.push(['Plná moc','Oprávnění jednat za firmu','poa']);
+  steps.push(['Dokončení registrace','Shrnutí a potvrzení','finish']);
+  const last=steps.length;
+  return {steps, screens:{
+    icoDup:      {step:4, label:'4.x – Firma už existuje', back:'ico'},
+    bank:        {step:3, label:'3.0/3.1 – Výběr ověření', back:'account'},
+    bankSite:    {step:3, label:'3.1b – Web banky (Bank iD)', back:'bank'},
+    docLoading:  {step:3, back:'bank'},
+    bankLoading: {step:3, back:'bank'},
+    idOk:        {step:3, label:'3.2 – Totožnost ověřena', back:'bank'},
+    ico:         {step:4, label:'4.1 – Zadejte IČO', back:'idOk'},
+    icoLoading:  {step:4, label:'4.2 – Načítání z rejstříku', back:'ico'},
+    icoFound:    {step:4, label:'4.3 A – IČO nalezeno', back:'ico'},
+    icoNotFound: {step:4, label:'4.3 B – IČO nenalezeno', back:'ico'},
+    poa:         {step:5, label:'5.1 – Nutná plná moc', back:'icoFound'},
+    poaLoading:  {step:5, label:'5.2 – Kontrola plné moci', back:'poa'},
+    poaOk:       {step:5, label:'5.3 – Plná moc ověřena', back:'poa'},
+    summary:     {step:last, label:last+'.1 – Shrnutí', back:poa?'poaOk':'icoFound'},
+    done:        {step:last}
+  }};
+}
+function applyFlow(){        // rewrite step numbers, back targets and the step list for the current variant
+  const def=flowDef(S.variant,S.needPoa);
+  Object.keys(SCREENS_A).forEach(k=>{ SCREENS[k]=Object.assign({},SCREENS_A[k],def.screens[k]||{}); });
+  STEPS.length=0; def.steps.forEach(x=>STEPS.push(x.slice()));
+  const j=document.querySelector('#sc-jump'); if(j){ const v=j.value; j.innerHTML=Object.entries(SCREENS).map(([k,x])=>`<option value="${k}">${x.label}</option>`).join(''); j.value=v; }
+}
+const stepNo = key => { let i=STEPS.findIndex(x=>x[2]===key); if(i<0 && key==='poa') i=STEPS.findIndex(x=>x[2]==='identity'); return i+1; };
 
 const S = {
   screen:'landing',
@@ -1038,12 +1078,15 @@ const S = {
   av:{q:'',sel:null,zoom:1,pin:null,restr:[],menu:false,pop:false},
   user:{first:'Jan',last:'Novák',phone:'+420 777 123 456'}, prefs:{mkEmail:false,mkSms:false,nReg:true,nRemind:true,nNews:false}, prof:{edit:false,pw:false,err:{}},
   icoFormat:'', touch:{}, inviteErr:{}, origin:null, hubNotice:'',
-  acct:null, completedUpTo:0, lastIco:null, drafts:[], regId:null, company:null, dup:null,
+  variant:'A', needPoa:false, match:null, identity:{verified:false,via:null}, draftSets:{A:[],B:[]},
+  acct:null, completedUpTo:0, lastIco:null, regId:null, company:null, dup:null,
   idScreen:null, bank:null, bankAll:false, consent:false,
   file:null, poaFail:false,
   invites:[], showInvite:false, terms:false,
   authForm:false, authEmail:''
-};
+};// the saved registrations belong to the flow variant that created them
+Object.defineProperty(S,'drafts',{get(){ return S.draftSets[S.variant]; }, set(v){ S.draftSets[S.variant]=v; }});
+
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const timers = [];
@@ -1055,6 +1098,7 @@ function focusPage(){    // after a screen change keyboard and screen-reader use
   if(!t.matches('input,button,a,select,textarea')) t.setAttribute('tabindex','-1');
   t.focus({preventScroll:true});
 }
+const afterIdentity = () => S.variant==='B' ? 'idOk' : ($('#sc-role').value==='poa'?'poa':'idOk');   // flow B decides about the power of attorney only after the company is known
 function go(id){
   timers.splice(0).forEach(clearTimeout);
   if(id!=='hub') S.hubNotice='';
@@ -1062,6 +1106,7 @@ function go(id){
   const prev = S.screen;
   if(prev!==id) S.prof={edit:false,pw:false,err:{}};   // an open profile form does not survive leaving the page
   if(id==='idOk'||id==='poaOk') S.idScreen = id;
+  if(id==='idOk' && S.variant==='B') S.identity={verified:true,via:S.via};   // identity belongs to the person, not to one registration
   S.screen = id;
   { const k = SCREENS[id].step; if(k>=2) S.completedUpTo = Math.max(S.completedUpTo, k-1); }
   if(location.hash.slice(1)!==id) history.replaceState(null,'','#'+id);
@@ -1077,7 +1122,7 @@ function go(id){
     const dup=S.drafts.find(d=>d.id!==S.regId && d.snap.ico===S.ico);
     if(reg){ S.dup={kind:'registered',name:reg.name}; go('icoDup'); }
     else if(dup){ S.dup={kind:'draft',name:(c||{}).name||S.ico,id:dup.id}; go('icoDup'); }
-    else if(c){ S.company=c; go('icoFound'); }
+    else if(c){ S.company=c; if(S.variant==='B'){ S.match=matchPerson(c); S.needPoa=!S.match.ok; applyFlow(); } go('icoFound'); }
     else go('icoNotFound');
   });
   if(id==='availLoading') later(1200,()=>go(S.av.sel && S.av.sel.ok ? 'availSchedule' : 'availNone'));
@@ -1085,9 +1130,9 @@ function go(id){
     if($('#sc-doc').value==='fail'){
       Object.values(S.docs).forEach(d=>d&&URL.revokeObjectURL(d.url));
       S.docs={front:null,back:null,selfie:null}; S.docConsent=false; S.docFail=true; go('bank');
-    } else go($('#sc-role').value==='poa'?'poa':'idOk'); // same outcome as a Bank iD check
+    } else go(afterIdentity()); // same outcome as a Bank iD check
   });
-  if(id==='bankLoading') later(1400,()=>go($('#sc-role').value==='poa'?'poa':'idOk'));
+  if(id==='bankLoading') later(1400,()=>go(afterIdentity()));
   if(id==='poaLoading') later(1800,()=>{
     if($('#sc-poa').value==='fail'){ S.file=null; S.poaFail=true; go('poa'); } else go('poaOk');
   });
@@ -1201,8 +1246,8 @@ const header = (loggedIn, regTarget='auth') => `
 
 // where a completed step in the sidebar leads back to
 const isMobile = () => matchMedia('(max-width:768px)').matches;
-const STEP_TARGET = n => ({1:'intro', 2:'account', 3:'icoFound', 4:S.idScreen||'idOk'})[n];
-const sidebar = (cur, done) => `
+const STEP_TARGET = n => ({intro:'intro', account:'account', company:'icoFound', identity:(S.variant==='B'?'idOk':(S.idScreen||'idOk')), poa:'poaOk', finish:'summary'})[(STEPS[n-1]||[])[2]];
+const sidebar = (cur, done) => { if(typeof cur==='string') cur=(SCREENS[cur]||{}).step; return `
   <nav class="steps" aria-label="Kroky registrace">${STEPS.map((s,i)=>{
     // completed steps (in any direction) are navigable; the current one is highlighted, later ones stay inert
     const n=i+1, st = n===cur?'active':(n<=S.completedUpTo?'done':'');
@@ -1210,7 +1255,7 @@ const sidebar = (cur, done) => `
     return st==='done'
       ? `<button type="button" class="step done" data-step-go="${STEP_TARGET(n)}" aria-label="Krok ${n}: ${s[0]} (dokončeno) – ${n<cur?'vrátit se':'přejít na tento krok'}">${inner}</button>`
       : `<div class="step ${st}"${st==='active'?' aria-current="step"':''}>${inner}</div>`;
-  }).join('')}</nav>`;
+  }).join('')}</nav>`; };
 
 // numbered rail shown instead of the sidebar on mobile; completed steps are tappable
 const rail = cur => `<nav class="rail" aria-label="Kroky registrace">${STEPS.map((st,i)=>{
@@ -1226,7 +1271,7 @@ const topbar = (id, saved=true) => {
   const sc = SCREENS[id];
   return `<div class="topbar">
     <button class="iconbtn back" data-back aria-label="Zpět"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M20 12H4.5M11 5.5L4.5 12l6.5 6.5"/></svg></button>
-    <span class="crumb">Krok ${sc.step} z 5 · ${STEPS[sc.step-1][0]}</span>
+    <span class="crumb">Krok ${sc.step} z ${STEPS.length} · ${STEPS[sc.step-1][0]}</span>
     ${saved?'<span class="saved">Uloženo</span>':''}
     <span class="grow"></span>
     <button class="iconbtn xbtn" data-go="later" aria-label="Zavřít">✕</button>
@@ -1324,15 +1369,16 @@ const EYE = {
 
 // ---- "Continue with unfinished registration": saved registrations, hub, sign-in ----
 const COMPANIES = {
-  '03255654': {ico:'03255654', name:'EREMITA COMPANY s.r.o.', seat:'Jičínská 226/17, Žižkov, 13000 Praha 3'},
-  '27082440': {ico:'27082440', name:'Pekárna U Mostu s.r.o.', seat:'Mostecká 12/5, Malá Strana, 11800 Praha 1'},
-  '05345456': {ico:'05345456', name:'Bistro Na Rohu s.r.o.', seat:'Hlavní 22/8, Moravská Ostrava, 70200 Ostrava'},
-  '08123456': {ico:'08123456', name:'Hotel Vltava a.s.', seat:'Nábřeží 3/1, 37001 České Budějovice'}
+  // people = who may act for the company according to the public register (name, date of birth)
+  '03255654': {ico:'03255654', name:'EREMITA COMPANY s.r.o.', seat:'Jičínská 226/17, Žižkov, 13000 Praha 3', people:[{name:'Ing. Jan Novák', born:'1988-01-05', role:'jednatel'}]},                       // match despite the title
+  '27082440': {ico:'27082440', name:'Pekárna U Mostu s.r.o.', seat:'Mostecká 12/5, Malá Strana, 11800 Praha 1', people:[{name:'Petr Svoboda', born:'1975-06-14', role:'jednatel'}]},                // not listed
+  '05345456': {ico:'05345456', name:'Bistro Na Rohu s.r.o.', seat:'Hlavní 22/8, Moravská Ostrava, 70200 Ostrava', people:[{name:'Novák Jan Karel', born:'1988-01-05', role:'jednatel'}]},            // match despite order and middle name
+  '08123456': {ico:'08123456', name:'Hotel Vltava a.s.', seat:'Nábřeží 3/1, 37001 České Budějovice', people:[{name:'Jan Novák', born:'1979-03-12', role:'člen představenstva'}]}               // same name, different date of birth
 };
 const REGISTERED = { '25596641': {ico:'25596641', name:'Řeznictví Dvořák s.r.o.'} };   // already a customer
 const MAX_DRAFTS = 5;                                                                 // limit can be changed later
 // parts of the flow state that belong to one registration (saved per draft)
-const REG_FIELDS = ['ico','dic','email','phone','method','via','docs','docConsent','bank','bankAll','consent','file','idScreen','lastIco','completedUpTo','company'];
+const REG_FIELDS = ['needPoa','match','ico','dic','email','phone','method','via','docs','docConsent','bank','bankAll','consent','file','idScreen','lastIco','completedUpTo','company'];
 const STABLE = {icoLoading:'ico',icoNotFound:'ico',icoDup:'ico',bankLoading:'bank',bankSite:'bank',docLoading:'bank',poaLoading:'poa'};
 const cur = () => S.company || COMPANIES[VALID_ICO];
 const fmtDate = iso => { const [y,m,d]=iso.split('-'); return `${+d}. ${+m}. ${y}`; };
@@ -1344,7 +1390,8 @@ function saveDraft(){   // called when the user leaves after the user account ex
   const step = (SCREENS[screen]||{}).step || 0;
   if(step<2 || screen==='done') return;
   const snap={}; REG_FIELDS.forEach(k=>{ snap[k]=S[k]; });
-  const d={id:S.regId||('r'+Date.now()), screen, saved:todayIso(), snap};
+  snap.identity=Object.assign({},S.identity);
+  const d={id:S.regId||('r'+Date.now()), variant:S.variant, screen, saved:todayIso(), snap};
   S.regId=d.id;
   const i=S.drafts.findIndex(x=>x.id===d.id);
   if(i>=0) S.drafts[i]=d; else S.drafts.push(d);
@@ -1352,16 +1399,25 @@ function saveDraft(){   // called when the user leaves after the user account ex
 function loadDraft(id){
   const d=S.drafts.find(x=>x.id===id); if(!d) return;
   REG_FIELDS.forEach(k=>{ S[k]=d.snap[k]; });
+  if(d.snap.identity && d.snap.identity.verified && !S.identity.verified) S.identity=Object.assign({},d.snap.identity);   // the person's verification is never lost
+  if(S.variant==='B' && S.identity.verified) S.via=S.identity.via||S.via;
+  applyFlow();
   Object.assign(S,{origin:'hub',regId:id,terms:false,invites:[],showInvite:false,docFail:false,poaFail:false,docErr:{}});
   go(d.screen);   // the last opened step
 }
 function resetRegistration(ico){
   S.av={q:'',sel:null,zoom:1,pin:null,restr:[],menu:false,pop:false};
-  Object.assign(S,{icoFormat:'',touch:{},inviteErr:{},completedUpTo:0,lastIco:null,regId:null,company:null,dup:null,method:'bankid',via:'bankid',docs:{front:null,back:null,selfie:null},docErr:{},docConsent:false,docFail:false,idScreen:null,ico:ico,dic:'',email:'',phone:'',bank:null,bankAll:false,consent:false,file:null,poaFail:false,invites:[],showInvite:false,terms:false,authForm:false,authEmail:''});
+  Object.assign(S,{needPoa:false,match:null,icoFormat:'',touch:{},inviteErr:{},completedUpTo:0,lastIco:null,regId:null,company:null,dup:null,method:'bankid',via:'bankid',docs:{front:null,back:null,selfie:null},docErr:{},docConsent:false,docFail:false,idScreen:null,ico:ico,dic:'',email:'',phone:'',bank:null,bankAll:false,consent:false,file:null,poaFail:false,invites:[],showInvite:false,terms:false,authForm:false,authEmail:''});
+  applyFlow();
 }
 function newRegistration(origin){    // another company: a fresh registration from step 1 (signed-in users skip creating an account)
   const email=S.authEmail;
   resetRegistration(''); S.authEmail=email; S.origin=origin||'hub';
+  if(S.variant==='B' && S.acct){          // identity belongs to the person: a verified person goes straight to the company step
+    if(S.identity.verified){ S.via=S.identity.via||S.via; S.completedUpTo=3; go('ico'); }
+    else { S.completedUpTo=2; go('bank'); }
+    return;
+  }
   go('intro');
 }
 const exitTarget = () => S.origin==='hub' ? 'hub' : 'landing';   // leave to where the registration was started from
@@ -1369,15 +1425,38 @@ function startFromPublic(){          // "Registrovat se" on public pages
   if(S.acct && S.drafts.length>=MAX_DRAFTS){ S.hubNotice='limit'; go('hub'); return; }
   if(S.acct) newRegistration('public'); else { S.origin='public'; go('intro'); }
 }
-function seedDrafts(kind){           // prototype scenarios: what the user has saved
-  const mk=(id,ico,screen,done,saved,extra={})=>({id,screen,saved,snap:Object.assign({ico,dic:'',email:'',phone:'',method:'bankid',via:'bankid',docs:{front:null,back:null,selfie:null},docConsent:false,bank:'Raiffeisen Bank',bankAll:false,consent:true,file:null,idScreen:'idOk',lastIco:ico,completedUpTo:done,company:COMPANIES[ico]||null},extra)});
-  const all=[ mk('s1','03255654','bank',3,'2026-10-12'),
-              mk('s2','27082440','icoFound',2,'2026-10-18'),
-              mk('s3','05345456','summary',4,'2026-10-20'),
-              mk('s4','','ico',2,'2026-10-21'),
-              mk('s5','08123456','poa',3,'2026-10-22') ];
-  S.drafts = kind==='none' ? [] : all.slice(0,{one:1,two:2,five:5}[kind]);
+function seedDrafts(kind, v){           // prototype scenarios: what the user has saved
+  v=v||S.variant;
+  const mk=(id,ico,screen,done,saved,extra={},ident)=>({id,variant:v,screen,saved,snap:Object.assign({ico,dic:'',email:'',phone:'',method:'bankid',via:'bankid',docs:{front:null,back:null,selfie:null},docConsent:false,bank:'Raiffeisen Bank',bankAll:false,consent:true,file:null,idScreen:'idOk',lastIco:ico,completedUpTo:done,company:COMPANIES[ico]||null,needPoa:false,match:null,identity:ident||{verified:false,via:null}},extra)});
+  let all;
+  if(v==='B'){
+    const idv={verified:true,via:'bankid'};
+    all=[ mk('b1','03255654','icoFound',3,'2026-10-12',{email:'info@eremita.cz',phone:'777 123 456',match:matchPerson(COMPANIES['03255654'])},idv),         // verified, company found, matches the register
+          mk('b2','','bank',2,'2026-10-18',{},{verified:false,via:null}),                                                                                        // account only, identity not verified yet
+          mk('b3','27082440','poa',4,'2026-10-20',{needPoa:true,email:'info@pekarna.cz',phone:'777 222 333',match:matchPerson(COMPANIES['27082440'])},idv),   // not in the register: power of attorney
+          mk('b4','05345456','summary',4,'2026-10-21',{email:'info@bistro.cz',phone:'777 444 555',match:matchPerson(COMPANIES['05345456'])},idv),
+          mk('b5','','ico',3,'2026-10-22',{},idv) ];                                                                                                          // verified, company not entered
+  } else {
+    all=[ mk('s1','03255654','bank',3,'2026-10-12'),
+          mk('s2','27082440','icoFound',2,'2026-10-18'),
+          mk('s3','05345456','summary',4,'2026-10-20'),
+          mk('s4','','ico',2,'2026-10-21'),
+          mk('s5','08123456','poa',3,'2026-10-22') ];
+  }
+  S.draftSets[v] = kind==='none' ? [] : all.slice(0,{one:1,two:2,five:5}[kind]);
 }
+
+// ---- flow B: the verified person is matched against the register ----
+const TITLE_RE = /\b(ing|mgr|bc|bca|mudr|mddr|judr|phdr|rndr|rsdr|mvdr|pharmdr|paeddr|thdr|doc|prof|dr|mba|csc|dis|arch|ph\.?\s?d|th\.?\s?d)\b\.?/g;
+const nameTokens = n => n.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(TITLE_RE,' ').replace(/[^a-z\s]/g,' ').split(/\s+/).filter(Boolean);
+// lenient: ignores case, diacritics, titles, middle names and the order of first and last name
+const sameName = (a,b) => { const A=nameTokens(a), B=nameTokens(b); if(A.length<2||B.length<2) return false; const [sm,lg]=A.length<=B.length?[A,B]:[B,A]; return sm.every(t=>lg.includes(t)); };
+function matchPerson(company){
+  const people=(company.people||[]).map(p=>{ const nameOk=sameName(PERSON.name,p.name); return {name:p.name,role:p.role,nameOk,ok:nameOk && p.born===PERSON.bornIso}; });
+  const ok=people.some(p=>p.ok);
+  return {ok, reason: ok?'match':(people.some(p=>p.nameOk)?'dob':'none'), people};
+}
+const rolePoa = () => S.variant==='B' ? S.needPoa : S.idScreen==='poaOk';
 
 // ---- validation helpers ----
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -1387,6 +1466,15 @@ const contactErr = () => ({
   phone: !S.phone.trim() ? 'Zadejte telefon firmy.' : !PHONE_RE.test(S.phone.trim()) ? 'Zadejte telefon ve tvaru 777 000 111.' : ''
 });
 const contactOk = () => { const e=contactErr(); return !e.email && !e.phone; };
+// flow B: result of comparing the verified person with the people listed in the register
+const matchBlock = () => {
+  const m=S.match; if(!m) return '';
+  const msg = m.ok ? 'V obchodním rejstříku jste uvedeni jako osoba oprávněná jednat za firmu. Plnou moc nepotřebujete.'
+    : m.reason==='dob' ? 'V rejstříku jsme našli osobu se stejným jménem, ale s jiným datem narození, proto vás nemůžeme spárovat. K dokončení registrace budete potřebovat plnou moc.'
+    : 'Mezi osobami oprávněnými jednat za firmu v obchodním rejstříku jsme vás nenašli. K dokončení registrace budete potřebovat plnou moc.';
+  return alertBox(m.ok?'ok':'warn',msg,'margin-top:16px')
+    + `<p class="hint" style="margin:8px 0 0">Za firmu podle rejstříku jednají: ${m.people.map(p=>`${esc(p.name)} (${esc(p.role)})${p.ok?' ✓':''}`).join(', ')}.</p>`;
+};
 const later_btn = `<button class="link" data-go="later">Dokončit registraci později</button>`;
 
 /* ---------- screens ---------- */
@@ -1533,13 +1621,13 @@ const VIEWS = {
   hub: () => {
     const ds=S.drafts, full=ds.length>=MAX_DRAFTS;
     const card = d => {
-      const step=SCREENS[d.screen].step, done=d.snap.completedUpTo, c=d.snap.company;
-      const segs=STEPS.map((st,i)=>`<i class="${i+1<=done?'on':i+1===step?'cur':''}" title="${st[0]}"></i>`).join('');
+      const def=flowDef(d.variant||S.variant,d.snap.needPoa), L=def.steps, step=Object.assign({},SCREENS_A[d.screen],def.screens[d.screen]||{}).step, done=d.snap.completedUpTo, c=d.snap.company;
+      const segs=L.map((st,i)=>`<i class="${i+1<=done?'on':i+1===step?'cur':''}" title="${st[0]}"></i>`).join('');
       return `<article class="reg-card" aria-label="${esc(draftName(d))}">
         <div class="rc-head"><div class="rc-ic">${INTRO_ICON.company}</div>
           <div><b class="rc-name">${esc(draftName(d))}</b><span class="rc-sub">${c?'IČO '+c.ico:'IČO zatím nezadáno'}</span></div></div>
         <div class="rc-prog" role="img" aria-label="Dokončeno kroků: ${Math.min(done,5)} z 5">${segs}</div>
-        <p class="rc-meta">Krok ${step} z 5 · ${STEPS[step-1][0]} · uloženo ${fmtDate(d.saved)}</p>
+        <p class="rc-meta">Krok ${step} z ${L.length} · ${L[step-1][0]} · uloženo ${fmtDate(d.saved)}</p>
         <div class="rc-actions"><button class="btn" data-resume="${d.id}">Pokračovat v registraci</button><button class="link" data-del="${d.id}" aria-label="Smazat registraci ${esc(draftName(d))}">Smazat</button></div>
       </article>`;
     };
@@ -1565,7 +1653,7 @@ const VIEWS = {
       </div></article></div>`,
 
   icoDup: () => `${header(true)}
-    <div class="page">${sidebar(3)}
+    <div class="page">${sidebar('icoDup')}
       <main>${topbar('icoDup')}<h1>Zadejte IČO vaší firmy</h1><p class="sub">a my doplníme ostatní údaje.</p>
         ${S.dup && S.dup.kind==='draft'
           ? alertBox('warn',`Registraci firmy ${esc(S.dup.name)} už máte rozpracovanou.`)
@@ -1635,14 +1723,17 @@ const VIEWS = {
       </div>`),
 
   intro: () => `${header(false)}
-    <div class="page">${sidebar(1)}
+    <div class="page">${sidebar('intro')}
       <main>
         ${topbar('intro',false)}
         <h1>Vítejte v registraci</h1>
         <p class="sub">do služby <b>makro distribuce</b> – vytvoření firemního účtu je zdarma.</p>
         <h3 style="font-size:14px">Co budete pro registraci potřebovat</h3>
-        <div class="info"><span class="tag">${INTRO_ICON.company}</span><div class="ib">IČO vaší firmy</div></div>
-        <div class="info"><span class="tag">${INTRO_ICON.bank}</span><div class="ib">Ověření vaší identity pomocí Bank iD, nebo osobního dokladu a fotografie</div></div>
+        ${S.variant==='B'
+          ? `<div class="info"><span class="tag">${INTRO_ICON.bank}</span><div class="ib">Ověření vaší identity pomocí Bank iD, nebo osobního dokladu a fotografie</div></div>
+             <div class="info"><span class="tag">${INTRO_ICON.company}</span><div class="ib">IČO vaší firmy</div></div>`
+          : `<div class="info"><span class="tag">${INTRO_ICON.company}</span><div class="ib">IČO vaší firmy</div></div>
+             <div class="info"><span class="tag">${INTRO_ICON.bank}</span><div class="ib">Ověření vaší identity pomocí Bank iD, nebo osobního dokladu a fotografie</div></div>`}
         <div class="info"><span class="tag">${INTRO_ICON.authority}</span><div class="ib">Oprávnění jednat za vaši firmu
           <ul><li>v obchodním rejstříku jste zapsáni jako osoba oprávněná jednat za firmu, nebo</li>
           <li>máte plnou moc, kterou při registraci nahrajete. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></li></ul></div></div>
@@ -1681,7 +1772,7 @@ const VIEWS = {
   },
 
   account: () => `${header(true)}
-    <div class="page">${sidebar(2)}
+    <div class="page">${sidebar('account')}
       <main>
         ${topbar('account')}
         <h1>Přihlašovací účet</h1>
@@ -1691,19 +1782,19 @@ const VIEWS = {
           <div style="font-size:13px"><div>Přihlášeni jako</div><b style="display:block;margin:6px 0 12px;color:var(--ink-strong)">${esc(S.authEmail||PERSON.email)}</b>
           <button class="btn soft sm" data-go="login">Přihlásit se jiným účtem</button></div>
         </div>
-        <div class="actions" style="margin-top:96px"><button class="btn" data-go="ico">Pokračovat na registraci firmy</button>${later_btn}</div>
+        <div class="actions" style="margin-top:96px">${S.variant==='B'?`<button class="btn" data-go="bank">Pokračovat na ověření totožnosti</button>`:`<button class="btn" data-go="ico">Pokračovat na registraci firmy</button>`}${later_btn}</div>
       </main>
     </div>`,
 
   ico: () => icoScreen(false),
   icoNotFound: () => icoScreen(true),
   icoLoading: () => `${header(true)}
-    <div class="page">${sidebar(3)}
+    <div class="page">${sidebar('icoLoading')}
       <main>${topbar('icoLoading')}<h1>Zadejte IČO vaší firmy</h1><p class="sub">a my doplníme ostatní údaje.</p>${loadingBox(240)}</main>
     </div>`,
 
   icoFound: () => `${header(true)}
-    <div class="page">${sidebar(3)}
+    <div class="page">${sidebar('icoFound')}
       <main>${topbar('icoFound')}<h1>Zadejte IČO vaší firmy</h1><p class="sub">a my doplníme ostatní údaje.</p>
         ${alertBox('ok',`Našli jsme firmu s IČO ${cur().ico}.`)}
         <div class="panel" style="align-items:flex-start"><div class="badge">${svgIcon(ICON.company)}</div><div style="flex:1">
@@ -1712,6 +1803,7 @@ const VIEWS = {
             <div class="field small-w"><input id="dic" data-bind="dic" value="${esc(S.dic)}"></div></div>
           <button class="btn soft sm" style="margin-top:20px" data-go="ico">Zadat jiné IČO</button>
         </div></div>
+        ${S.variant==='B'?matchBlock():''}
         <h3 style="margin-top:32px">Kontaktní údaje firmy</h3>
         <div class="stack">
           <label class="lbl" for="email" style="margin-top:16px">E-mail</label>
@@ -1723,7 +1815,9 @@ const VIEWS = {
           </div>
           <div class="slot-err" id="phoneErr" role="alert" style="margin:4px 0 0">${S.touch.phone?contactErr().phone:''}</div>
         </div>
-        <div class="actions"><button class="btn" id="icoNext" data-go="bank" ${contactOk()?'':'disabled'}>Pokračovat na ověření totožnosti</button>${later_btn}</div>
+        <div class="actions">${S.variant==='B'
+          ? `<button class="btn" id="icoNext" data-go="${S.needPoa?'poa':'summary'}" ${contactOk()?'':'disabled'}>${S.needPoa?'Pokračovat a nahrát plnou moc':'Pokračovat na dokončení registrace'}</button>`
+          : `<button class="btn" id="icoNext" data-go="bank" ${contactOk()?'':'disabled'}>Pokračovat na ověření totožnosti</button>`}${later_btn}</div>
       </main>
     </div>`,
 
@@ -1758,10 +1852,12 @@ const VIEWS = {
         <label class="chk"><input type="checkbox" id="docConsent" ${S.docConsent?'checked':''}> <span>Souhlasím se zpracováním údajů z dokladu a fotografie za účelem ověření totožnosti. <a href="#">Zásady zpracování osobních údajů</a></span></label>
         <div class="actions" style="margin-top:36px"><button class="btn" id="docGo" ${docsReady&&S.docConsent?'':'disabled'}>Zkontrolovat doklad a fotografii</button>${later_btn}</div>`;
     return `${header(true)}
-    <div class="page">${sidebar(4)}
+    <div class="page">${sidebar('bank')}
       <main>${topbar('bank')}
         <h1>Ověřte svou totožnost</h1>
-        <p class="sub">Abychom si byli jistí, že za firmu jednáte oprávněně, potřebujeme ověřit vaši totožnost. Ověření trvá asi minutu. Ověřte se přes svou banku (<a href="#">Bank iD</a>), nebo nahrajte svůj osobní doklad a svou fotografii.</p>
+        <p class="sub">${S.variant==='B'
+          ? 'Než zaregistrujete firmu, potřebujeme ověřit, kdo jste. Ověření trvá asi minutu. Ověřte se přes svou banku (<a href="#">Bank iD</a>), nebo nahrajte svůj osobní doklad a svou fotografii. Díky tomu pak můžeme sami zkontrolovat, že za firmu smíte jednat.'
+          : 'Abychom si byli jistí, že za firmu jednáte oprávněně, potřebujeme ověřit vaši totožnost. Ověření trvá asi minutu. Ověřte se přes svou banku (<a href="#">Bank iD</a>), nebo nahrajte svůj osobní doklad a svou fotografii.'}</p>
         ${S.docFail?alertBox('warn','Doklad a fotografii se nepodařilo ověřit. Zkontrolujte, že jsou snímky ostré a čitelné, a zkuste to znovu. Pokud to nepomůže, zavolejte nám na +420 271 005 005.','margin-top:4px'):''}
         <div class="seg" role="tablist" aria-label="Způsob ověření totožnosti">${tabs}</div>
         <div id="verifyPanel" role="tabpanel" aria-labelledby="tab-${S.method}">${isDoc?docPanel:bankPanel}</div>
@@ -1770,7 +1866,7 @@ const VIEWS = {
   },
 
   docLoading: () => `${header(true)}
-    <div class="page">${sidebar(4)}
+    <div class="page">${sidebar('docLoading')}
       <main>${topbar('docLoading')}<h1>Ověřujeme vaši totožnost</h1><p class="sub">Porovnáváme doklad s fotografií a údaji z obchodního rejstříku…</p>${loadingBox(200)}</main>
     </div>`,
 
@@ -1794,16 +1890,16 @@ const VIEWS = {
   },
 
   bankLoading: () => `${header(true)}
-    <div class="page">${sidebar(4)}
+    <div class="page">${sidebar('bankLoading')}
       <main>${topbar('bankLoading')}<h1>Ověřujeme vaši totožnost</h1><p class="sub">Probíhá komunikace s ${esc(S.bank||'bankou')}…</p>${loadingBox(200)}</main>
     </div>`,
 
-  idOk: () => idDone('Ověřeno v obchodním rejstříku ✓','idOk','summary'),
+  idOk: () => S.variant==='B' ? idDone('','idOk','ico') : idDone('Ověřeno v obchodním rejstříku ✓','idOk','summary'),
   poaOk: () => idDone('Ověřeno – plná moc ✓','poaOk','summary'),
 
   poa: () => `${header(true)}
-    <div class="page">${sidebar(4)}
-      <main>${topbar('poa')}<h1>Ověření totožnosti – poslední krok</h1>
+    <div class="page">${sidebar('poa')}
+      <main>${topbar('poa')}<h1>${S.variant==='B'?'Nahrajte plnou moc':'Ověření totožnosti – poslední krok'}</h1>
         ${S.poaFail?alertBox('warn','Plnou moc se nám nepodařilo přečíst. Nahrajte ji znovu, nebo nám zavolejte na +420 271 005 005.','margin-top:20px'):'<div style="height:20px"></div>'}
         <div class="panel" style="align-items:flex-start"><div class="badge">${svgIcon(ICON.id)}</div><div style="flex:1">
           <dl>
@@ -1821,12 +1917,12 @@ const VIEWS = {
     </div>`,
 
   poaLoading: () => `${header(true)}
-    <div class="page">${sidebar(4)}
+    <div class="page">${sidebar('poaLoading')}
       <main>${topbar('poaLoading')}<h1>Ověření totožnosti – poslední krok</h1><div style="height:20px"></div>${loadingBox(172)}</main>
     </div>`,
 
   summary: () => `${header(true)}
-    <div class="page">${sidebar(5)}
+    <div class="page">${sidebar('summary')}
       <main>${topbar('summary')}
         <h1 style="margin-top:12px">Děkujeme,</h1>
         <p class="sub">teď máme všechno potřebné, abyste mohli začít používat službu <b>makro distribuce.</b></p>
@@ -1835,7 +1931,7 @@ const VIEWS = {
         <h3 style="font-size:13px">Ověření totožnosti</h3>
         <div class="panel green"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([
           ['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()],
-          ['Oprávnění jednat za firmu', S.idScreen==='poaOk'?'Ověřeno – plná moc ✓':'Ověřeno v obchodním rejstříku ✓']])}<span class="bigcheck" style="width:28px;height:28px">✓</span></div>
+          ['Oprávnění jednat za firmu', rolePoa()?'Ověřeno – plná moc ✓':'Ověřeno v obchodním rejstříku ✓']])}<span class="bigcheck" style="width:28px;height:28px">✓</span></div>
         <h3 style="font-size:13px;margin-top:28px">Chcete přidat další kolegy? <span style="font-weight:400">(nepovinné)</span></h3>
         <p class="hint">Kolegům pošleme pozvánku e-mailem. Jakmile si vytvoří účet, budou mít přístup hned.</p>
         ${S.showInvite?`<div style="margin-top:12px"><label class="lbl">E-mail</label>
@@ -1863,7 +1959,7 @@ const VIEWS = {
 
 function icoScreen(err){
   return `${header(true)}
-    <div class="page">${sidebar(3)}
+    <div class="page">${sidebar(err?'icoNotFound':'ico')}
       <main>${topbar(err?'icoNotFound':'ico')}<h1>Zadejte IČO vaší firmy</h1><p class="sub">a my doplníme ostatní údaje.</p>
         ${err?alertBox('err','Firmu s tímto IČO jsme nenašli. Zkontrolujte číslo, nebo nám zavolejte na +420 271 005 005.'):''}
         <label class="lbl" for="ico" style="margin-top:${err?0:20}px">IČO</label>
@@ -1877,12 +1973,20 @@ function icoScreen(err){
     </div>`;
 }
 function idDone(role, cur, next){
+  const B = S.variant==='B';
+  const title = B && cur==='poaOk' ? 'Plná moc ověřena' : 'Ověření totožnosti dokončeno';
+  const msg = !B ? `Vaše totožnost byla úspěšně ověřena ${viaText()} a zkontrolovali jsme, že jste oprávněni jednat za tuto firmu.`
+    : cur==='idOk' ? `Vaše totožnost byla úspěšně ověřena ${viaText()}. V dalším kroku zaregistrujete firmu a my zkontrolujeme, že za ni smíte jednat.`
+    : 'Plnou moc jsme zkontrolovali. Jste oprávněni jednat za tuto firmu.';
+  const rows=[['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()]];
+  if(!(B && cur==='idOk')) rows.push(['Oprávnění jednat za firmu',role]);
+  const cta = B && cur==='idOk' ? 'Pokračovat na registraci firmy' : 'Pokračovat na dokončení registrace';
   return `${header(true)}
-    <div class="page">${sidebar(4)}
-      <main>${topbar(cur)}<h1>Ověření totožnosti dokončeno</h1>
-        ${alertBox('ok',`Vaše totožnost byla úspěšně ověřena ${viaText()} a zkontrolovali jsme, že jste oprávněni jednat za tuto firmu.`,'margin-top:20px')}
-        <div class="panel"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()],['Oprávnění jednat za firmu',role]])}</div>
-        <div class="actions" style="margin-top:36px"><button class="btn" data-go="${next}" style="padding:14px 8px">Pokračovat na dokončení registrace</button><button class="link later-mob" data-go="later">Dokončit registraci později</button></div>
+    <div class="page">${sidebar(cur)}
+      <main>${topbar(cur)}<h1>${title}</h1>
+        ${alertBox('ok',msg,'margin-top:20px')}
+        <div class="panel"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows(rows)}</div>
+        <div class="actions" style="margin-top:36px"><button class="btn" data-go="${next}" style="padding:14px 8px">${cta}</button><button class="link later-mob" data-go="later">Dokončit registraci později</button></div>
       </main>
     </div>`;
 }
@@ -1908,7 +2012,7 @@ function wire(){
     if(isDirty() && t!==S.screen) return leaveTo(t);   // unsaved profile form
     if(t==='intro' && !inRegistration()) return startFromPublic();   // public "Registrovat se": new registration, limit applies
     if(t==='auth' && S.acct) return go('account');   // already has an account: step 2 is just confirmed
-    if(t==='ico' && S.screen==='icoFound') S.completedUpTo=Math.min(S.completedUpTo,2); // "Zadat jiné IČO"
+    if(t==='ico' && S.screen==='icoFound') S.completedUpTo=Math.min(S.completedUpTo,stepNo('company')-1); // "Zadat jiné IČO"
     if(t==='auth') S.authForm=false;
     go(t);
   }));
@@ -1920,7 +2024,7 @@ function wire(){
   app.querySelectorAll('[data-back]').forEach(el=>el.addEventListener('click',()=>{
     if(SCREENS[S.screen].step<=1) return openExit(); // step 1: back = exit flow
     let b = SCREENS[S.screen].back || 'intro';
-    if(S.screen==='summary') b = S.idScreen || 'idOk';   // back to the result that was actually reached (registry or power of attorney)
+    if(S.screen==='summary' && S.variant!=='B') b = S.idScreen || 'idOk';   // back to the result that was actually reached (registry or power of attorney)
     if(b==='ico'){ S.icoErr=false; }
     go(b);
   }));
@@ -1948,8 +2052,8 @@ function wire(){
   const al = app.querySelector('[data-auth-login]');
   if(al) al.addEventListener('click',e=>{ e.preventDefault(); go('login'); });
   const af = $('#authForm');
-  if(af) af.addEventListener('submit',e=>{ e.preventDefault(); S.authEmail=$('#aemail').value.trim(); S.acct='created'; go('account'); });
-  app.querySelectorAll('[data-social]').forEach(b=>b.addEventListener('click',()=>{ S.authEmail=PERSON.email; S.acct='created'; go('account'); }));
+  if(af) af.addEventListener('submit',e=>{ e.preventDefault(); S.authEmail=$('#aemail').value.trim(); S.acct='created'; S.identity={verified:false,via:null}; go('account'); });
+  app.querySelectorAll('[data-social]').forEach(b=>b.addEventListener('click',()=>{ S.authEmail=PERSON.email; S.acct='created'; S.identity={verified:false,via:null}; go('account'); }));
 
   // ICO
   const ico = $('#ico');
@@ -1984,7 +2088,7 @@ function wire(){
   const dc = $('#docConsent');
   if(dc) dc.addEventListener('change',()=>{ S.docConsent=dc.checked; $('#docGo').disabled=!(S.docs.front&&S.docs.back&&S.docs.selfie&&S.docConsent); });
   const dg = $('#docGo');
-  if(dg) dg.addEventListener('click',()=>{ S.completedUpTo=Math.min(S.completedUpTo,3); S.via='doc'; S.docFail=false; go('docLoading'); });
+  if(dg) dg.addEventListener('click',()=>{ S.completedUpTo=Math.min(S.completedUpTo,stepNo('identity')-1); S.via='doc'; S.docFail=false; go('docLoading'); });
 
   // bank
   app.querySelectorAll('[data-bank]').forEach(b=>b.addEventListener('click',()=>{ S.bank=b.dataset.bank; render(); }));
@@ -1993,7 +2097,7 @@ function wire(){
   const cons = $('#consent');
   if(cons) cons.addEventListener('change',()=>{ S.consent=cons.checked; $('#bankGo').disabled=!(S.bank&&S.consent); });
   const bg = $('#bankGo');
-  if(bg) bg.addEventListener('click',()=>{ S.completedUpTo=Math.min(S.completedUpTo,3); S.via='bankid'; S.docFail=false; go('bankSite'); });
+  if(bg) bg.addEventListener('click',()=>{ S.completedUpTo=Math.min(S.completedUpTo,stepNo('identity')-1); S.via='bankid'; S.docFail=false; go('bankSite'); });
 
   const bv = $('#bsVerify');
   if(bv) bv.addEventListener('click',()=>go('bankLoading'));
@@ -2009,7 +2113,7 @@ function wire(){
     drop.addEventListener('drop',e=>setFile(e.dataTransfer.files[0]));
   }
   const pg = $('#poaGo');
-  if(pg) pg.addEventListener('click',()=>{ S.completedUpTo=Math.min(S.completedUpTo,3); S.poaFail=false; go('poaLoading'); });
+  if(pg) pg.addEventListener('click',()=>{ S.completedUpTo=Math.min(S.completedUpTo,stepNo('poa')-1); S.poaFail=false; go('poaLoading'); });
 
   // summary
   const au = $('#addUser');
@@ -2194,7 +2298,7 @@ function wireProfile(app){
 }
 
 function verifyIco(){
-  if(S.ico!==S.lastIco) S.completedUpTo=Math.min(S.completedUpTo,2); // a different company: later steps no longer valid
+  if(S.ico!==S.lastIco) S.completedUpTo=Math.min(S.completedUpTo,stepNo('company')-1); // a different company: later steps no longer valid
   S.lastIco=S.ico;
   if(!/^\d{8}$/.test(S.ico)){          // malformed: explain, do not pretend a lookup happened
     S.icoFormat = S.ico ? 'IČO má 8 číslic.' : 'Zadejte IČO vaší firmy.';
@@ -2244,7 +2348,7 @@ $('#sc-type').addEventListener('change',e=>applyType(e.target.value));
   const sel=$('#sc-drafts');
   const seed=k=>{ sel.value=k; seedDrafts(k); };
   const ACT={
-    leave:()=>{ S.acct='created'; S.company=COMPANIES['03255654']; S.origin='public'; S.completedUpTo=Math.max(S.completedUpTo,2); go('ico'); toast('Click ✕ or the logo to see the leave dialog.'); },
+    leave:()=>{ S.acct='created'; S.company=COMPANIES['03255654']; S.origin='public'; S.completedUpTo=Math.max(S.completedUpTo,2); go(S.variant==='B'?'bank':'ico'); toast('Click ✕ or the logo to see the leave dialog.'); },
     come:()=>go('reminder'),
     hub:()=>{ S.acct='existing'; if(!S.drafts.length) seed('two'); go('hub'); },
     resume:()=>{ S.acct='existing'; if(!S.drafts.length) seed('two'); go('hub'); toast('Press "Pokračovat v registraci" on a card.'); },
@@ -2259,7 +2363,14 @@ $('#sc-type').addEventListener('change',e=>applyType(e.target.value));
 
 /* saved registrations scenario */
 $('#sc-drafts').addEventListener('change',e=>{ seedDrafts(e.target.value); if(S.screen==='hub') render(); });
-seedDrafts('one');
+seedDrafts('one','A'); seedDrafts('one','B');
+// switching the flow version starts the prototype over: a different order of steps is a different registration
+$('#sc-flow').addEventListener('change',e=>{
+  S.variant=e.target.value; resetRegistration(VALID_ICO); S.identity={verified:false,via:null}; S.origin=null;
+  $('#sc-drafts').value='one'; seedDrafts('one'); $('#sc-role').disabled=(S.variant==='B');
+  applyFlow(); go('landing'); toast('Flow '+S.variant+': '+(S.variant==='B'?'identity first, then company':'company first, then identity')+'.');
+});
+applyFlow();
 
 /* prototype panel */
 $('#sc-jump').innerHTML = Object.entries(SCREENS).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('');
