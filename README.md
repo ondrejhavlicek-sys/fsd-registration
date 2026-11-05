@@ -18,3 +18,5 @@ to change them; addresses in Znojmo are not served.
 Use the **Prototype scenarios** box (bottom right) to switch between a statutory body and a
 power-of-attorney case, to make the power-of-attorney check fail, or to jump to any screen.
 Demo IČO that is found: `03255654`.
+
+Flows for leaving and resuming a registration are described in [docs/unfinished-registration.md](docs/unfinished-registration.md).
