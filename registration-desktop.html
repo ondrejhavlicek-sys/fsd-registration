@@ -810,6 +810,10 @@
   html[data-type="makro"] .about{font-size:16px;line-height:24px}
   html[data-type="makro"] .journey span{font-size:15px;line-height:22px}
 
+  .poa-box{background:#f6f6f6;padding:16px}
+  .poa-box .drop,.poa-box .file{margin-top:0}
+  .poa-box .file .link.small{margin-left:12px;flex:none}
+
   /* prototype controls */
   .proto{position:fixed;right:12px;bottom:12px;background:#fff;border:1px solid var(--line);box-shadow:0 2px 12px rgba(0,0,0,.12);font-size:12px;width:230px;z-index:10}
   .proto summary{padding:8px 10px;font-weight:600;cursor:pointer;color:var(--muted)}
@@ -1042,7 +1046,6 @@ function flowDef(v, poa){
   if(v!=='B') return {steps:STEPS_A, screens:{}};
   const steps=[['Úvod','Co je potřeba k registraci','intro'],['Přihlašovací účet','Účet pro přihlášení do služby','account'],
     ['Ověření totožnosti','Ověření osoby, než zaregistrujete firmu','identity'],['Registrace firmy','IČO a fakturační údaje','company']];
-  if(poa) steps.push(['Plná moc','Oprávnění jednat za firmu','poa']);
   steps.push(['Dokončení registrace','Shrnutí a potvrzení','finish']);
   const last=steps.length;
   return {steps, screens:{
@@ -1056,10 +1059,10 @@ function flowDef(v, poa){
     icoLoading:  {step:4, label:'4.2 – Načítání z rejstříku', back:'ico'},
     icoFound:    {step:4, label:'4.3 A – IČO nalezeno', back:'ico'},
     icoNotFound: {step:4, label:'4.3 B – IČO nenalezeno', back:'ico'},
-    poa:         {step:5, label:'5.1 – Nutná plná moc', back:'icoFound'},
-    poaLoading:  {step:5, label:'5.2 – Kontrola plné moci', back:'poa'},
-    poaOk:       {step:5, label:'5.3 – Plná moc ověřena', back:'poa'},
-    summary:     {step:last, label:last+'.1 – Shrnutí', back:poa?'poaOk':'icoFound'},
+    poa:         {step:4, label:'4.x – Plná moc (v kroku firmy)', back:'icoFound'},
+    poaLoading:  {step:4, back:'poa'},
+    poaOk:       {step:4, back:'poa'},
+    summary:     {step:last, label:last+'.1 – Shrnutí', back:'icoFound'},
     done:        {step:last}
   }};
 }
@@ -1069,7 +1072,7 @@ function applyFlow(){        // rewrite step numbers, back targets and the step 
   STEPS.length=0; def.steps.forEach(x=>STEPS.push(x.slice()));
   const j=document.querySelector('#sc-jump'); if(j){ const v=j.value; j.innerHTML=Object.entries(SCREENS).map(([k,x])=>`<option value="${k}">${x.label}</option>`).join(''); j.value=v; }
 }
-const stepNo = key => { let i=STEPS.findIndex(x=>x[2]===key); if(i<0 && key==='poa') i=STEPS.findIndex(x=>x[2]==='identity'); return i+1; };
+const stepNo = key => { let i=STEPS.findIndex(x=>x[2]===key); if(i<0 && key==='poa') i=STEPS.findIndex(x=>x[2]===(S.variant==='B'?'company':'identity')); return i+1; };
 
 const S = {
   screen:'landing',
@@ -1078,7 +1081,7 @@ const S = {
   av:{q:'',sel:null,zoom:1,pin:null,restr:[],menu:false,pop:false},
   user:{first:'Jan',last:'Novák',phone:'+420 777 123 456'}, prefs:{mkEmail:false,mkSms:false,nReg:true,nRemind:true,nNews:false}, prof:{edit:false,pw:false,err:{}},
   icoFormat:'', touch:{}, inviteErr:{}, origin:null, hubNotice:'',
-  variant:'A', needPoa:false, match:null, identity:{verified:false,via:null}, draftSets:{A:[],B:[]},
+  variant:'A', needPoa:false, poaState:'none', match:null, identity:{verified:false,via:null}, draftSets:{A:[],B:[]},
   acct:null, completedUpTo:0, lastIco:null, regId:null, company:null, dup:null,
   idScreen:null, bank:null, bankAll:false, consent:false,
   file:null, poaFail:false,
@@ -1122,7 +1125,7 @@ function go(id){
     const dup=S.drafts.find(d=>d.id!==S.regId && d.snap.ico===S.ico);
     if(reg){ S.dup={kind:'registered',name:reg.name}; go('icoDup'); }
     else if(dup){ S.dup={kind:'draft',name:(c||{}).name||S.ico,id:dup.id}; go('icoDup'); }
-    else if(c){ S.company=c; if(S.variant==='B'){ S.match=matchPerson(c); S.needPoa=!S.match.ok; applyFlow(); } go('icoFound'); }
+    else if(c){ const changed=!S.company||S.company.ico!==c.ico; S.company=c; if(S.variant==='B'){ S.match=matchPerson(c); S.needPoa=!S.match.ok; if(changed||!S.needPoa){ S.poaState='none'; S.file=null; S.poaFail=false; } applyFlow(); } go('icoFound'); }
     else go('icoNotFound');
   });
   if(id==='availLoading') later(1200,()=>go(S.av.sel && S.av.sel.ok ? 'availSchedule' : 'availNone'));
@@ -1378,7 +1381,7 @@ const COMPANIES = {
 const REGISTERED = { '25596641': {ico:'25596641', name:'Řeznictví Dvořák s.r.o.'} };   // already a customer
 const MAX_DRAFTS = 5;                                                                 // limit can be changed later
 // parts of the flow state that belong to one registration (saved per draft)
-const REG_FIELDS = ['needPoa','match','ico','dic','email','phone','method','via','docs','docConsent','bank','bankAll','consent','file','idScreen','lastIco','completedUpTo','company'];
+const REG_FIELDS = ['needPoa','poaState','match','ico','dic','email','phone','method','via','docs','docConsent','bank','bankAll','consent','file','idScreen','lastIco','completedUpTo','company'];
 const STABLE = {icoLoading:'ico',icoNotFound:'ico',icoDup:'ico',bankLoading:'bank',bankSite:'bank',docLoading:'bank',poaLoading:'poa'};
 const cur = () => S.company || COMPANIES[VALID_ICO];
 const fmtDate = iso => { const [y,m,d]=iso.split('-'); return `${+d}. ${+m}. ${y}`; };
@@ -1407,7 +1410,7 @@ function loadDraft(id){
 }
 function resetRegistration(ico){
   S.av={q:'',sel:null,zoom:1,pin:null,restr:[],menu:false,pop:false};
-  Object.assign(S,{needPoa:false,match:null,icoFormat:'',touch:{},inviteErr:{},completedUpTo:0,lastIco:null,regId:null,company:null,dup:null,method:'bankid',via:'bankid',docs:{front:null,back:null,selfie:null},docErr:{},docConsent:false,docFail:false,idScreen:null,ico:ico,dic:'',email:'',phone:'',bank:null,bankAll:false,consent:false,file:null,poaFail:false,invites:[],showInvite:false,terms:false,authForm:false,authEmail:''});
+  Object.assign(S,{needPoa:false,poaState:'none',match:null,icoFormat:'',touch:{},inviteErr:{},completedUpTo:0,lastIco:null,regId:null,company:null,dup:null,method:'bankid',via:'bankid',docs:{front:null,back:null,selfie:null},docErr:{},docConsent:false,docFail:false,idScreen:null,ico:ico,dic:'',email:'',phone:'',bank:null,bankAll:false,consent:false,file:null,poaFail:false,invites:[],showInvite:false,terms:false,authForm:false,authEmail:''});
   applyFlow();
 }
 function newRegistration(origin){    // another company: a fresh registration from step 1 (signed-in users skip creating an account)
@@ -1433,7 +1436,7 @@ function seedDrafts(kind, v){           // prototype scenarios: what the user ha
     const idv={verified:true,via:'bankid'};
     all=[ mk('b1','03255654','icoFound',3,'2026-10-12',{email:'info@eremita.cz',phone:'777 123 456',match:matchPerson(COMPANIES['03255654'])},idv),         // verified, company found, matches the register
           mk('b2','','bank',2,'2026-10-18',{},{verified:false,via:null}),                                                                                        // account only, identity not verified yet
-          mk('b3','27082440','poa',4,'2026-10-20',{needPoa:true,email:'info@pekarna.cz',phone:'777 222 333',match:matchPerson(COMPANIES['27082440'])},idv),   // not in the register: power of attorney
+          mk('b3','27082440','icoFound',3,'2026-10-20',{needPoa:true,email:'info@pekarna.cz',phone:'777 222 333',match:matchPerson(COMPANIES['27082440'])},idv),   // not in the register: power of attorney still to upload
           mk('b4','05345456','summary',4,'2026-10-21',{email:'info@bistro.cz',phone:'777 444 555',match:matchPerson(COMPANIES['05345456'])},idv),
           mk('b5','','ico',3,'2026-10-22',{},idv) ];                                                                                                          // verified, company not entered
   } else {
@@ -1466,12 +1469,31 @@ const contactErr = () => ({
   phone: !S.phone.trim() ? 'Zadejte telefon firmy.' : !PHONE_RE.test(S.phone.trim()) ? 'Zadejte telefon ve tvaru 777 000 111.' : ''
 });
 const contactOk = () => { const e=contactErr(); return !e.email && !e.phone; };
+// flow B: the power of attorney is uploaded on the company step, only when the person is not in the register
+const canContinueCompany = () => contactOk() && (!(S.variant==='B' && S.needPoa) || S.poaState==='ok');
+const poaSection = () => {
+  if(!(S.variant==='B' && S.needPoa)) return '';
+  const st=S.poaState;
+  let body;
+  if(st==='checking') body=`<div class="file"><span class="fi">🖼</span><b style="font-weight:500">${esc(S.file.name)}</b></div>${loadingBox(110)}`;
+  else if(st==='ok') body=`${alertBox('ok','Plnou moc jsme zkontrolovali. Jste oprávněni jednat za tuto firmu.','margin:0 0 12px')}
+      <div class="file"><span class="fi">🖼</span><b style="font-weight:500">${esc(S.file.name)}</b><span class="sz">${fmtSize(S.file.size)}</span><button type="button" class="link small" data-poa-remove aria-label="Odebrat plnou moc">Odebrat</button></div>`;
+  else if(S.file) body=`<div class="file"><span class="fi">🖼</span><b style="font-weight:500">${esc(S.file.name)}</b> · <a href="#" data-preview>Náhled</a><span class="sz">${fmtSize(S.file.size)}</span><button type="button" class="link small" data-poa-remove aria-label="Odebrat plnou moc">Odebrat</button></div>
+      <div style="margin-top:12px"><button class="btn soft sm" id="poaGo">Zkontrolovat plnou moc</button></div>`;
+  else body=`<div class="drop" id="drop"><span class="up">⇪</span><div class="t"><b>Vyberte nebo přetáhněte soubor</b><small>JPG, PNG nebo PDF, velikost do 10 MB</small></div>
+      <button class="btn soft sm" id="pick">Vybrat soubor</button><input type="file" id="fileIn" accept=".jpg,.jpeg,.png,.pdf" hidden></div>
+      <div id="fileErr" class="slot-err" role="alert" style="margin-top:6px"></div>`;
+  return `<h3 style="margin-top:32px">Plná moc</h3>
+    <p class="hint" style="margin:4px 0 12px">Nahrajte plnou moc, která vás opravňuje jednat za vaši firmu. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></p>
+    ${S.poaFail?alertBox('warn','Plnou moc se nám nepodařilo přečíst. Nahrajte ji znovu, nebo nám zavolejte na +420 271 005 005.','margin:0 0 12px'):''}
+    <div class="poa-box">${body}</div>`;
+};
 // flow B: result of comparing the verified person with the people listed in the register
 const matchBlock = () => {
   const m=S.match; if(!m) return '';
   const msg = m.ok ? 'V obchodním rejstříku jste uvedeni jako osoba oprávněná jednat za firmu. Plnou moc nepotřebujete.'
-    : m.reason==='dob' ? 'V rejstříku jsme našli osobu se stejným jménem, ale s jiným datem narození, proto vás nemůžeme spárovat. K dokončení registrace budete potřebovat plnou moc.'
-    : 'Mezi osobami oprávněnými jednat za firmu v obchodním rejstříku jsme vás nenašli. K dokončení registrace budete potřebovat plnou moc.';
+    : m.reason==='dob' ? 'V rejstříku jsme našli osobu se stejným jménem, ale s jiným datem narození, proto vás nemůžeme spárovat. K dokončení registrace potřebujeme plnou moc, nahrajte ji níže.'
+    : 'Mezi osobami oprávněnými jednat za firmu v obchodním rejstříku jsme vás nenašli. K dokončení registrace potřebujeme plnou moc, nahrajte ji níže.';
   return alertBox(m.ok?'ok':'warn',msg,'margin-top:16px')
     + `<p class="hint" style="margin:8px 0 0">Za firmu podle rejstříku jednají: ${m.people.map(p=>`${esc(p.name)} (${esc(p.role)})${p.ok?' ✓':''}`).join(', ')}.</p>`;
 };
@@ -1803,7 +1825,7 @@ const VIEWS = {
             <div class="field small-w"><input id="dic" data-bind="dic" value="${esc(S.dic)}"></div></div>
           <button class="btn soft sm" style="margin-top:20px" data-go="ico">Zadat jiné IČO</button>
         </div></div>
-        ${S.variant==='B'?matchBlock():''}
+        ${S.variant==='B'?matchBlock()+poaSection():''}
         <h3 style="margin-top:32px">Kontaktní údaje firmy</h3>
         <div class="stack">
           <label class="lbl" for="email" style="margin-top:16px">E-mail</label>
@@ -1816,7 +1838,7 @@ const VIEWS = {
           <div class="slot-err" id="phoneErr" role="alert" style="margin:4px 0 0">${S.touch.phone?contactErr().phone:''}</div>
         </div>
         <div class="actions">${S.variant==='B'
-          ? `<button class="btn" id="icoNext" data-go="${S.needPoa?'poa':'summary'}" ${contactOk()?'':'disabled'}>${S.needPoa?'Pokračovat a nahrát plnou moc':'Pokračovat na dokončení registrace'}</button>`
+          ? `<button class="btn" id="icoNext" data-go="summary" ${canContinueCompany()?'':'disabled'}>Pokračovat na dokončení registrace</button>`
           : `<button class="btn" id="icoNext" data-go="bank" ${contactOk()?'':'disabled'}>Pokračovat na ověření totožnosti</button>`}${later_btn}</div>
       </main>
     </div>`,
@@ -2036,7 +2058,7 @@ function wire(){
   app.querySelectorAll('[data-bind]').forEach(el=>el.addEventListener('input',()=>{
     S[el.dataset.bind]=el.value;
     const nx=$('#icoNext'); if(nx){                      // contact details are required: live check, errors after the first blur
-      const e=contactErr(); nx.disabled=!!(e.email||e.phone);
+      const e=contactErr(); nx.disabled=!canContinueCompany();
       ['email','phone'].forEach(k=>{ if(S.touch[k]){ $('#'+k+'Err').textContent=e[k]; $('#'+k).closest('.field').classList.toggle('err',!!e[k]); } });
     }
   }));
@@ -2113,7 +2135,19 @@ function wire(){
     drop.addEventListener('drop',e=>setFile(e.dataTransfer.files[0]));
   }
   const pg = $('#poaGo');
-  if(pg) pg.addEventListener('click',()=>{ S.completedUpTo=Math.min(S.completedUpTo,stepNo('poa')-1); S.poaFail=false; go('poaLoading'); });
+  if(pg) pg.addEventListener('click',()=>{
+    S.completedUpTo=Math.min(S.completedUpTo,stepNo('poa')-1); S.poaFail=false;
+    if(S.variant==='B'){                                  // flow B checks the power of attorney on the company step
+      S.poaState='checking'; render();
+      later(1800,()=>{
+        if($('#sc-poa').value==='fail'){ S.file=null; S.poaFail=true; S.poaState='none'; } else S.poaState='ok';
+        render();
+      });
+      return;
+    }
+    go('poaLoading');
+  });
+  app.querySelectorAll('[data-poa-remove]').forEach(b=>b.addEventListener('click',()=>{ S.file=null; S.poaState='none'; S.poaFail=false; S.completedUpTo=Math.min(S.completedUpTo,stepNo('company')-1); render(); }));
 
   // summary
   const au = $('#addUser');
@@ -2319,7 +2353,7 @@ function setFile(f){
   if(!f) return;
   const ok = /\.(jpe?g|png|pdf)$/i.test(f.name) && f.size <= 10*1048576;
   if(!ok){ const e=$('#fileErr'); if(e) e.textContent='Nahrajte prosím soubor JPG, PNG nebo PDF do velikosti 10 MB.'; return; }
-  S.file = {name:f.name,size:f.size}; S.poaFail=false; render();
+  S.file = {name:f.name,size:f.size}; S.poaFail=false; S.poaState='none'; render();
 }
 
 matchMedia('(max-width:768px)').addEventListener('change',()=>render());
