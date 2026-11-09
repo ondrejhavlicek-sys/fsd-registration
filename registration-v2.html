@@ -121,6 +121,22 @@
   .ico-row .field{width:248px}
   .clear{background:none;border:0;font-size:16px;color:var(--ink-strong)}
   .stack{max-width:600px}
+  .rm-h{font-size:14px;margin:28px 0 0}
+  .roadmap{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0 24px;padding:0}
+  .roadmap li{background:#f5f5f5;border-top:4px solid #d5d8dd;padding:14px;display:flex;flex-direction:column;gap:4px}
+  .roadmap li.cur{background:#f3f5fe;border-top-color:var(--blue)}
+  .roadmap .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#fff;border:1.5px solid var(--line);font-weight:600;font-size:13px;color:var(--muted)}
+  .roadmap li.cur .n{background:var(--blue);border-color:var(--blue);color:#fff}
+  .roadmap b{color:var(--ink-strong);margin-top:6px}
+  .roadmap small{color:var(--muted);font-size:13px}
+  .roadmap p{margin:6px 0 0;font-size:14px;line-height:20px}
+  .assure{list-style:none;margin:0 0 28px;padding:0;display:grid;gap:10px}
+  .assure li{display:flex;gap:10px;align-items:flex-start}
+  .assure li::before{content:"✓";flex:none;width:22px;height:22px;border-radius:50%;background:#e3f4ea;color:#0a6b3a;display:grid;place-items:center;font-size:13px;font-weight:700;margin-top:1px}
+  .callrep{margin-top:48px;padding:20px 24px;background:#f5f5f5;border-left:4px solid var(--yellow)}
+  .callrep p{margin:6px 0 0}
+  .callrep .phone{margin-top:12px}
+  .callrep small{display:block;margin-top:4px;color:var(--muted);font-size:13px}
   .phone-row{display:flex;gap:10px;align-items:flex-end;margin-top:20px}
   .prefix{width:100px}
   .prefix .field{justify-content:space-between;padding:0 10px}
@@ -366,6 +382,8 @@
     .iconbtn.back svg{width:22px;height:22px}
     .field{height:48px}
     .stack{max-width:none}
+    .roadmap{grid-template-columns:1fr}
+    .callrep{margin-top:36px}
     .prefix{width:119px}
     .dic-row{grid-template-columns:1fr;gap:6px}
     .field.small-w{width:100%}
@@ -480,6 +498,8 @@
   html[data-type="makro"] .lbl,html[data-type="makro"] label,html[data-type="makro"] dt,html[data-type="makro"] dd,html[data-type="makro"] .info,html[data-type="makro"] .chk,html[data-type="makro"] .dic-row{font-size:16px}
   html[data-type="makro"] dd,html[data-type="makro"] .lbl{font-weight:700}
   html[data-type="makro"] .info{--tag:30px}
+  html[data-type="makro"] .roadmap p,html[data-type="makro"] .roadmap small,html[data-type="makro"] .callrep small,html[data-type="makro"] .rm-h{font-size:16px;line-height:24px}
+  html[data-type="makro"] .roadmap{grid-template-columns:repeat(2,1fr)}
   html[data-type="makro"] .info .tag svg{width:18px;height:18px}
   html[data-type="makro"] .alert{font-size:16px;line-height:24px}
   html[data-type="makro"] .alert svg{width:24px;height:24px}
@@ -1032,8 +1052,9 @@ const SCREENS = {
   hub:         { step:0, label:'L2 – Vaše registrace (rozpracované)' },
   reminder:    { step:0, label:'(e-mail s připomínkou)', bare:true },
   icoDup:      { step:3, label:'3.x – Firma už existuje', back:'ico' },
-  auth:        { step:1, label:'1.1 – Registrace (modal)', bare:true },
-  account:     { step:1, label:'1.2 – Účet vytvořen' },
+  intro:       { step:1, label:'1.1 – Úvod k účtu' },
+  auth:        { step:1, label:'1.2 – Registrace (modal)', bare:true },
+  account:     { step:1, label:'1.3 – Účet vytvořen' },
   ico:         { step:3, label:'3.1 – Zadejte IČO', back:'account' },
   icoLoading:  { step:3, label:'3.2 – Načítání z rejstříku', back:'ico' },
   icoFound:    { step:3, label:'3.3 A – IČO nalezeno', back:'ico' },
@@ -1167,8 +1188,8 @@ function leaveTo(target){   // ask first when a profile form has unsaved changes
   if(target==='@signout') doSignOut(); else go(target);
 }
 function openExit(kind, extra){
-  // nothing is saved until the user account exists: the account-creation modal
-  exitKind = kind || (S.screen==='auth' ? 'confirm' : 'saved');
+  // nothing is saved until the user account exists: the intro and the account-creation modal
+  exitKind = kind || ((S.screen==='auth'||S.screen==='intro') ? 'confirm' : 'saved');
   const c = Object.assign({}, EXIT_COPY[exitKind], extra||{});
   $('#exitTitle').textContent=c.title; $('#exitText').textContent=c.text;
   $('#exitContinue').textContent=c.stay; $('#exitRestart').textContent=c.leave;
@@ -1389,7 +1410,7 @@ const draftName = d => d.snap.company ? d.snap.company.name : 'Firma zatím neza
 function saveDraft(){   // called when the user leaves after the user account exists
   const screen = STABLE[S.screen] || S.screen;
   const step = (SCREENS[screen]||{}).step || 0;
-  if(step<1 || screen==='auth' || screen==='done') return;
+  if(step<1 || screen==='intro' || screen==='auth' || screen==='done') return;
   const snap={}; REG_FIELDS.forEach(k=>{ snap[k]=S[k]; });
   snap.identity=Object.assign({},S.identity);
   const d={id:S.regId||('r'+Date.now()), variant:S.variant, screen, saved:todayIso(), snap};
@@ -1419,12 +1440,12 @@ function newRegistration(origin){    // another company: a fresh registration fr
     else { S.completedUpTo=1; go('bank'); }
     return;
   }
-  go('auth');
+  go('intro');
 }
 const exitTarget = () => S.origin==='hub' ? 'hub' : 'landing';   // leave to where the registration was started from
 function startFromPublic(){          // "Registrovat se" on public pages
   if(S.acct && S.drafts.length>=MAX_DRAFTS){ S.hubNotice='limit'; go('hub'); return; }
-  if(S.acct) newRegistration('public'); else { S.origin='public'; go('auth'); }
+  if(S.acct) newRegistration('public'); else { S.origin='public'; go('intro'); }
 }
 function seedDrafts(kind, v){           // prototype scenarios: what the user has saved
   v=v||S.variant;
@@ -1752,6 +1773,33 @@ const VIEWS = {
         <div class="av-actions"><button class="btn" id="avTryAgain">Zkusit jinou adresu</button><button class="link" data-go="landing">Zpět na úvod</button></div>
       </div>`),
 
+  intro: () => `${header(false)}
+    <div class="page">${sidebar('intro')}
+      <main>
+        ${topbar('intro',false)}
+        <h1>Začněte vytvořením přihlašovacího účtu</h1>
+        <p class="sub">Účet je váš osobní přístup do služby <b>makro distribuce</b>. S ním pak zaregistrujete firmu a budete objednávat. Registrace je zdarma.</p>
+        <h3 class="rm-h">Jak registrace probíhá</h3>
+        <ol class="roadmap">
+          <li class="cur"><span class="n">1</span><b>Přihlašovací účet</b><small>asi 1 minuta</small><p>Zadáte e-mail a vytvoříte si přístup.</p></li>
+          <li><span class="n">2</span><b>Ověření totožnosti</b><small>asi 2 minuty</small><p>Přes Bank iD, nebo osobní doklad a fotografii.</p></li>
+          <li><span class="n">3</span><b>Registrace firmy</b><small>asi 4 minuty</small><p>Zadáte IČO, údaje o firmě doplníme sami.</p></li>
+          <li><span class="n">4</span><b>Shrnutí</b><small>asi 3 minuty</small><p>Doplníte kontakt a potvrdíte podmínky.</p></li>
+        </ol>
+        <ul class="assure">
+          <li>Postup se průběžně ukládá. Registraci můžete přerušit a vrátit se později.</li>
+          <li>Údaje o firmě doplníme z obchodního rejstříku, nemusíte je opisovat.</li>
+          <li>Kdykoli vám pomůžeme: stačí zavolat.</li>
+        </ul>
+        <button class="btn cta-intro" data-go="auth" style="padding:14px 8px">Vytvořit přihlašovací účet</button>
+        <p class="resume-hint" ${S.acct?'hidden':''}>Máte účet nebo rozpracovanou registraci? <button type="button" class="link" data-go="login">Přihlásit se</button></p>
+        <div class="callrep"><b>Chcete registraci raději vyřídit osobně?</b>
+          <p>Zavolejte nám a domluvíme schůzku s obchodním zástupcem. Pomůže vám s celou registrací.</p>
+          <div class="phone">${INTRO_ICON.phone}<span>+420 271 005 005</span></div>
+          <small>Po–Pá 7–19 h, Ne 12–19 h</small></div>
+      </main>
+    </div>`,
+
   auth: () => {
     const content = `
       <button class="x" data-go="later" aria-label="Zavřít">✕</button>
@@ -1772,9 +1820,9 @@ const VIEWS = {
         <button class="btn-wide" data-auth-mail>Registrovat se e-mailem</button>`}
       <div class="have">Máte účet v makro? <a href="#" data-auth-login><b>Přihlásit se</b></a></div>
 `;
-    // desktop: centred modal on a blank page; mobile: bottom sheet over the landing page
+    // desktop: centred modal on a blank page; mobile: bottom sheet over the intro screen
     return isMobile()
-      ? `${VIEWS.landing()}<div class="sheet-ov"><div class="sheet modal" role="dialog" aria-modal="true" aria-label="Registrace">${content}</div></div>`
+      ? `${VIEWS.intro()}<div class="sheet-ov"><div class="sheet modal" role="dialog" aria-modal="true" aria-label="Registrace">${content}</div></div>`
       : `<div class="modal-wrap"><div class="modal">${content}</div></div>`;
   },
 
@@ -1970,7 +2018,7 @@ function wire(){
     const t = el.dataset.go;
     if(t==='later') return openExit();
     if(isDirty() && t!==S.screen) return leaveTo(t);   // unsaved profile form
-    if(t==='start') return inRegistration() ? go('auth') : startFromPublic();   // public "Registrovat se": new registration, limit applies
+    if(t==='start') return inRegistration() ? go('intro') : startFromPublic();   // public "Registrovat se": new registration, limit applies
     if(t==='auth' && S.acct) return go('account');   // already has an account: step 2 is just confirmed
     if(t==='ico' && S.screen==='icoFound') S.completedUpTo=Math.min(S.completedUpTo,stepNo('company')-1); // "Zadat jiné IČO"
     if(t==='auth') S.authForm=false;
