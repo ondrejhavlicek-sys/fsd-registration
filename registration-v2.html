@@ -215,7 +215,7 @@
   .lp-why{padding:72px 0 0}
   .lp-why h2{margin:0 0 40px;text-align:center;font-size:32px;font-weight:700;color:#002d72}
   .lp-why h2::after{content:"";display:block;width:56px;height:5px;background:var(--yellow);margin:16px auto 0}
-  .lp-need{padding-top:72px}
+  .lp-need{padding:72px 0 96px}
   .lp-need-sub{max-width:640px;margin:-16px auto 36px;text-align:center;font-size:16px;line-height:24px}
   .lp-needs{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
   .lp-needs article{background:#f3f5fe;padding:28px 24px;display:flex;flex-direction:column;gap:10px}
@@ -432,7 +432,7 @@
     .lp-pill{width:100%}
     .lp-stats{gap:12px;padding-top:24px}
     .lp-why{padding-top:48px}
-    .lp-need{padding-top:48px}
+    .lp-need{padding:48px 0 56px}
     .lp-need-sub{margin-top:-8px}
     .lp-need-cta .lp-pill{width:100%;text-align:center}
     .lp-why h2{font-size:26px;margin-bottom:28px}
@@ -1010,7 +1010,6 @@ const VALID_ICO = '03255654';
 const PERSON = { name: 'Jan Novák', born: '5. 1. 1988', bornIso: '1988-01-05', email: 'jan.novak@eremita.cz' };
 
 const STEPS = [
-  ['Úvod','Co je potřeba k registraci','intro'],
   ['Přihlašovací účet','Účet pro přihlášení do služby','account'],
   ['Registrace firmy','IČO a fakturační údaje','company'],
   ['Ověření totožnosti','Oprávnění jednat za firmu','identity'],
@@ -1033,9 +1032,8 @@ const SCREENS = {
   hub:         { step:0, label:'L2 – Vaše registrace (rozpracované)' },
   reminder:    { step:0, label:'(e-mail s připomínkou)', bare:true },
   icoDup:      { step:3, label:'3.x – Firma už existuje', back:'ico' },
-  intro:       { step:1, label:'1 – Úvod' },
-  auth:        { step:2, label:'2 – Registrace (modal)', bare:true, back:'intro' },
-  account:     { step:2, label:'2.2 – Účet vytvořen', back:'intro' },
+  auth:        { step:1, label:'1.1 – Registrace (modal)', bare:true },
+  account:     { step:1, label:'1.2 – Účet vytvořen' },
   ico:         { step:3, label:'3.1 – Zadejte IČO', back:'account' },
   icoLoading:  { step:3, label:'3.2 – Načítání z rejstříku', back:'ico' },
   icoFound:    { step:3, label:'3.3 A – IČO nalezeno', back:'ico' },
@@ -1051,21 +1049,21 @@ const SCREENS = {
 // ---- flow definition: identity first, then the company (v2 has one flow) ----
 const SCREENS_A = JSON.parse(JSON.stringify(SCREENS));
 function flowDef(v, poa){
-  const steps=[['Úvod','Co je potřeba k registraci','intro'],['Přihlašovací účet','Účet pro přihlášení do služby','account'],
+  const steps=[['Přihlašovací účet','Účet pro přihlášení do služby','account'],
     ['Ověření totožnosti','Ověření osoby, než zaregistrujete firmu','identity'],['Registrace firmy','IČO a fakturační údaje','company']];
   steps.push(['Shrnutí','Dokončení a souhlas s podmínkami','finish']);
   const last=steps.length;
   return {steps, screens:{
-    icoDup:      {step:4, label:'4.x – Firma už existuje', back:'ico'},
-    bank:        {step:3, label:'3.0/3.1 – Výběr ověření', back:'account'},
-    bankSite:    {step:3, label:'3.1b – Web banky (Bank iD)', back:'bank'},
-    docLoading:  {step:3, back:'bank'},
-    bankLoading: {step:3, back:'bank'},
-    idOk:        {step:3, label:'3.2 – Totožnost ověřena', back:'bank'},
-    ico:         {step:4, label:'4.1 – Zadejte IČO', back:'idOk'},
-    icoLoading:  {step:4, label:'4.2 – Načítání z rejstříku', back:'ico'},
-    icoFound:    {step:4, label:'4.3 A – IČO nalezeno', back:'ico'},
-    icoNotFound: {step:4, label:'4.3 B – IČO nenalezeno', back:'ico'},
+    icoDup:      {step:3, label:'3.x – Firma už existuje', back:'ico'},
+    bank:        {step:2, label:'2.0/2.1 – Výběr ověření', back:'account'},
+    bankSite:    {step:2, label:'2.1b – Web banky (Bank iD)', back:'bank'},
+    docLoading:  {step:2, back:'bank'},
+    bankLoading: {step:2, back:'bank'},
+    idOk:        {step:2, label:'2.2 – Totožnost ověřena', back:'bank'},
+    ico:         {step:3, label:'3.1 – Zadejte IČO', back:'idOk'},
+    icoLoading:  {step:3, label:'3.2 – Načítání z rejstříku', back:'ico'},
+    icoFound:    {step:3, label:'3.3 A – IČO nalezeno', back:'ico'},
+    icoNotFound: {step:3, label:'3.3 B – IČO nenalezeno', back:'ico'},
     summary:     {step:last, label:last+'.1 – Shrnutí', back:'icoFound'},
     done:        {step:last}
   }};
@@ -1169,8 +1167,8 @@ function leaveTo(target){   // ask first when a profile form has unsaved changes
   if(target==='@signout') doSignOut(); else go(target);
 }
 function openExit(kind, extra){
-  // nothing is saved until the user account exists: step 1 and the account-creation modal
-  exitKind = kind || ((SCREENS[S.screen].step <= 1 || S.screen==='auth') ? 'confirm' : 'saved');
+  // nothing is saved until the user account exists: the account-creation modal
+  exitKind = kind || (S.screen==='auth' ? 'confirm' : 'saved');
   const c = Object.assign({}, EXIT_COPY[exitKind], extra||{});
   $('#exitTitle').textContent=c.title; $('#exitText').textContent=c.text;
   $('#exitContinue').textContent=c.stay; $('#exitRestart').textContent=c.leave;
@@ -1249,7 +1247,7 @@ const header = (loggedIn, regTarget='auth') => `
 
 // where a completed step in the sidebar leads back to
 const isMobile = () => matchMedia('(max-width:768px)').matches;
-const STEP_TARGET = n => ({intro:'intro', account:'account', company:'icoFound', identity:'idOk', finish:'summary'})[(STEPS[n-1]||[])[2]];
+const STEP_TARGET = n => ({account:'account', company:'icoFound', identity:'idOk', finish:'summary'})[(STEPS[n-1]||[])[2]];
 const sidebar = (cur, done) => { if(typeof cur==='string') cur=(SCREENS[cur]||{}).step; return `
   <nav class="steps" aria-label="Kroky registrace">${STEPS.map((s,i)=>{
     // completed steps (in any direction) are navigable; the current one is highlighted, later ones stay inert
@@ -1391,7 +1389,7 @@ const draftName = d => d.snap.company ? d.snap.company.name : 'Firma zatím neza
 function saveDraft(){   // called when the user leaves after the user account exists
   const screen = STABLE[S.screen] || S.screen;
   const step = (SCREENS[screen]||{}).step || 0;
-  if(step<2 || screen==='done') return;
+  if(step<1 || screen==='auth' || screen==='done') return;
   const snap={}; REG_FIELDS.forEach(k=>{ snap[k]=S[k]; });
   snap.identity=Object.assign({},S.identity);
   const d={id:S.regId||('r'+Date.now()), variant:S.variant, screen, saved:todayIso(), snap};
@@ -1417,16 +1415,16 @@ function newRegistration(origin){    // another company: a fresh registration fr
   const email=S.authEmail;
   resetRegistration(''); S.authEmail=email; S.origin=origin||'hub';
   if(S.acct){          // identity belongs to the person: a verified person goes straight to the company step
-    if(S.identity.verified){ S.via=S.identity.via||S.via; S.completedUpTo=3; go('ico'); }
-    else { S.completedUpTo=2; go('bank'); }
+    if(S.identity.verified){ S.via=S.identity.via||S.via; S.completedUpTo=2; go('ico'); }
+    else { S.completedUpTo=1; go('bank'); }
     return;
   }
-  go('intro');
+  go('auth');
 }
 const exitTarget = () => S.origin==='hub' ? 'hub' : 'landing';   // leave to where the registration was started from
 function startFromPublic(){          // "Registrovat se" on public pages
   if(S.acct && S.drafts.length>=MAX_DRAFTS){ S.hubNotice='limit'; go('hub'); return; }
-  if(S.acct) newRegistration('public'); else { S.origin='public'; go('intro'); }
+  if(S.acct) newRegistration('public'); else { S.origin='public'; go('auth'); }
 }
 function seedDrafts(kind, v){           // prototype scenarios: what the user has saved
   v=v||S.variant;
@@ -1434,11 +1432,11 @@ function seedDrafts(kind, v){           // prototype scenarios: what the user ha
   let all;
   {
     const idv={verified:true,via:'bankid'};
-    all=[ mk('b1','03255654','icoFound',3,'2026-10-12',{email:'info@eremita.cz',phone:'777 123 456',match:matchPerson(COMPANIES['03255654'])},idv),         // verified, company found, matches the register
-          mk('b2','','bank',2,'2026-10-18',{},{verified:false,via:null}),                                                                                        // account only, identity not verified yet
-          mk('b3','27082440','icoFound',3,'2026-10-20',{needPoa:true,email:'info@pekarna.cz',phone:'777 222 333',match:matchPerson(COMPANIES['27082440'])},idv),   // not in the register: power of attorney still to upload
-          mk('b4','05345456','summary',4,'2026-10-21',{email:'info@bistro.cz',phone:'777 444 555',match:matchPerson(COMPANIES['05345456'])},idv),
-          mk('b5','','ico',3,'2026-10-22',{},idv) ];                                                                                                          // verified, company not entered
+    all=[ mk('b1','03255654','icoFound',2,'2026-10-12',{email:'info@eremita.cz',phone:'777 123 456',match:matchPerson(COMPANIES['03255654'])},idv),         // verified, company found, matches the register
+          mk('b2','','bank',1,'2026-10-18',{},{verified:false,via:null}),                                                                                        // account only, identity not verified yet
+          mk('b3','27082440','icoFound',2,'2026-10-20',{needPoa:true,email:'info@pekarna.cz',phone:'777 222 333',match:matchPerson(COMPANIES['27082440'])},idv),   // not in the register: power of attorney still to upload
+          mk('b4','05345456','summary',3,'2026-10-21',{email:'info@bistro.cz',phone:'777 444 555',match:matchPerson(COMPANIES['05345456'])},idv),
+          mk('b5','','ico',2,'2026-10-22',{},idv) ];                                                                                                          // verified, company not entered
   }
   S.draftSets[v] = kind==='none' ? [] : all.slice(0,{one:1,two:2,five:5}[kind]);
 }
@@ -1507,7 +1505,7 @@ const later_btn = `<button class="link" data-go="later">Dokončit registraci poz
 /* ---------- screens ---------- */
 // shared page for the availability flow: site header, back link, title, content, site footer
 const addrCard = () => `<div class="av-card"><div class="bx">${AV_ICON.locicon}</div><div class="addr">${esc(S.av.sel?avText(S.av.sel):'')}</div><button type="button" class="chg" data-av-change>${AV_ICON.edit}Změnit adresu</button></div>`;
-const avShell = content => `${header(false,'intro')}
+const avShell = content => `${header(false,'start')}
   <div class="av"><div class="av-col">
     <button type="button" class="av-back" data-go="landing">${AV_ICON.chev}Zpět na úvod</button>
     <h1>Ověřit dostupnost doručení</h1>
@@ -1529,7 +1527,7 @@ const acctShell = (id,title,content) => `${header(true)}
   </div></div>`;
 
 const VIEWS = {
-  landing: () => `${header(false,'intro')}
+  landing: () => `${header(false,'start')}
     <div class="lp">
       <div class="lp-wrap">
         <section class="lp-hero" style="--tile:url(${LP['hero-bg.png']})">
@@ -1537,7 +1535,7 @@ const VIEWS = {
           <p class="lp-eyebrow">makro distribuce</p>
           <h1>Míň starostí. <span>Víc času na podnikání.</span></h1>
           <p class="lead">Makro distribuce doručí zboží přímo k vám – po celé ČR. Nově i stávajícím zákazníkům makro. Vy rostete, my zásobujeme.</p>
-          <div class="row"><button class="lp-pill primary" data-go="intro">Registrovat se</button><button class="lp-pill ghost" data-go="avail">Ověřit dostupnost doručení</button></div>
+          <div class="row"><button class="lp-pill primary" data-go="start">Registrovat se</button><button class="lp-pill ghost" data-go="avail">Ověřit dostupnost doručení</button></div>
         </section>
         <section class="lp-stats">
           <div class="lp-stat" style="--accent:#005ae0;background:#f2f4f8"><b style="color:#005ae0">95 %</b><span>garantovaná dostupnost produktů</span></div>
@@ -1561,11 +1559,7 @@ const VIEWS = {
             <article><span class="ic">${INTRO_ICON.company}</span><h3>IČO vaší firmy</h3><p>Název a sídlo firmy doplníme sami z obchodního rejstříku.</p></article>
             <article><span class="ic">${INTRO_ICON.authority}</span><h3>Oprávnění jednat za firmu</h3><p>Stačí, když jste v obchodním rejstříku zapsáni jako osoba oprávněná jednat za firmu. Jinak budete potřebovat plnou moc. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></p></article>
           </div>
-          <div class="lp-need-cta"><button class="lp-pill primary" data-go="intro">Začít registraci</button></div>
-        </section>
-        <section class="lp-cta">
-          <div><h2>Staňte se zákazníkem ještě dnes</h2><p>Jediným požadavkem je minimální hodnota objednávky.</p></div>
-          <button class="lp-pill primary" data-go="intro">Registrovat se</button>
+          <div class="lp-need-cta"><button class="lp-pill primary" data-go="start">Registrovat se</button></div>
         </section>
       </div>
       ${lpFooter()}
@@ -1747,7 +1741,7 @@ const VIEWS = {
         <div class="slots">${AV_DAYS.map((d,i)=>`<div class="slot-row ${w[i]?'':'off'}"><span>${d}</span><span>${w[i]?fmtMin(w[i][0])+'–'+fmtMin(w[i][1]):'Doručení nedostupné'}</span></div>`).join('')}</div>
         ${none?'':`<p class="hint" style="margin:12px 0 0">Podle zvolených omezení jsme upravili dny a časy doručení.</p>`}
       </div>
-      <div class="av-in"><div><button class="btn" data-go="intro">Přejít na registraci</button></div></div>`);
+      <div class="av-in"><div><button class="btn" data-go="start">Přejít na registraci</button></div></div>`);
   },
 
   availNone: () => avShell(`
@@ -1757,26 +1751,6 @@ const VIEWS = {
         <p class="av-intro">Zavolejte nám na +420 271 005 005 (Po–Pá 7–19 h, Ne 12–19 h), domluvíme se, jak vám zboží doručit jinak. Nebo zkuste jinou adresu.</p>
         <div class="av-actions"><button class="btn" id="avTryAgain">Zkusit jinou adresu</button><button class="link" data-go="landing">Zpět na úvod</button></div>
       </div>`),
-
-  intro: () => `${header(false)}
-    <div class="page">${sidebar('intro')}
-      <main>
-        ${topbar('intro',false)}
-        <h1>Vítejte v registraci</h1>
-        <p class="sub">do služby <b>makro distribuce</b> – vytvoření firemního účtu je zdarma. Registrace trvá asi 10 minut. Postup se průběžně ukládá, takže ji můžete přerušit a vrátit se později.</p>
-        <h3 style="font-size:14px">Co budete pro registraci potřebovat</h3>
-        <div class="info"><span class="tag">${INTRO_ICON.bank}</span><div class="ib">Ověření vaší totožnosti pomocí Bank iD (stačí přihlášení do bankovnictví), nebo osobního dokladu a fotografie</div></div>
-             <div class="info"><span class="tag">${INTRO_ICON.company}</span><div class="ib">IČO vaší firmy</div></div>
-        <div class="info"><span class="tag">${INTRO_ICON.authority}</span><div class="ib">Oprávnění jednat za vaši firmu
-          <ul><li>v obchodním rejstříku jste zapsáni jako osoba oprávněná jednat za firmu, nebo</li>
-          <li>máte plnou moc, kterou při registraci nahrajete. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></li></ul></div></div>
-        <p style="margin:16px 0 20px">Nejdřív si vytvoříte přihlašovací účet. S ním se pak budete přihlašovat do služby <b>makro distribuce</b>.</p>
-        <button class="btn cta-intro" data-go="auth" style="padding:14px 8px">Začít registraci</button>
-        <p class="resume-hint" ${S.acct?'hidden':''}>Máte rozpracovanou registraci? <button type="button" class="link" data-go="login">Přihlásit se</button></p>
-        <p style="margin:56px 0 0">Chcete registraci raději vyřídit osobně? Zavolejte nám a domluvíme schůzku s obchodním zástupcem.</p>
-        <div class="phone">${INTRO_ICON.phone}<span>+420 271 005 005</span></div>
-      </main>
-    </div>`,
 
   auth: () => {
     const content = `
@@ -1798,9 +1772,9 @@ const VIEWS = {
         <button class="btn-wide" data-auth-mail>Registrovat se e-mailem</button>`}
       <div class="have">Máte účet v makro? <a href="#" data-auth-login><b>Přihlásit se</b></a></div>
 `;
-    // desktop: centred modal on a blank page; mobile: bottom sheet over the intro screen
+    // desktop: centred modal on a blank page; mobile: bottom sheet over the landing page
     return isMobile()
-      ? `${VIEWS.intro()}<div class="sheet-ov"><div class="sheet modal" role="dialog" aria-modal="true" aria-label="Registrace">${content}</div></div>`
+      ? `${VIEWS.landing()}<div class="sheet-ov"><div class="sheet modal" role="dialog" aria-modal="true" aria-label="Registrace">${content}</div></div>`
       : `<div class="modal-wrap"><div class="modal">${content}</div></div>`;
   },
 
@@ -1996,7 +1970,7 @@ function wire(){
     const t = el.dataset.go;
     if(t==='later') return openExit();
     if(isDirty() && t!==S.screen) return leaveTo(t);   // unsaved profile form
-    if(t==='intro' && !inRegistration()) return startFromPublic();   // public "Registrovat se": new registration, limit applies
+    if(t==='start') return inRegistration() ? go('auth') : startFromPublic();   // public "Registrovat se": new registration, limit applies
     if(t==='auth' && S.acct) return go('account');   // already has an account: step 2 is just confirmed
     if(t==='ico' && S.screen==='icoFound') S.completedUpTo=Math.min(S.completedUpTo,stepNo('company')-1); // "Zadat jiné IČO"
     if(t==='auth') S.authForm=false;
@@ -2009,7 +1983,7 @@ function wire(){
   app.querySelectorAll('[data-step-go]').forEach(el=>el.addEventListener('click',()=>go(el.dataset.stepGo)));
   app.querySelectorAll('[data-back]').forEach(el=>el.addEventListener('click',()=>{
     if(SCREENS[S.screen].step<=1) return openExit(); // step 1: back = exit flow
-    let b = SCREENS[S.screen].back || 'intro';
+    let b = SCREENS[S.screen].back || 'account';
     if(b==='ico'){ S.icoErr=false; }
     go(b);
   }));
@@ -2345,7 +2319,7 @@ $('#sc-type').addEventListener('change',e=>applyType(e.target.value));
   const sel=$('#sc-drafts');
   const seed=k=>{ sel.value=k; seedDrafts(k); };
   const ACT={
-    leave:()=>{ S.acct='created'; S.company=COMPANIES['03255654']; S.origin='public'; S.completedUpTo=Math.max(S.completedUpTo,2); go('bank'); toast('Click ✕ or the logo to see the leave dialog.'); },
+    leave:()=>{ S.acct='created'; S.company=COMPANIES['03255654']; S.origin='public'; S.completedUpTo=Math.max(S.completedUpTo,1); go('bank'); toast('Click ✕ or the logo to see the leave dialog.'); },
     come:()=>go('reminder'),
     hub:()=>{ S.acct='existing'; if(!S.drafts.length) seed('two'); go('hub'); },
     resume:()=>{ S.acct='existing'; if(!S.drafts.length) seed('two'); go('hub'); toast('Press "Pokračovat v registraci" on a card.'); },
