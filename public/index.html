@@ -500,7 +500,7 @@
   html[data-type="makro"] .slot-h span,html[data-type="makro"] .slot-err{font-size:14px}
   html[data-type="makro"] .drop .t b{font-size:16px;font-weight:700}
   html[data-type="makro"] .drop small,html[data-type="makro"] .file,html[data-type="makro"] .file .sz{font-size:14px}
-  html[data-type="makro"] .role{font-size:13px;padding:3px 8px}
+  html[data-type="makro"] .role{font-size:14px;padding:3px 8px}
 
   /* dialogs and registration modal */
   html[data-type="makro"] .dialog h2{font-size:24px;line-height:32px}
@@ -822,6 +822,17 @@
   .proto select{font:inherit;padding:4px}
   @media (max-width:400px){.brand,.logo{font-size:22px}.btn-reg{padding:9px 10px;font-size:13px}}
   @media (max-width:768px){.proto{left:4px;right:auto;bottom:4px;width:200px;opacity:.92}}
+  .how{margin:4px 0 20px;padding-left:22px;line-height:1.6}
+  .how-h{margin:0}
+  .seg .rec{font-size:12px;font-weight:600;margin-left:6px;padding:1px 6px;background:#e3f4ea;color:#0a6b3a}
+  .seg button[aria-selected="true"] .rec{background:#fff}
+  main .btn{min-height:48px}
+  main .btn.sm{min-height:44px}
+  main .link.small{padding:10px 4px}
+  .chk input{width:24px;height:24px;margin:0}
+  .chk input:checked::after{font-size:16px}
+  .chk{font-size:15px;gap:12px}
+  .save-note{margin:0;flex-basis:100%;font-size:14px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -926,8 +937,8 @@
     </label>
     <label>Typography
       <select id="sc-type">
-        <option value="default">Default (Figma, 14px base)</option>
-        <option value="makro">makro.cz (larger text)</option>
+        <option value="makro">makro.cz (larger text, default)</option>
+        <option value="default">Figma (14px base)</option>
       </select>
     </label>
     <label>Flow version
@@ -1480,35 +1491,35 @@ const poaSection = () => {
   else if(st==='ok') body=`${alertBox('ok','Plnou moc jsme zkontrolovali. Jste oprávněni jednat za tuto firmu.','margin:0 0 12px')}
       <div class="file"><span class="fi">🖼</span><b style="font-weight:500">${esc(S.file.name)}</b><span class="sz">${fmtSize(S.file.size)}</span><button type="button" class="link small" data-poa-remove aria-label="Odebrat plnou moc">Odebrat</button></div>`;
   else if(S.file) body=`<div class="file"><span class="fi">🖼</span><b style="font-weight:500">${esc(S.file.name)}</b> · <a href="#" data-preview>Náhled</a><span class="sz">${fmtSize(S.file.size)}</span><button type="button" class="link small" data-poa-remove aria-label="Odebrat plnou moc">Odebrat</button></div>`;
-  else body=`<div class="drop" id="drop"><span class="up">⇪</span><div class="t"><b>Vyberte nebo přetáhněte soubor</b><small>JPG, PNG nebo PDF, velikost do 10 MB</small></div>
-      <button class="btn soft sm" id="pick">Vybrat soubor</button><input type="file" id="fileIn" accept=".jpg,.jpeg,.png,.pdf" hidden></div>
+  else body=`<div class="drop" id="drop"><span class="up">⇪</span><div class="t"><b>Nahrát fotografii nebo sken plné moci</b><small>Přijímáme JPG, PNG nebo PDF do 10 MB</small></div>
+      <button class="btn soft sm" id="pick">${isMobile()?'Vyfotit nebo vybrat':'Vybrat soubor'}</button><input type="file" id="fileIn" accept=".jpg,.jpeg,.png,.pdf" hidden></div>
       <div id="fileErr" class="slot-err" role="alert" style="margin-top:6px"></div>`;
   return `<h3 style="margin-top:32px">Plná moc</h3>
     <p class="hint" style="margin:4px 0 12px">Nahrajte plnou moc, která vás opravňuje jednat za vaši firmu. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></p>
-    ${S.poaFail?alertBox('warn','Plnou moc se nám nepodařilo přečíst. Nahrajte ji znovu, nebo nám zavolejte na +420 271 005 005.','margin:0 0 12px'):''}
+    ${S.poaFail?alertBox('warn','Plnou moc se nám nepodařilo přečíst. Nahrajte ji znovu, nebo registraci vyřiďte s obchodním zástupcem – zavolejte nám na +420 271 005 005 (Po–Pá 7–19 h, Ne 12–19 h).','margin:0 0 12px'):''}
     <div class="poa-box">${body}</div>`;
 };
 // flow B: result of comparing the verified person with the people listed in the register
 const matchBlock = () => {
   const m=S.match; if(!m) return '';
   const msg = m.ok ? 'V obchodním rejstříku jste uvedeni jako osoba oprávněná jednat za firmu. Plnou moc nepotřebujete.'
-    : m.reason==='dob' ? 'V rejstříku jsme našli osobu se stejným jménem, ale s jiným datem narození, proto vás nemůžeme spárovat. K dokončení registrace potřebujeme plnou moc, nahrajte ji níže.'
-    : 'Mezi osobami oprávněnými jednat za firmu v obchodním rejstříku jsme vás nenašli. K dokončení registrace potřebujeme plnou moc, nahrajte ji níže.';
+    : m.reason==='dob' ? 'V rejstříku jsme našli osobu se stejným jménem, ale s jiným datem narození, proto vás nemůžeme spárovat. Nevadí – stačí nahrát plnou moc.'
+    : 'V rejstříku vás jako osobu oprávněnou jednat za firmu nevidíme. Nevadí – stačí nahrát plnou moc.';
+  const ppl=m.people.map(p=>`${esc(p.name)} (${esc(p.role)})${p.ok?' ✓':''}`).join(', ');
   return alertBox(m.ok?'ok':'warn',msg,'margin-top:16px')
-    + `<p class="hint" style="margin:8px 0 0">Za firmu podle rejstříku jednají: ${m.people.map(p=>`${esc(p.name)} (${esc(p.role)})${p.ok?' ✓':''}`).join(', ')}.</p>`;
+    + `<p class="hint" style="margin:8px 0 0">${m.ok?'Za firmu podle rejstříku jednají':'Plnou moc musí podepsat někdo z osob, které za firmu podle rejstříku jednají'}: ${ppl}.</p>`;
 };
 const contactFields = () => `
         <div class="stack">
           <label class="lbl" for="email" style="margin-top:16px">E-mail</label>
           <div class="field ${S.touch.email&&contactErr().email?'err':''}"><input id="email" type="email" data-bind="email" value="${esc(S.email)}" autocomplete="email" aria-required="true" aria-describedby="emailErr"></div>
           <div class="slot-err" id="emailErr" role="alert" style="margin:4px 0 0">${S.touch.email?contactErr().email:''}</div>
-          <div class="phone-row">
-            <div class="prefix"><label class="lbl">Předvolba</label><div class="field"><span><svg class="flag" viewBox="0 0 3 2" aria-hidden="true"><rect width="3" height="1" fill="#fff"/><rect y="1" width="3" height="1" fill="#d7141a"/><path d="M0 0L1.5 1L0 2z" fill="#11457e"/></svg>+420</span>⌄</div></div>
-            <div style="flex:1"><label class="lbl" for="phone">Telefon</label><div class="field ${S.touch.phone&&contactErr().phone?'err':''}"><input id="phone" inputmode="tel" data-bind="phone" value="${esc(S.phone)}" placeholder="777 000 111" autocomplete="tel-national" aria-required="true" aria-describedby="phoneErr"></div></div>
-          </div>
+          <label class="lbl" for="phone" style="margin-top:20px">Telefon</label>
+          <div class="field ${S.touch.phone&&contactErr().phone?'err':''}"><span class="pfx"><svg class="flag" viewBox="0 0 3 2" aria-hidden="true"><rect width="3" height="1" fill="#fff"/><rect y="1" width="3" height="1" fill="#d7141a"/><path d="M0 0L1.5 1L0 2z" fill="#11457e"/></svg>+420</span><input id="phone" inputmode="tel" data-bind="phone" value="${esc(S.phone)}" placeholder="777 000 111" autocomplete="tel-national" aria-required="true" aria-describedby="phoneErr"></div>
+          <button type="button" class="link small" data-soon-msg="Zahraniční telefonní čísla zatím v prototypu nejsou podporována." style="margin-top:6px">Mám zahraniční číslo</button>
           <div class="slot-err" id="phoneErr" role="alert" style="margin:4px 0 0">${S.touch.phone?contactErr().phone:''}</div>
         </div>`;
-const later_btn = `<button class="link" data-go="later">Dokončit registraci později</button>`;
+const later_btn = `<button class="link" data-go="later">Dokončit registraci později</button><span class="save-note">Postup se ukládá. Kdykoli se můžete vrátit.</span>`;
 
 /* ---------- screens ---------- */
 // shared page for the availability flow: site header, back link, title, content, site footer
@@ -1690,7 +1701,7 @@ const VIEWS = {
       <main>${topbar('icoDup')}<h1>Zadejte IČO vaší firmy</h1><p class="sub">a my doplníme ostatní údaje.</p>
         ${S.dup && S.dup.kind==='draft'
           ? alertBox('warn',`Registraci firmy ${esc(S.dup.name)} už máte rozpracovanou.`)
-          : alertBox('warn',`Firma ${esc(S.dup ? S.dup.name : '')} už je v makro distribuce registrovaná. Zavolejte nám na +420 271 005 005, pomůžeme vám s přístupem.`)}
+          : alertBox('warn',`Firma ${esc(S.dup ? S.dup.name : '')} už je v makro distribuce registrovaná. Zavolejte nám na +420 271 005 005 (Po–Pá 7–19 h, Ne 12–19 h), pomůžeme vám s přístupem.`)}
         <div class="actions" style="margin-top:32px">${S.dup && S.dup.kind==='draft'?`<button class="btn" id="dupResume">Pokračovat v této registraci</button>`:''}<button class="${S.dup && S.dup.kind==='draft'?'link':'btn'}" data-go="ico">Zadat jiné IČO</button></div>
       </main>
     </div>`,
@@ -1751,7 +1762,7 @@ const VIEWS = {
       ${addrCard()}
       <div class="av-in">
         ${alertBox('warn',`Na adresu ${esc(S.av.sel?avText(S.av.sel):'')} zatím nedoručujeme.`)}
-        <p class="av-intro">Zavolejte nám na +420 271 005 005, domluvíme se, jak vám zboží doručit jinak. Nebo zkuste jinou adresu.</p>
+        <p class="av-intro">Zavolejte nám na +420 271 005 005 (Po–Pá 7–19 h, Ne 12–19 h), domluvíme se, jak vám zboží doručit jinak. Nebo zkuste jinou adresu.</p>
         <div class="av-actions"><button class="btn" id="avTryAgain">Zkusit jinou adresu</button><button class="link" data-go="landing">Zpět na úvod</button></div>
       </div>`),
 
@@ -1760,13 +1771,13 @@ const VIEWS = {
       <main>
         ${topbar('intro',false)}
         <h1>Vítejte v registraci</h1>
-        <p class="sub">do služby <b>makro distribuce</b> – vytvoření firemního účtu je zdarma.</p>
+        <p class="sub">do služby <b>makro distribuce</b> – vytvoření firemního účtu je zdarma. Registrace trvá asi 10 minut. Postup se průběžně ukládá, takže ji můžete přerušit a vrátit se později.</p>
         <h3 style="font-size:14px">Co budete pro registraci potřebovat</h3>
         ${S.variant==='B'
-          ? `<div class="info"><span class="tag">${INTRO_ICON.bank}</span><div class="ib">Ověření vaší identity pomocí Bank iD, nebo osobního dokladu a fotografie</div></div>
+          ? `<div class="info"><span class="tag">${INTRO_ICON.bank}</span><div class="ib">Ověření vaší totožnosti pomocí Bank iD (stačí přihlášení do bankovnictví), nebo osobního dokladu a fotografie</div></div>
              <div class="info"><span class="tag">${INTRO_ICON.company}</span><div class="ib">IČO vaší firmy</div></div>`
           : `<div class="info"><span class="tag">${INTRO_ICON.company}</span><div class="ib">IČO vaší firmy</div></div>
-             <div class="info"><span class="tag">${INTRO_ICON.bank}</span><div class="ib">Ověření vaší identity pomocí Bank iD, nebo osobního dokladu a fotografie</div></div>`}
+             <div class="info"><span class="tag">${INTRO_ICON.bank}</span><div class="ib">Ověření vaší totožnosti pomocí Bank iD (stačí přihlášení do bankovnictví), nebo osobního dokladu a fotografie</div></div>`}
         <div class="info"><span class="tag">${INTRO_ICON.authority}</span><div class="ib">Oprávnění jednat za vaši firmu
           <ul><li>v obchodním rejstříku jste zapsáni jako osoba oprávněná jednat za firmu, nebo</li>
           <li>máte plnou moc, kterou při registraci nahrajete. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></li></ul></div></div>
@@ -1812,7 +1823,7 @@ const VIEWS = {
         ${alertBox('ok',S.acct==='existing'?'Jste přihlášeni, přihlašovací účet už máte':'Přihlašovací účet byl vytvořen','margin-top:24px')}
         <div class="panel acct-panel">
           <div class="badge">${svgIcon(ICON.user)}</div>
-          <div style="font-size:13px"><div>Přihlášeni jako</div><b style="display:block;margin:6px 0 12px;color:var(--ink-strong)">${esc(S.authEmail||PERSON.email)}</b>
+          <div style="font-size:15px"><div>Přihlášeni jako</div><b style="display:block;margin:6px 0 12px;color:var(--ink-strong)">${esc(S.authEmail||PERSON.email)}</b>
           <button class="btn soft sm" data-go="login">Přihlásit se jiným účtem</button></div>
         </div>
         <div class="actions" style="margin-top:96px">${S.variant==='B'?`<button class="btn" data-go="bank">Pokračovat na ověření totožnosti</button>`:`<button class="btn" data-go="ico">Pokračovat na registraci firmy</button>`}${later_btn}</div>
@@ -1838,7 +1849,7 @@ const VIEWS = {
         </div></div>
         ${S.variant==='B'?matchBlock()+poaSection():''}
         <div class="actions">${S.variant==='B'
-          ? `<button class="btn" id="icoNext" data-go="summary" ${canContinueCompany()?'':'disabled'}>Pokračovat na dokončení registrace</button>`
+          ? `<button class="btn" id="icoNext" data-next="company">Pokračovat na dokončení registrace</button>`
           : `<button class="btn" id="icoNext" data-go="bank">Pokračovat na ověření totožnosti</button>`}${later_btn}</div>
       </main>
     </div>`,
@@ -1846,22 +1857,24 @@ const VIEWS = {
   bank: () => {
     const list = S.bankAll ? BANKS : BANKS.slice(0,BANK_SHORT);
     const isDoc = S.method==='doc';
-    const tabs = [['bankid','Bank iD'],['doc','Osobní doklad']].map(([k,t])=>
+    const tabs = [['bankid','Bank iD <span class="rec">doporučeno</span>'],['doc','Osobní doklad']].map(([k,t])=>
       `<button type="button" role="tab" id="tab-${k}" aria-selected="${S.method===k}" aria-controls="verifyPanel" tabindex="${S.method===k?0:-1}" data-method="${k}">${t}</button>`).join('');
     const bankPanel = `
+        <p class="how-h"><b>Ověření přes Bank iD trvá asi 2 minuty:</b></p>
+        <ol class="how"><li>Vyberete svou banku.</li><li>Přihlásíte se do bankovnictví jako obvykle.</li><li>Vrátíte se sem. Heslo k bance nevidíme.</li></ol>
         <div class="banks" role="radiogroup" aria-label="Banka">${list.map(b=>`
           <button class="bank ${S.bank===b[0]?'sel':''}" role="radio" aria-checked="${S.bank===b[0]}" data-bank="${esc(b[0])}">
             <span class="lg"><img src="${b[1]}" alt=""></span><span class="name">${b[0]}</span><span class="radio"></span></button>`).join('')}
           <button class="toggle" data-toggle-banks>${S.bankAll?'Skrýt ⌃':`Zobrazit všechny banky (${BANKS.length}) ⌄`}</button>
         </div>
-        <label class="chk"><input type="checkbox" id="consent" ${S.consent?'checked':''}> <span>Potvrzuji přečtení <a href="#">Zásad zpracování osobních údajů</a></span></label>
-        <div class="actions" style="margin-top:36px"><button class="btn" id="bankGo" ${S.bank&&S.consent?'':'disabled'}>Ověřit se přes Bank iD</button>${later_btn}</div>`;
+        <label class="chk"><input type="checkbox" id="consent" ${S.consent?'checked':''}> <span>Potvrzuji, že jsem si přečetl(a) <a href="#" data-soon-msg="Dokument by se otevřel v novém okně, váš postup zůstane zachován.">Zásady zpracování osobních údajů</a></span></label>
+        <div class="actions" style="margin-top:36px"><button class="btn" id="bankGo">Ověřit totožnost přes Bank iD</button>${later_btn}</div>`;
     const slot = ([k,title,desc]) => {
       const d = S.docs[k];
       return `<div class="slot">
           <div class="slot-h"><b>${title}</b><span>${desc}</span></div>
           ${d ? `<div class="file"><img class="thumb" src="${d.url}" alt=""><b class="fname">${esc(d.name)}</b><span class="sz">${fmtSize(d.size)}</span><button type="button" class="link small" data-doc-remove="${k}" aria-label="Odebrat soubor ${esc(d.name)}">Odebrat</button></div>`
-          : `<div class="drop" data-doc-drop="${k}"><span class="up">⇪</span><div class="t"><b>Vyberte nebo přetáhněte soubor</b><small>JPG nebo PNG, velikost do 10 MB</small></div>
+          : `<div class="drop" data-doc-drop="${k}"><span class="up">⇪</span><div class="t"><b>Nahrát fotografii</b><small>Přijímáme JPG nebo PNG do 10 MB</small></div>
               <button type="button" class="btn soft sm" data-doc-pick="${k}">${k==='selfie'?'Vyfotit nebo vybrat':'Vybrat soubor'}</button>
               <input type="file" hidden accept="image/jpeg,image/png" data-doc-input="${k}" ${k==='selfie'?'capture="user"':''}></div>
             ${S.docErr[k]?`<div class="slot-err" role="alert">${S.docErr[k]}</div>`:''}`}
@@ -1869,18 +1882,18 @@ const VIEWS = {
     };
     const docsReady = S.docs.front && S.docs.back && S.docs.selfie;
     const docPanel = `
-        <p class="hint" style="margin:0 0 12px">Doklad musí být platný a čitelný. Jméno a datum narození z dokladu porovnáme s údaji o osobách oprávněných jednat za firmu v obchodním rejstříku.</p>
+        <p class="hint" style="margin:0 0 12px"><b>Tato cesta trvá o něco déle</b>, protože potřebujete nafotit doklad a svůj obličej. Doklad musí být platný a čitelný. Jméno a datum narození z dokladu porovnáme s údaji o osobách oprávněných jednat za firmu v obchodním rejstříku.</p>
         <div class="docpanel">${DOC_SLOTS.map(slot).join('')}</div>
         <label class="chk"><input type="checkbox" id="docConsent" ${S.docConsent?'checked':''}> <span>Souhlasím se zpracováním údajů z dokladu a fotografie za účelem ověření totožnosti. <a href="#">Zásady zpracování osobních údajů</a></span></label>
-        <div class="actions" style="margin-top:36px"><button class="btn" id="docGo" ${docsReady&&S.docConsent?'':'disabled'}>Zkontrolovat doklad a fotografii</button>${later_btn}</div>`;
+        <div class="actions" style="margin-top:36px"><button class="btn" id="docGo">Zkontrolovat doklad a fotografii</button>${later_btn}</div>`;
     return `${header(true)}
     <div class="page">${sidebar('bank')}
       <main>${topbar('bank')}
-        <h1>Ověřte svou totožnost</h1>
+        <h1>Ověření totožnosti</h1>
         <p class="sub">${S.variant==='B'
-          ? 'Než zaregistrujete firmu, potřebujeme ověřit, kdo jste. Ověření trvá asi minutu. Ověřte se přes svou banku (<a href="#">Bank iD</a>), nebo nahrajte svůj osobní doklad a svou fotografii. Díky tomu pak můžeme sami zkontrolovat, že za firmu smíte jednat.'
-          : 'Abychom si byli jistí, že za firmu jednáte oprávněně, potřebujeme ověřit vaši totožnost. Ověření trvá asi minutu. Ověřte se přes svou banku (<a href="#">Bank iD</a>), nebo nahrajte svůj osobní doklad a svou fotografii.'}</p>
-        ${S.docFail?alertBox('warn','Doklad a fotografii se nepodařilo ověřit. Zkontrolujte, že jsou snímky ostré a čitelné, a zkuste to znovu. Pokud to nepomůže, zavolejte nám na +420 271 005 005.','margin-top:4px'):''}
+          ? 'Než zaregistrujete firmu, potřebujeme ověřit, kdo jste. Díky tomu pak můžeme sami zkontrolovat, že za firmu smíte jednat.'
+          : 'Abychom si byli jistí, že za firmu jednáte oprávněně, potřebujeme ověřit vaši totožnost.'}</p>
+        ${S.docFail?alertBox('warn','Doklad a fotografii se nepodařilo ověřit. Zkontrolujte, že jsou snímky ostré a čitelné, a zkuste to znovu. Pokud to nepomůže, vyřiďte registraci s obchodním zástupcem – zavolejte nám na +420 271 005 005 (Po–Pá 7–19 h, Ne 12–19 h).','margin-top:4px'):''}
         <div class="seg" role="tablist" aria-label="Způsob ověření totožnosti">${tabs}</div>
         <div id="verifyPanel" role="tabpanel" aria-labelledby="tab-${S.method}">${isDoc?docPanel:bankPanel}</div>
       </main>
@@ -1903,7 +1916,7 @@ const VIEWS = {
           <h1 id="bsTitle">Toto je web vaší banky</h1>
           <p class="bsite-note">Zobrazená stránka slouží pouze pro účely prototypu. Ve skutečnosti se zde přihlásíte do internetového bankovnictví ${esc(name)}.</p>
           <div class="bsite-env"><b>Prostředí mimo náš web</b>
-            <ul><li>ověření identity</li><li>souhlas s předáním údajů</li></ul></div>
+            <ul><li>ověření totožnosti</li><li>souhlas s předáním údajů</li></ul></div>
           <button class="btn" id="bsVerify" style="padding:14px 28px;font-size:15px">Ověřit totožnost</button>
           <button class="link" data-go="bank" style="margin-top:20px">Zrušit a vrátit se do registrace</button>
         </section>
@@ -1922,7 +1935,7 @@ const VIEWS = {
   poa: () => `${header(true)}
     <div class="page">${sidebar('poa')}
       <main>${topbar('poa')}<h1>${S.variant==='B'?'Nahrajte plnou moc':'Ověření totožnosti – poslední krok'}</h1>
-        ${S.poaFail?alertBox('warn','Plnou moc se nám nepodařilo přečíst. Nahrajte ji znovu, nebo nám zavolejte na +420 271 005 005.','margin-top:20px'):'<div style="height:20px"></div>'}
+        ${S.poaFail?alertBox('warn','Plnou moc se nám nepodařilo přečíst. Nahrajte ji znovu, nebo registraci vyřiďte s obchodním zástupcem – zavolejte nám na +420 271 005 005 (Po–Pá 7–19 h, Ne 12–19 h).','margin-top:20px'):'<div style="height:20px"></div>'}
         <div class="panel" style="align-items:flex-start"><div class="badge">${svgIcon(ICON.id)}</div><div style="flex:1">
           <dl>
             <dt>Jméno a příjmení</dt><dd>${PERSON.name}</dd><dt>Datum narození</dt><dd>${PERSON.born}</dd>
@@ -1930,11 +1943,11 @@ const VIEWS = {
           </dl>
           <p class="hint" style="margin-top:16px">Nahrajte plnou moc, která vás opravňuje jednat za vaši firmu. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></p>
           ${S.file ? `<div class="file"><span class="fi">🖼</span><b style="font-weight:500">${esc(S.file.name)}</b> · <a href="#" data-preview>Náhled</a><span class="sz">${fmtSize(S.file.size)}</span></div>`
-          : `<div class="drop" id="drop"><span class="up">⇪</span><div class="t"><b>Vyberte nebo přetáhněte soubor</b><small>JPG, PNG nebo PDF, velikost do 10 MB</small></div>
-              <button class="btn soft sm" id="pick">Vybrat soubor</button><input type="file" id="fileIn" accept=".jpg,.jpeg,.png,.pdf" hidden></div>
+          : `<div class="drop" id="drop"><span class="up">⇪</span><div class="t"><b>Nahrát fotografii nebo sken plné moci</b><small>Přijímáme JPG, PNG nebo PDF do 10 MB</small></div>
+              <button class="btn soft sm" id="pick">${isMobile()?'Vyfotit nebo vybrat':'Vybrat soubor'}</button><input type="file" id="fileIn" accept=".jpg,.jpeg,.png,.pdf" hidden></div>
               <div id="fileErr" class="hint" style="color:var(--err);margin-top:8px"></div>`}
         </div></div>
-        <div class="actions" style="margin-top:36px"><button class="btn" id="poaGo" ${S.file?'':'disabled'}>Zkontrolovat plnou moc</button>${later_btn}</div>
+        <div class="actions" style="margin-top:36px"><button class="btn" id="poaGo">Zkontrolovat plnou moc</button>${later_btn}</div>
       </main>
     </div>`,
 
@@ -1946,8 +1959,8 @@ const VIEWS = {
   summary: () => `${header(true)}
     <div class="page">${sidebar('summary')}
       <main>${topbar('summary')}
-        <h1 style="margin-top:12px">Děkujeme,</h1>
-        <p class="sub">teď máme skoro všechno potřebné, abyste mohli začít používat službu <b>makro distribuce.</b> Zbývá doplnit kontakt na firmu a potvrdit podmínky.</p>
+        <h1 style="margin-top:12px">Zkontrolujte údaje a dokončete registraci</h1>
+        <p class="sub">Zbývají dvě věci: doplnit kontakt na firmu a souhlasit s podmínkami.</p>
         <h3 style="font-size:13px;margin-top:28px">Vaše firma</h3>
         <div class="panel green"><div class="badge">${svgIcon(ICON.company)}</div>${dataRows([['IČO',cur().ico],['Název',cur().name]])}<span class="bigcheck" style="width:28px;height:28px">✓</span></div>
         <h3 style="font-size:13px">Ověření totožnosti</h3>
@@ -1955,10 +1968,10 @@ const VIEWS = {
           ['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()],
           ['Oprávnění jednat za firmu', rolePoa()?'Ověřeno – plná moc ✓':'Ověřeno v obchodním rejstříku ✓']])}<span class="bigcheck" style="width:28px;height:28px">✓</span></div>
         <h3 style="margin-top:32px">Kontaktní údaje firmy</h3>
-        <p class="hint" style="margin:4px 0 0">Na tento e-mail a telefon vám pošleme potvrzení registrace.</p>
+        <p class="hint" style="margin:4px 0 0">Na e-mail vám pošleme potvrzení registrace. Telefon použijeme jen tehdy, když bude potřeba něco upřesnit.</p>
         ${contactFields()}
-        <label class="chk terms"><input type="checkbox" id="terms" ${S.terms?'checked':''}><span>Souhlasím s <a href="#">Všeobecnými obchodními podmínkami</a> služby makro distribuce a se <a href="#">Zásadami zpracování osobních údajů</a>.</span></label>
-        <div class="actions" style="margin-top:24px"><button class="btn" id="finish" ${canFinish()?'':'disabled'} style="padding:14px 8px">Dokončit registraci a přejít do obchodu</button><button class="link later-mob" data-go="later">Dokončit registraci později</button></div>
+        <label class="chk terms"><input type="checkbox" id="terms" ${S.terms?'checked':''}><span>Souhlasím s <a href="#" data-soon-msg="Dokument by se otevřel v novém okně, váš postup zůstane zachován.">obchodními podmínkami</a> a se <a href="#" data-soon-msg="Dokument by se otevřel v novém okně, váš postup zůstane zachován.">Zásadami zpracování osobních údajů</a>.</span></label>
+        <div class="actions" style="margin-top:24px"><button class="btn" id="finish" style="padding:14px 8px">Dokončit registraci a přejít do obchodu</button><button class="link later-mob" data-go="later">Dokončit registraci později</button></div>
       </main>
     </div>`,
 
@@ -1967,7 +1980,7 @@ const VIEWS = {
     return `${header(true)}
     <div class="center-note"><div class="badge" style="margin:0 auto 16px;width:56px;height:56px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;font-size:28px">✓</div>
       <h1>Registrace dokončena</h1>
-      <p>Registraci firmy <b>${esc(cur().name)}</b> máme hotovou. Potvrzení jsme vám poslali e-mailem. Nakupovat můžete hned.</p>
+      <p>Registraci firmy <b>${esc(cur().name)}</b> máme hotovou. Potvrzení jsme poslali na ${esc(S.email)}. Nakupovat můžete hned.</p>
       <div class="done-actions">
         <button class="btn" data-soon-msg="Obchod zatím není součástí tohoto prototypu.">Přejít do obchodu</button>
         <button class="btn soft" data-new ${full?'disabled':''}>Registrovat další firmu</button>
@@ -1981,14 +1994,13 @@ function icoScreen(err){
   return `${header(true)}
     <div class="page">${sidebar(err?'icoNotFound':'ico')}
       <main>${topbar(err?'icoNotFound':'ico')}<h1>Zadejte IČO vaší firmy</h1><p class="sub">a my doplníme ostatní údaje.</p>
-        ${err?alertBox('err','Firmu s tímto IČO jsme nenašli. Zkontrolujte číslo, nebo nám zavolejte na +420 271 005 005.'):''}
+        ${err?alertBox('err','Firmu s tímto IČO jsme nenašli. Zkontrolujte číslo, nebo nám zavolejte na +420 271 005 005 (Po–Pá 7–19 h, Ne 12–19 h).'):''}
         <label class="lbl" for="ico" style="margin-top:${err?0:20}px">IČO</label>
-        <div class="ico-row"><div class="field ${(err||S.icoFormat)?'err':''}"><input id="ico" inputmode="numeric" maxlength="8" data-bind="ico" value="${esc(S.ico)}" autofocus aria-describedby="icoHelp" ${S.icoFormat?'aria-invalid="true"':''}>
-          <button class="clear" data-clear aria-label="Smazat">✕</button></div>
-          <button class="btn soft" id="icoVerify" style="padding:13px 10px;font-size:13px">Ověřit IČO</button></div>
+        <div class="ico-row"><div class="field ${(err||S.icoFormat)?'err':''}"><input id="ico" inputmode="numeric" data-bind="ico" value="${esc(S.ico)}" autofocus aria-describedby="icoHelp" ${S.icoFormat?'aria-invalid="true"':''}>
+          <button class="clear" data-clear aria-label="Smazat">✕</button></div></div>
         ${S.icoFormat?`<div class="slot-err" role="alert" style="margin-top:6px">${S.icoFormat}</div>`:''}
-        <div id="icoHelp" class="hint" style="color:var(--muted);margin-top:6px;font-size:12px">8 číslic. Pro ukázku použijte ${VALID_ICO} nebo 27082440 (25596641 je už registrovaná firma); jiné IČO skončí chybou „nenalezeno“.</div>
-        <div class="actions" style="margin-top:${err?96:112}px"><button class="btn" disabled>Pokračovat na ověření totožnosti</button>${later_btn}</div>
+        <div id="icoHelp" class="hint" style="color:var(--muted);margin-top:6px;font-size:12px">8 číslic. IČO najdete na faktuře nebo v obchodním rejstříku. Firmu vyhledáme hned po zadání. Pro ukázku použijte ${VALID_ICO} nebo 27082440 (25596641 je už registrovaná firma); jiné IČO skončí chybou „nenalezeno“.</div>
+        <div class="actions" style="margin-top:${err?48:64}px">${later_btn}</div>
       </main>
     </div>`;
 }
@@ -2056,7 +2068,7 @@ function wire(){
   app.querySelectorAll('[data-bind]').forEach(el=>el.addEventListener('input',()=>{
     S[el.dataset.bind]=el.value;
     const fn=$('#finish'); if(fn){                       // contact details are required: live check, errors after the first blur
-      const e=contactErr(); fn.disabled=!canFinish();
+      const e=contactErr(); clearBlocked();
       ['email','phone'].forEach(k=>{ if(S.touch[k] && $('#'+k+'Err')){ $('#'+k+'Err').textContent=e[k]; $('#'+k).closest('.field').classList.toggle('err',!!e[k]); } });
     }
   }));
@@ -2078,9 +2090,8 @@ function wire(){
   // ICO
   const ico = $('#ico');
   if(ico){
-    ico.addEventListener('input',()=>{ ico.value=ico.value.replace(/\D/g,''); S.ico=ico.value; if(S.icoFormat){ S.icoFormat=''; $('#icoVerify').parentElement.parentElement.querySelectorAll('.slot-err').forEach(e=>e.remove()); ico.closest('.field').classList.remove('err'); } });
+    ico.addEventListener('input',()=>{ ico.value=ico.value.replace(/\D/g,'').slice(0,8); S.ico=ico.value; if(S.icoFormat){ S.icoFormat=''; document.querySelectorAll('.slot-err').forEach(e=>e.remove()); ico.closest('.field').classList.remove('err'); } if(ico.value.length===8) verifyIco(); });
     ico.addEventListener('keydown',e=>{ if(e.key==='Enter') verifyIco(); });
-    $('#icoVerify').addEventListener('click',verifyIco);
     app.querySelector('[data-clear]').addEventListener('click',()=>{ S.ico=''; ico.value=''; ico.focus(); });
   }
 
@@ -2106,18 +2117,24 @@ function wire(){
     const k=b.dataset.docRemove; URL.revokeObjectURL(S.docs[k].url); S.docs[k]=null; render();
   }));
   const dc = $('#docConsent');
-  if(dc) dc.addEventListener('change',()=>{ S.docConsent=dc.checked; $('#docGo').disabled=!(S.docs.front&&S.docs.back&&S.docs.selfie&&S.docConsent); });
+  if(dc) dc.addEventListener('change',()=>{ S.docConsent=dc.checked; clearBlocked(); });
   const dg = $('#docGo');
-  if(dg) dg.addEventListener('click',()=>{ S.completedUpTo=Math.min(S.completedUpTo,stepNo('identity')-1); S.via='doc'; S.docFail=false; go('docLoading'); });
+  if(dg) dg.addEventListener('click',()=>{
+    if(!(S.docs.front&&S.docs.back&&S.docs.selfie)) return blocked('Nahrajte prosím všechny tři snímky: přední a zadní stranu dokladu a svou fotografii.');
+    if(!S.docConsent) return blocked('Potvrďte prosím souhlas se zpracováním údajů z dokladu.','#docConsent');
+    S.completedUpTo=Math.min(S.completedUpTo,stepNo('identity')-1); S.via='doc'; S.docFail=false; go('docLoading'); });
 
   // bank
   app.querySelectorAll('[data-bank]').forEach(b=>b.addEventListener('click',()=>{ S.bank=b.dataset.bank; render(); }));
   const tb = app.querySelector('[data-toggle-banks]');
   if(tb) tb.addEventListener('click',()=>{ S.bankAll=!S.bankAll; render(); });
   const cons = $('#consent');
-  if(cons) cons.addEventListener('change',()=>{ S.consent=cons.checked; $('#bankGo').disabled=!(S.bank&&S.consent); });
+  if(cons) cons.addEventListener('change',()=>{ S.consent=cons.checked; clearBlocked(); });
   const bg = $('#bankGo');
-  if(bg) bg.addEventListener('click',()=>{ S.completedUpTo=Math.min(S.completedUpTo,stepNo('identity')-1); S.via='bankid'; S.docFail=false; go('bankSite'); });
+  if(bg) bg.addEventListener('click',()=>{
+    if(!S.bank) return blocked('Vyberte prosím svou banku.');
+    if(!S.consent) return blocked('Potvrďte prosím, že jste si přečetli Zásady zpracování osobních údajů.','#consent');
+    S.completedUpTo=Math.min(S.completedUpTo,stepNo('identity')-1); S.via='bankid'; S.docFail=false; go('bankSite'); });
 
   const bv = $('#bsVerify');
   if(bv) bv.addEventListener('click',()=>go('bankLoading'));
@@ -2134,6 +2151,7 @@ function wire(){
   }
   const pg = $('#poaGo');
   if(pg) pg.addEventListener('click',()=>{
+    if(!S.file) return blocked('Nejdřív nahrajte plnou moc.','#pick');
     S.completedUpTo=Math.min(S.completedUpTo,stepNo('poa')-1); S.poaFail=false;
     if(S.variant==='B'){ checkPoaB(); return; }          // flow B checks the power of attorney on the company step
     go('poaLoading');
@@ -2142,10 +2160,17 @@ function wire(){
 
   // summary
   const tm = $('#terms');
-  if(tm) tm.addEventListener('change',()=>{ S.terms=tm.checked; $('#finish').disabled=!canFinish(); });
+  if(tm) tm.addEventListener('change',()=>{ S.terms=tm.checked; clearBlocked(); });
+  const nx = app.querySelector('[data-next="company"]');
+  if(nx) nx.addEventListener('click',()=>{
+    if(S.poaState==='checking') return blocked('Počkejte prosím, plnou moc právě kontrolujeme.');
+    if(!canContinueCompany()) return blocked('Nahrajte prosím plnou moc. Bez ní nemůžeme registraci dokončit.','#pick');
+    go('summary');
+  });
   const fin = $('#finish');
   if(fin) fin.addEventListener('click',()=>{
     if(!contactOk()){ S.touch={email:true,phone:true}; render(); (contactErr().email?$('#email'):$('#phone'))?.focus(); return; }   // contact details are required
+    if(!S.terms) return blocked('Potvrďte prosím souhlas s podmínkami.','#terms');
     S.drafts=S.drafts.filter(d=>d.id!==S.regId); go('done');
   });
 }
@@ -2240,7 +2265,7 @@ function wireResume(app){
       const show=(msg,focus)=>{ err.innerHTML=alertBox('err',msg,'margin:0'); $('#lemail').closest('.field').classList.toggle('err',focus==='#lemail'); $('#lpass').closest('.field').classList.toggle('err',focus==='#lpass'); $(focus).focus(); };
       if(!EMAIL_RE.test(em)) return show('Zadejte e-mail ve tvaru jmeno@domena.cz.','#lemail');
       if(!pw) return show('Zadejte heslo.','#lpass');
-      if(res==='locked') return show('Přihlášení je dočasně zablokované kvůli opakovaným neúspěšným pokusům. Zkuste to za 15 minut, nebo nám zavolejte na +420 271 005 005.','#lpass');
+      if(res==='locked') return show('Přihlášení je dočasně zablokované kvůli opakovaným neúspěšným pokusům. Zkuste to za 15 minut, nebo nám zavolejte na +420 271 005 005 (Po–Pá 7–19 h, Ne 12–19 h).','#lpass');
       if(res==='wrong'){ $('#lpass').value=''; return show('E-mail nebo heslo nesedí. Zkuste to znovu, nebo si nechte heslo obnovit.','#lpass'); }   // same message for an unknown e-mail: we do not reveal which accounts exist
       S.authEmail=em; S.acct='existing'; go('hub');
     });
@@ -2306,6 +2331,14 @@ function wireProfile(app){
   });
 }
 
+function blocked(msg, focusSel){
+  clearBlocked();
+  const act=document.querySelector('.actions'); if(!act) return;
+  const e=document.createElement('div'); e.id='actErr'; e.className='slot-err'; e.setAttribute('role','alert'); e.style.cssText='margin:0 0 12px;font-size:15px;font-weight:600';
+  e.textContent=msg; act.parentNode.insertBefore(e,act);
+  e.scrollIntoView({block:'center',behavior:'smooth'}); if(focusSel) document.querySelector(focusSel)?.focus({preventScroll:true});
+}
+function clearBlocked(){ document.getElementById('actErr')?.remove(); }
 function verifyIco(){
   if(S.ico!==S.lastIco) S.completedUpTo=Math.min(S.completedUpTo,stepNo('company')-1); // a different company: later steps no longer valid
   S.lastIco=S.ico;
@@ -2352,7 +2385,7 @@ $('#sc-type').addEventListener('change',e=>applyType(e.target.value));
 (function initType(){
   let t = new URLSearchParams(location.search).get('type');
   if(!t){ try{ t = localStorage.getItem('fsd-type'); }catch(e){} }
-  applyType(t==='makro' ? 'makro' : 'default');
+  applyType(t==='default' ? 'default' : 'makro');
 })();
 
 
