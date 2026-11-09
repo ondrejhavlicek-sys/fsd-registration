@@ -121,16 +121,7 @@
   .ico-row .field{width:248px}
   .clear{background:none;border:0;font-size:16px;color:var(--ink-strong)}
   .stack{max-width:600px}
-  .rm-h{font-size:14px;margin:28px 0 0}
-  .roadmap{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0 24px;padding:0}
-  .roadmap li{background:#f5f5f5;border-top:4px solid #d5d8dd;padding:14px;display:flex;flex-direction:column;gap:4px}
-  .roadmap li.cur{background:#f3f5fe;border-top-color:var(--blue)}
-  .roadmap .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#fff;border:1.5px solid var(--line);font-weight:600;font-size:13px;color:var(--muted)}
-  .roadmap li.cur .n{background:var(--blue);border-color:var(--blue);color:#fff}
-  .roadmap b{color:var(--ink-strong);margin-top:6px}
-  .roadmap small{color:var(--muted);font-size:13px}
-  .roadmap p{margin:6px 0 0;font-size:14px;line-height:20px}
-  .assure{list-style:none;margin:0 0 28px;padding:0;display:grid;gap:10px}
+  .assure{list-style:none;margin:28px 0 28px;padding:0;display:grid;gap:10px}
   .assure li{display:flex;gap:10px;align-items:flex-start}
   .assure li::before{content:"✓";flex:none;width:22px;height:22px;border-radius:50%;background:#e3f4ea;color:#0a6b3a;display:grid;place-items:center;font-size:13px;font-weight:700;margin-top:1px}
   .callrep{margin-top:48px;padding:20px 24px;background:#f5f5f5;border-left:4px solid var(--yellow)}
@@ -382,7 +373,6 @@
     .iconbtn.back svg{width:22px;height:22px}
     .field{height:48px}
     .stack{max-width:none}
-    .roadmap{grid-template-columns:1fr}
     .callrep{margin-top:36px}
     .prefix{width:119px}
     .dic-row{grid-template-columns:1fr;gap:6px}
@@ -498,8 +488,6 @@
   html[data-type="makro"] .lbl,html[data-type="makro"] label,html[data-type="makro"] dt,html[data-type="makro"] dd,html[data-type="makro"] .info,html[data-type="makro"] .chk,html[data-type="makro"] .dic-row{font-size:16px}
   html[data-type="makro"] dd,html[data-type="makro"] .lbl{font-weight:700}
   html[data-type="makro"] .info{--tag:30px}
-  html[data-type="makro"] .roadmap p,html[data-type="makro"] .roadmap small,html[data-type="makro"] .callrep small,html[data-type="makro"] .rm-h{font-size:16px;line-height:24px}
-  html[data-type="makro"] .roadmap{grid-template-columns:repeat(2,1fr)}
   html[data-type="makro"] .info .tag svg{width:18px;height:18px}
   html[data-type="makro"] .alert{font-size:16px;line-height:24px}
   html[data-type="makro"] .alert svg{width:24px;height:24px}
@@ -1779,13 +1767,6 @@ const VIEWS = {
         ${topbar('intro',false)}
         <h1>Začněte vytvořením přihlašovacího účtu</h1>
         <p class="sub">Účet je váš osobní přístup do služby <b>makro distribuce</b>. S ním pak zaregistrujete firmu a budete objednávat. Registrace je zdarma.</p>
-        <h3 class="rm-h">Jak registrace probíhá</h3>
-        <ol class="roadmap">
-          <li class="cur"><span class="n">1</span><b>Přihlašovací účet</b><small>asi 1 minuta</small><p>Zadáte e-mail a vytvoříte si přístup.</p></li>
-          <li><span class="n">2</span><b>Ověření totožnosti</b><small>asi 2 minuty</small><p>Přes Bank iD, nebo osobní doklad a fotografii.</p></li>
-          <li><span class="n">3</span><b>Registrace firmy</b><small>asi 4 minuty</small><p>Zadáte IČO, údaje o firmě doplníme sami.</p></li>
-          <li><span class="n">4</span><b>Shrnutí</b><small>asi 3 minuty</small><p>Doplníte kontakt a potvrdíte podmínky.</p></li>
-        </ol>
         <ul class="assure">
           <li>Postup se průběžně ukládá. Registraci můžete přerušit a vrátit se později.</li>
           <li>Údaje o firmě doplníme z obchodního rejstříku, nemusíte je opisovat.</li>
