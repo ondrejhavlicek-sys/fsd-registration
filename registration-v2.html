@@ -215,7 +215,7 @@
   .lp-why{padding:72px 0 0}
   .lp-why h2{margin:0 0 40px;text-align:center;font-size:32px;font-weight:700;color:#002d72}
   .lp-why h2::after{content:"";display:block;width:56px;height:5px;background:var(--yellow);margin:16px auto 0}
-  .lp-need{padding-top:72px}
+  .lp-need{padding:72px 0 96px}
   .lp-need-sub{max-width:640px;margin:-16px auto 36px;text-align:center;font-size:16px;line-height:24px}
   .lp-needs{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
   .lp-needs article{background:#f3f5fe;padding:28px 24px;display:flex;flex-direction:column;gap:10px}
@@ -432,7 +432,7 @@
     .lp-pill{width:100%}
     .lp-stats{gap:12px;padding-top:24px}
     .lp-why{padding-top:48px}
-    .lp-need{padding-top:48px}
+    .lp-need{padding:48px 0 56px}
     .lp-need-sub{margin-top:-8px}
     .lp-need-cta .lp-pill{width:100%;text-align:center}
     .lp-why h2{font-size:26px;margin-bottom:28px}
@@ -1561,11 +1561,7 @@ const VIEWS = {
             <article><span class="ic">${INTRO_ICON.company}</span><h3>IČO vaší firmy</h3><p>Název a sídlo firmy doplníme sami z obchodního rejstříku.</p></article>
             <article><span class="ic">${INTRO_ICON.authority}</span><h3>Oprávnění jednat za firmu</h3><p>Stačí, když jste v obchodním rejstříku zapsáni jako osoba oprávněná jednat za firmu. Jinak budete potřebovat plnou moc. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></p></article>
           </div>
-          <div class="lp-need-cta"><button class="lp-pill primary" data-go="intro">Začít registraci</button></div>
-        </section>
-        <section class="lp-cta">
-          <div><h2>Staňte se zákazníkem ještě dnes</h2><p>Jediným požadavkem je minimální hodnota objednávky.</p></div>
-          <button class="lp-pill primary" data-go="intro">Registrovat se</button>
+          <div class="lp-need-cta"><button class="lp-pill primary" data-go="intro">Registrovat se</button></div>
         </section>
       </div>
       ${lpFooter()}
