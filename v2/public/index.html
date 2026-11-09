@@ -955,6 +955,12 @@
         <option value="none">None / expired</option>
       </select>
     </label>
+    <label>Account creation (step 1)
+      <select id="sc-acct">
+        <option value="aad">AAD sign-in (modal, social or e-mail)</option>
+        <option value="native">Native form (e-mail + password)</option>
+      </select>
+    </label>
     <label>Typography
       <select id="sc-type">
         <option value="makro">makro.cz (larger text, default)</option>
@@ -1041,7 +1047,8 @@ const SCREENS = {
   reminder:    { step:0, label:'(e-mail s připomínkou)', bare:true },
   icoDup:      { step:3, label:'3.x – Firma už existuje', back:'ico' },
   intro:       { step:1, label:'1.1 – Úvod k účtu' },
-  auth:        { step:1, label:'1.2 – Registrace (modal)', bare:true },
+  auth:        { step:1, label:'1.2 – Registrace (modal, AAD)', bare:true },
+  signup:      { step:1, label:'1.2 – Vytvoření účtu (nativní formulář)' },
   account:     { step:1, label:'1.3 – Účet vytvořen' },
   ico:         { step:3, label:'3.1 – Zadejte IČO', back:'account' },
   icoLoading:  { step:3, label:'3.2 – Načítání z rejstříku', back:'ico' },
@@ -1113,7 +1120,9 @@ function focusPage(){    // after a screen change keyboard and screen-reader use
   t.focus({preventScroll:true});
 }
 const afterIdentity = () => 'idOk';   // the power of attorney is decided only after the company is known
+const nativeAcct = () => (document.querySelector('#sc-acct')||{}).value==='native';   // prototype scenario: native account form instead of the AAD modal
 function go(id){
+  if(id==='auth' && nativeAcct()) id='signup';
   timers.splice(0).forEach(clearTimeout);
   if(id!=='hub') S.hubNotice='';
   if(id==='profile' && !isMobile()) id='profPersonal';   // the profile hub is a mobile page; desktop opens the first section
@@ -1177,7 +1186,7 @@ function leaveTo(target){   // ask first when a profile form has unsaved changes
 }
 function openExit(kind, extra){
   // nothing is saved until the user account exists: the intro and the account-creation modal
-  exitKind = kind || ((S.screen==='auth'||S.screen==='intro') ? 'confirm' : 'saved');
+  exitKind = kind || ((S.screen==='auth'||S.screen==='signup'||S.screen==='intro') ? 'confirm' : 'saved');
   const c = Object.assign({}, EXIT_COPY[exitKind], extra||{});
   $('#exitTitle').textContent=c.title; $('#exitText').textContent=c.text;
   $('#exitContinue').textContent=c.stay; $('#exitRestart').textContent=c.leave;
@@ -1398,7 +1407,7 @@ const draftName = d => d.snap.company ? d.snap.company.name : 'Firma zatím neza
 function saveDraft(){   // called when the user leaves after the user account exists
   const screen = STABLE[S.screen] || S.screen;
   const step = (SCREENS[screen]||{}).step || 0;
-  if(step<1 || screen==='intro' || screen==='auth' || screen==='done') return;
+  if(step<1 || screen==='intro' || screen==='auth' || screen==='signup' || screen==='done') return;
   const snap={}; REG_FIELDS.forEach(k=>{ snap[k]=S[k]; });
   snap.identity=Object.assign({},S.identity);
   const d={id:S.regId||('r'+Date.now()), variant:S.variant, screen, saved:todayIso(), snap};
@@ -1781,6 +1790,27 @@ const VIEWS = {
       </main>
     </div>`,
 
+  signup: () => `${header(false)}
+    <div class="page">${sidebar('signup')}
+      <main>
+        ${topbar('signup',false)}
+        <h1>Vytvořte si přihlašovací účet</h1>
+        <p class="sub">Zadejte e-mail a zvolte si heslo. E-mail budete používat k přihlášení.</p>
+        <form id="signupForm" class="stack" novalidate>
+          <label class="lbl" for="suEmail" style="margin-top:20px">E-mail</label>
+          <div class="field"><input id="suEmail" type="email" inputmode="email" autocomplete="email" autofocus aria-required="true" aria-describedby="suEmailErr suEmailHint" placeholder="jmeno@domena.cz" value="${esc(S.authEmail||'')}"></div>
+          <div class="slot-err" id="suEmailErr" role="alert" style="margin:4px 0 0"></div>
+          <div class="hint" id="suEmailHint" style="color:var(--muted);margin-top:6px;font-size:12px">Pro ukázku: e-mail ${PERSON.email} už účet má.</div>
+          <label class="lbl" for="suPw" style="margin-top:20px">Heslo</label>
+          <div class="field"><input id="suPw" type="password" autocomplete="new-password" aria-required="true" aria-describedby="suPwErr suPwHint"><button type="button" class="link small" id="suPwToggle" aria-controls="suPw" aria-pressed="false">Zobrazit</button></div>
+          <div class="slot-err" id="suPwErr" role="alert" style="margin:4px 0 0"></div>
+          <div class="hint" id="suPwHint" style="color:var(--muted);margin-top:6px;font-size:12px">Alespoň 8 znaků.</div>
+          <div class="actions" style="margin-top:36px"><button class="btn" type="submit">Vytvořit účet</button></div>
+        </form>
+        <p class="resume-hint" style="margin-top:20px">Už máte účet? <button type="button" class="link" data-go="login">Přihlásit se</button></p>
+      </main>
+    </div>`,
+
   auth: () => {
     const content = `
       <button class="x" data-go="later" aria-label="Zavřít">✕</button>
@@ -2011,6 +2041,7 @@ function wire(){
   }));
   app.querySelectorAll('[data-step-go]').forEach(el=>el.addEventListener('click',()=>go(el.dataset.stepGo)));
   app.querySelectorAll('[data-back]').forEach(el=>el.addEventListener('click',()=>{
+    if(S.screen==='signup') return go('intro');
     if(SCREENS[S.screen].step<=1) return openExit(); // step 1: back = exit flow
     let b = SCREENS[S.screen].back || 'account';
     if(b==='ico'){ S.icoErr=false; }
@@ -2039,6 +2070,22 @@ function wire(){
   if(am) am.addEventListener('click',()=>{ S.authForm=true; render(); $('#aemail')?.focus(); });
   const al = app.querySelector('[data-auth-login]');
   if(al) al.addEventListener('click',e=>{ e.preventDefault(); go('login'); });
+  const sf = $('#signupForm');
+  if(sf){
+    const em=$('#suEmail'), pw=$('#suPw'), setErr=(inp,id,msg)=>{ $('#'+id).textContent=msg; inp.closest('.field').classList.toggle('err',!!msg); inp.setAttribute('aria-invalid',msg?'true':'false'); };
+    $('#suPwToggle').addEventListener('click',e=>{ const show=pw.type==='password'; pw.type=show?'text':'password'; e.currentTarget.textContent=show?'Skrýt':'Zobrazit'; e.currentTarget.setAttribute('aria-pressed',show); pw.focus(); });
+    em.addEventListener('input',()=>setErr(em,'suEmailErr',''));
+    pw.addEventListener('input',()=>setErr(pw,'suPwErr',''));
+    sf.addEventListener('submit',e=>{
+      e.preventDefault(); const mail=em.value.trim(); let bad=null;
+      const eErr = !mail ? 'Zadejte svůj e-mail.' : !EMAIL_RE.test(mail) ? 'Zadejte e-mail ve tvaru jmeno@domena.cz.'
+        : mail.toLowerCase()===PERSON.email ? 'Účet s tímto e-mailem už existuje. Přihlaste se, nebo použijte jiný e-mail.' : '';
+      const pErr = !pw.value ? 'Zvolte si heslo.' : pw.value.length<8 ? 'Heslo musí mít alespoň 8 znaků.' : '';
+      setErr(em,'suEmailErr',eErr); setErr(pw,'suPwErr',pErr);
+      bad = eErr ? em : pErr ? pw : null; if(bad){ bad.focus(); return; }
+      S.authEmail=mail; S.acct='created'; S.identity={verified:false,via:null}; go('account');
+    });
+  }
   const af = $('#authForm');
   if(af) af.addEventListener('submit',e=>{ e.preventDefault(); S.authEmail=$('#aemail').value.trim(); S.acct='created'; S.identity={verified:false,via:null}; go('account'); });
   app.querySelectorAll('[data-social]').forEach(b=>b.addEventListener('click',()=>{ S.authEmail=PERSON.email; S.acct='created'; S.identity={verified:false,via:null}; go('account'); }));
@@ -2366,6 +2413,7 @@ $('#sc-drafts').addEventListener('change',e=>{ seedDrafts(e.target.value); if(S.
 seedDrafts('one');
 applyFlow();
 
+$('#sc-acct').addEventListener('change',()=>{ if(S.screen==='auth'||S.screen==='signup') go('auth'); });
 /* prototype panel */
 $('#sc-jump').innerHTML = Object.entries(SCREENS).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('');
 $('#sc-jump').addEventListener('change',e=>{
