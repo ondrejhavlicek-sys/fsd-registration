@@ -121,6 +121,7 @@
   .ico-row .field{width:248px}
   .clear{background:none;border:0;font-size:16px;color:var(--ink-strong)}
   .stack{max-width:600px}
+  .limits{margin:8px 0 0;padding-left:20px;display:grid;gap:4px}
   .assure{list-style:none;margin:28px 0 28px;padding:0;display:grid;gap:10px}
   .assure li{display:flex;gap:10px;align-items:flex-start}
   .assure li::before{content:"✓";flex:none;width:22px;height:22px;border-radius:50%;background:#e3f4ea;color:#0a6b3a;display:grid;place-items:center;font-size:13px;font-weight:700;margin-top:1px}
@@ -1025,6 +1026,21 @@ const DOC_SLOTS = [
 ];
 const VALID_ICO = '03255654';
 const PERSON = { name: 'Jan Novák', born: '5. 1. 1988', bornIso: '1988-01-05', email: 'jan.novak@eremita.cz' };
+// Identity check can be skipped. Name and date of birth are then typed in by the user (self-declared, not verified).
+// The limits below are an example for the prototype; the final list is for Makro to decide.
+const SKIP_LIMITS = ['Objednávky budete platit předem.','Alkohol a tabákové výrobky vám nebudou k dispozici.'];
+const SKIP_LATER = 'Totožnost můžete ověřit kdykoli později ve svém profilu.';
+const skipped = () => !!(S.identity && S.identity.skipped);
+const person = () => skipped() ? {name:S.identity.name, born:S.identity.born, bornIso:S.identity.bornIso} : PERSON;
+const limitsList = () => `<ul class="limits">${SKIP_LIMITS.map(x=>`<li>${x}</li>`).join('')}</ul>`;
+const limitsBox = (lead, extra) => `<div class="alert warn" role="status">${ALERT_ICONS.warn}<div><p><b>${lead}</b></p>${limitsList()}${extra?`<p style="margin-top:10px">${extra}</p>`:''}</div></div>`;
+function parseDob(str){   // "5. 1. 1988", "05.01.1988", "5/1/1988"
+  const m=String(str).trim().match(/^(\d{1,2})\s*[.\/-]\s*(\d{1,2})\s*[.\/-]\s*(\d{4})$/); if(!m) return null;
+  const d=+m[1], mo=+m[2], y=+m[3], dt=new Date(y,mo-1,d);
+  if(dt.getFullYear()!==y || dt.getMonth()!==mo-1 || dt.getDate()!==d || y<1900 || dt>new Date()) return null;
+  const now=new Date(); let age=now.getFullYear()-y; if(now.getMonth()<mo-1 || (now.getMonth()===mo-1 && now.getDate()<d)) age--;
+  return {iso:`${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`, born:`${d}. ${mo}. ${y}`, age};
+}
 
 const STEPS = [
   ['Přihlašovací účet','Účet pro přihlášení do služby','account'],
@@ -1106,7 +1122,7 @@ const S = {
   idScreen:null, bank:null, bankAll:false, consent:false,
   file:null, poaFail:false,
   invites:[], showInvite:false, terms:false,
-  authForm:false, authEmail:''
+  authForm:false, authEmail:'', skName:'', skDob:'', verifyLater:false
 };// the saved registrations belong to the flow variant that created them
 Object.defineProperty(S,'drafts',{get(){ return S.draftSets[S.variant]; }, set(v){ S.draftSets[S.variant]=v; }});
 const S_INIT = JSON.parse(JSON.stringify(S));   // the starting state, used by "Reset data to default"
@@ -1131,7 +1147,8 @@ function go(id){
   if(id==='profile' && !isMobile()) id='profPersonal';   // the profile hub is a mobile page; desktop opens the first section
   const prev = S.screen;
   if(prev!==id) S.prof={edit:false,pw:false,err:{}};   // an open profile form does not survive leaving the page
-  if(id==='idOk') S.identity={verified:true,via:S.via};   // identity belongs to the person, not to one registration
+  if(id==='idOk' && S.method!=='skip') S.identity={verified:true,via:S.via};   // identity belongs to the person, not to one registration
+  if(S.verifyLater && (id==='profPersonal' || !['bank','bankSite','docLoading','bankLoading','idOk'].includes(id))) S.verifyLater=false;
   S.screen = id;
   { const k = SCREENS[id].step; if(k>=2) S.completedUpTo = Math.max(S.completedUpTo, k-1); }
   if(location.hash.slice(1)!==id) history.replaceState(null,'','#'+id);
@@ -1312,7 +1329,7 @@ const loadingBox = h => `<div class="loading" style="height:${h}px" role="status
 const dataRows = rows => `<dl>${rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
 const personPanel = (roleHtml, green) => `
   <div class="panel ${green?'green':''}"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([
-    ['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()],['Oprávnění jednat za firmu',roleHtml]
+    ['Jméno a příjmení',esc(person().name)],['Datum narození',person().born],['Ověřeno přes',viaLabel()],['Oprávnění jednat za firmu',roleHtml]
   ])}${green?'<span class="bigcheck">✓</span>':''}</div>`;
 
 const svgIcon = (body, size=24) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">${body}</svg>`;
@@ -1421,7 +1438,7 @@ function saveDraft(){   // called when the user leaves after the user account ex
 function loadDraft(id){
   const d=S.drafts.find(x=>x.id===id); if(!d) return;
   REG_FIELDS.forEach(k=>{ S[k]=d.snap[k]; });
-  if(d.snap.identity && d.snap.identity.verified && !S.identity.verified) S.identity=Object.assign({},d.snap.identity);   // the person's verification is never lost
+  if(d.snap.identity && (d.snap.identity.verified||d.snap.identity.skipped) && !S.identity.verified && !S.identity.skipped) S.identity=Object.assign({},d.snap.identity);   // the person's verification is never lost
   if(S.identity.verified) S.via=S.identity.via||S.via;
   applyFlow();
   Object.assign(S,{origin:'hub',regId:id,terms:false,invites:[],showInvite:false,docFail:false,poaFail:false,docErr:{}});
@@ -1436,7 +1453,7 @@ function newRegistration(origin){    // another company: a fresh registration fr
   const email=S.authEmail;
   resetRegistration(''); S.authEmail=email; S.origin=origin||'hub';
   if(S.acct){          // identity belongs to the person: a verified person goes straight to the company step
-    if(S.identity.verified){ S.via=S.identity.via||S.via; S.completedUpTo=2; go('ico'); }
+    if(S.identity.verified||skipped()){ S.via=S.identity.via||S.via; S.completedUpTo=2; if(skipped()) S.method='skip'; go('ico'); }
     else { S.completedUpTo=1; go('bank'); }
     return;
   }
@@ -1468,11 +1485,12 @@ const nameTokens = n => n.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().
 // lenient: ignores case, diacritics, titles, middle names and the order of first and last name
 const sameName = (a,b) => { const A=nameTokens(a), B=nameTokens(b); if(A.length<2||B.length<2) return false; const [sm,lg]=A.length<=B.length?[A,B]:[B,A]; return sm.every(t=>lg.includes(t)); };
 function matchPerson(company){
-  const people=(company.people||[]).map(p=>{ const nameOk=sameName(PERSON.name,p.name); return {name:p.name,role:p.role,nameOk,ok:nameOk && p.born===PERSON.bornIso}; });
+  const people=(company.people||[]).map(p=>{ const me=person(), nameOk=sameName(me.name,p.name); return {name:p.name,role:p.role,nameOk,ok:nameOk && p.born===me.bornIso}; });
   const ok=people.some(p=>p.ok);
   return {ok, reason: ok?'match':(people.some(p=>p.nameOk)?'dob':'none'), people};
 }
 const rolePoa = () => S.needPoa;
+const poaLocked = () => S.needPoa && skipped();   // without a verified identity only statutory bodies (listed in the register) can register
 
 // ---- validation helpers ----
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -1487,6 +1505,10 @@ const canContinueCompany = () => !S.needPoa || S.poaState==='ok';
 const canFinish = () => S.terms && contactOk();
 const poaSection = () => {
   if(!S.needPoa) return '';
+  if(poaLocked()) return `<h3 style="margin-top:32px">Plná moc</h3>
+    ${alertBox('warn','Plnou moc může nahrát jen ověřená osoba. Nejdřív proto ověřte svou totožnost.','margin:8px 0 12px')}
+    <button type="button" class="btn soft" id="verifyNow" data-verify>Ověřit totožnost</button>
+    <p class="hint" style="margin:12px 0 0">Nebo registraci vyřiďte s obchodním zástupcem – zavolejte nám na +420 271 005 005 (Po–Pá 7–19 h, Ne 12–19 h).</p>`;
   const st=S.poaState;
   let body;
   if(st==='checking') body=`<div class="file"><span class="fi">🖼</span><b style="font-weight:500">${esc(S.file.name)}</b></div>${loadingBox(110)}`;
@@ -1504,12 +1526,13 @@ const poaSection = () => {
 // flow B: result of comparing the verified person with the people listed in the register
 const matchBlock = () => {
   const m=S.match; if(!m) return '';
-  const msg = m.ok ? 'V obchodním rejstříku jste uvedeni jako osoba oprávněná jednat za firmu. Plnou moc nepotřebujete.'
+  const msg = m.ok ? (skipped() ? 'V obchodním rejstříku jste podle zadaných údajů uvedeni jako osoba oprávněná jednat za firmu. Plnou moc nepotřebujete.' : 'V obchodním rejstříku jste uvedeni jako osoba oprávněná jednat za firmu. Plnou moc nepotřebujete.')
+    : poaLocked() ? (m.reason==='dob' ? 'V rejstříku jsme našli osobu se stejným jménem, ale s jiným datem narození, než jste zadali.' : 'V rejstříku vás podle zadaného jména a data narození jako osobu oprávněnou jednat za firmu nevidíme.')
     : m.reason==='dob' ? 'V rejstříku jsme našli osobu se stejným jménem, ale s jiným datem narození, proto vás nemůžeme spárovat. Nevadí – stačí nahrát plnou moc.'
     : 'V rejstříku vás jako osobu oprávněnou jednat za firmu nevidíme. Nevadí – stačí nahrát plnou moc.';
   const ppl=m.people.map(p=>`${esc(p.name)} (${esc(p.role)})${p.ok?' ✓':''}`).join(', ');
   return alertBox(m.ok?'ok':'warn',msg,'margin-top:16px')
-    + `<p class="hint" style="margin:8px 0 0">${m.ok?'Za firmu podle rejstříku jednají':'Plnou moc musí podepsat někdo z osob, které za firmu podle rejstříku jednají'}: ${ppl}.</p>`;
+    + `<p class="hint" style="margin:8px 0 0">${m.ok||poaLocked()?'Za firmu podle rejstříku jednají':'Plnou moc musí podepsat někdo z osob, které za firmu podle rejstříku jednají'}: ${ppl}.</p>`;
 };
 const contactFields = () => `
         <div class="stack">
@@ -1610,7 +1633,13 @@ const VIEWS = {
           <div class="ac-actions"><button class="btn" type="submit">Uložit změny</button><button class="link" type="button" id="pfCancel">Zrušit</button></div>
         </form>`
       :`<dl class="kv"><dt>Jméno</dt><dd>${esc(userFull())}</dd><dt>Telefon</dt><dd>${esc(S.user.phone||'—')}</dd><dt>Přihlašovací e-mail</dt><dd>${esc(userEmail())}</dd></dl>`}
-      <p class="ac-note">Tyto údaje patří k vašemu přihlašovacímu účtu. Údaje o firmě spravujete zvlášť.</p></section>`);
+      <p class="ac-note">Tyto údaje patří k vašemu přihlašovacímu účtu. Údaje o firmě spravujete zvlášť.</p></section>
+      ${(S.identity.verified||skipped()||S.acct==='created')?`<section class="ac-card"><div class="ac-card-h"><h2>Ověření totožnosti</h2></div>
+        ${S.identity.verified
+          ? `<dl class="kv"><dt>Stav</dt><dd>Ověřeno ✓</dd><dt>Ověřeno přes</dt><dd>${S.identity.via==='doc'?'Osobní doklad a fotografie':'Bank iD'}</dd></dl>`
+          : `<dl class="kv"><dt>Stav</dt><dd>Neověřeno</dd></dl>
+             <p class="ac-note" style="margin-bottom:14px">Bez ověření totožnosti platí omezení: ${SKIP_LIMITS.map(x=>x.replace(/\.$/,'').replace(/^(.)/,c=>c.toLowerCase())).join('; ')}.</p>
+             <button type="button" class="btn soft" data-verify="profile">Ověřit totožnost</button>`}</section>`:''}`);
   },
 
   profSecurity: () => {
@@ -1875,7 +1904,8 @@ const VIEWS = {
   bank: () => {
     const list = S.bankAll ? BANKS : BANKS.slice(0,BANK_SHORT);
     const isDoc = S.method==='doc';
-    const tabs = [['bankid','Bank iD <span class="rec">doporučeno</span>'],['doc','Osobní doklad']].map(([k,t])=>
+    const canSkip = !S.identity.verified && !S.verifyLater;
+    const tabs = [['bankid','Bank iD <span class="rec">doporučeno</span>'],['doc','Osobní doklad']].concat(canSkip?[['skip','Přeskočit ověření']]:[]).map(([k,t])=>
       `<button type="button" role="tab" id="tab-${k}" aria-selected="${S.method===k}" aria-controls="verifyPanel" tabindex="${S.method===k?0:-1}" data-method="${k}">${t}</button>`).join('');
     const bankPanel = `
         <p class="how-h"><b>Ověření přes Bank iD trvá asi 2 minuty:</b></p>
@@ -1904,6 +1934,20 @@ const VIEWS = {
         <div class="docpanel">${DOC_SLOTS.map(slot).join('')}</div>
         <label class="chk"><input type="checkbox" id="docConsent" ${S.docConsent?'checked':''}> <span>Souhlasím se zpracováním údajů z dokladu a fotografie za účelem ověření totožnosti. <a href="#">Zásady zpracování osobních údajů</a></span></label>
         <div class="actions" style="margin-top:36px"><button class="btn" id="docGo">Zkontrolovat doklad a fotografii</button>${later_btn}</div>`;
+    const skipPanel = `
+        ${limitsBox('Bez ověření totožnosti budete mít omezený přístup ke službám:', SKIP_LATER)}
+        <p class="hint" style="margin:0 0 20px">Bez ověření můžete firmu zaregistrovat jen tehdy, když jste v obchodním rejstříku uvedeni jako osoba oprávněná za ni jednat. Plnou moc může nahrát jen ověřená osoba.</p>
+        <form id="skipForm" class="stack" novalidate>
+          <label class="lbl" for="skName">Jméno a příjmení</label>
+          <div class="field"><input id="skName" data-bind="skName" value="${esc(S.skName)}" autocomplete="name" aria-required="true" aria-describedby="skNameErr"></div>
+          <div class="slot-err" id="skNameErr" role="alert" style="margin:4px 0 0"></div>
+          <label class="lbl" for="skDob" style="margin-top:20px">Datum narození</label>
+          <div class="field small-w"><input id="skDob" data-bind="skDob" value="${esc(S.skDob)}" inputmode="numeric" placeholder="5. 1. 1988" autocomplete="off" aria-required="true" aria-describedby="skDobHint skDobErr"></div>
+          <div class="hint" id="skDobHint" style="color:var(--muted);margin-top:6px;font-size:12px">Ve tvaru den. měsíc. rok, například 5. 1. 1988. Údaje porovnáme s obchodním rejstříkem.</div>
+          <div class="slot-err" id="skDobErr" role="alert" style="margin:4px 0 0"></div>
+          <div class="hint" style="color:var(--muted);margin-top:6px;font-size:12px">Pro ukázku: Jan Novák, 5. 1. 1988 je osoba uvedená v rejstříku u IČO 03255654.</div>
+          <div class="actions" style="margin-top:36px"><button class="btn" type="submit" id="skipGo">Pokračovat bez ověření</button>${later_btn}</div>
+        </form>`;
     return `${header(true)}
     <div class="page">${sidebar('bank')}
       <main>${topbar('bank')}
@@ -1911,7 +1955,7 @@ const VIEWS = {
         <p class="sub">Než zaregistrujete firmu, potřebujeme ověřit, kdo jste. Díky tomu pak můžeme sami zkontrolovat, že za firmu smíte jednat.</p>
         ${S.docFail?alertBox('warn','Doklad a fotografii se nepodařilo ověřit. Zkontrolujte, že jsou snímky ostré a čitelné, a zkuste to znovu. Pokud to nepomůže, vyřiďte registraci s obchodním zástupcem – zavolejte nám na +420 271 005 005 (Po–Pá 7–19 h, Ne 12–19 h).','margin-top:4px'):''}
         <div class="seg" role="tablist" aria-label="Způsob ověření totožnosti">${tabs}</div>
-        <div id="verifyPanel" role="tabpanel" aria-labelledby="tab-${S.method}">${isDoc?docPanel:bankPanel}</div>
+        <div id="verifyPanel" role="tabpanel" aria-labelledby="tab-${S.method}">${S.method==='skip'&&canSkip?skipPanel:isDoc?docPanel:bankPanel}</div>
       </main>
     </div>`;
   },
@@ -1955,9 +1999,13 @@ const VIEWS = {
         <h3 style="font-size:13px;margin-top:28px">Vaše firma</h3>
         <div class="panel green"><div class="badge">${svgIcon(ICON.company)}</div>${dataRows([['IČO',cur().ico],['Název',cur().name]])}<span class="bigcheck" style="width:28px;height:28px">✓</span></div>
         <h3 style="font-size:13px">Ověření totožnosti</h3>
-        <div class="panel green"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([
-          ['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()],
-          ['Oprávnění jednat za firmu', rolePoa()?'Ověřeno – plná moc ✓':'Ověřeno v obchodním rejstříku ✓']])}<span class="bigcheck" style="width:28px;height:28px">✓</span></div>
+        ${skipped() ? `<div class="panel"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([
+          ['Jméno a příjmení',esc(person().name)],['Datum narození',person().born],['Ověření','Přeskočeno – údaje zadány ručně'],
+          ['Oprávnění jednat za firmu','Shoda s obchodním rejstříkem (podle zadaných údajů)']])}</div>
+        ${limitsBox('Bez ověření totožnosti platí omezení:', SKIP_LATER)}
+        <button type="button" class="btn soft sm" data-verify style="margin:-4px 0 8px">Ověřit totožnost nyní</button>` : `<div class="panel green"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([
+          ['Jméno a příjmení',esc(person().name)],['Datum narození',person().born],['Ověřeno přes',viaLabel()],
+          ['Oprávnění jednat za firmu', rolePoa()?'Ověřeno – plná moc ✓':'Ověřeno v obchodním rejstříku ✓']])}<span class="bigcheck" style="width:28px;height:28px">✓</span></div>`}
         <h3 style="margin-top:32px">Kontaktní údaje firmy</h3>
         <p class="hint" style="margin:4px 0 0">Na e-mail vám pošleme potvrzení registrace. Telefon použijeme jen tehdy, když bude potřeba něco upřesnit.</p>
         ${contactFields()}
@@ -1972,7 +2020,9 @@ const VIEWS = {
     <div class="center-note"><div class="badge" style="margin:0 auto 16px;width:56px;height:56px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;font-size:28px">✓</div>
       <h1>Registrace dokončena</h1>
       <p>Registraci firmy <b>${esc(cur().name)}</b> máme hotovou. Potvrzení jsme poslali na ${esc(S.email)}. Nakupovat můžete hned.</p>
+      ${skipped()?`<div style="text-align:left;max-width:560px;margin:0 auto 24px">${limitsBox('Protože jste přeskočili ověření totožnosti, platí omezení:', SKIP_LATER)}</div>`:''}
       <div class="done-actions">
+        ${skipped()?'<button class="btn soft" data-verify="profile">Ověřit totožnost</button>':''}
         <button class="btn" data-soon-msg="Obchod zatím není součástí tohoto prototypu.">Přejít do obchodu</button>
         <button class="btn soft" data-new ${full?'disabled':''}>Registrovat další firmu</button>
         ${full?`<p class="hint" style="margin:0">Máte rozpracováno ${MAX_DRAFTS} registrací. Dokončete nebo smažte některou.</p>`:''}
@@ -1995,15 +2045,27 @@ function icoScreen(err){
       </main>
     </div>`;
 }
+function idSkipped(cur, next){
+  const p=person();
+  return `${header(true)}
+    <div class="page">${sidebar(cur)}
+      <main>${topbar(cur)}<h1>Pokračujete bez ověření totožnosti</h1>
+        <div style="margin-top:20px">${limitsBox('Do doby, než totožnost ověříte, platí omezení:', SKIP_LATER)}</div>
+        <div class="panel"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows([['Jméno a příjmení',esc(p.name)],['Datum narození',p.born],['Ověření','Přeskočeno – údaje jste zadali ručně']])}</div>
+        <div class="actions" style="margin-top:36px"><button class="btn" data-go="${next}" style="padding:14px 8px">Pokračovat na registraci firmy</button><button class="btn soft" data-verify>Ověřit totožnost nyní</button><button class="link later-mob" data-go="later">Dokončit registraci později</button></div>
+      </main>
+    </div>`;
+}
 function idDone(role, cur, next){
+  if(skipped()) return idSkipped(cur,next);
   const msg = `Vaše totožnost byla úspěšně ověřena ${viaText()}. V dalším kroku zaregistrujete firmu a my zkontrolujeme, že za ni smíte jednat.`;
-  const rows=[['Jméno a příjmení',PERSON.name],['Datum narození',PERSON.born],['Ověřeno přes',viaLabel()]];
+  const rows=[['Jméno a příjmení',esc(person().name)],['Datum narození',person().born],['Ověřeno přes',viaLabel()]];
   return `${header(true)}
     <div class="page">${sidebar(cur)}
       <main>${topbar(cur)}<h1>Ověření totožnosti dokončeno</h1>
         ${alertBox('ok',msg,'margin-top:20px')}
         <div class="panel"><div class="badge">${svgIcon(ICON.id)}</div>${dataRows(rows)}</div>
-        <div class="actions" style="margin-top:36px"><button class="btn" data-go="${next}" style="padding:14px 8px">Pokračovat na registraci firmy</button><button class="link later-mob" data-go="later">Dokončit registraci později</button></div>
+        <div class="actions" style="margin-top:36px"><button class="btn" data-go="${S.verifyLater?'profPersonal':next}" style="padding:14px 8px">${S.verifyLater?'Zpět do profilu':'Pokračovat na registraci firmy'}</button>${S.verifyLater?'':'<button class="link later-mob" data-go="later">Dokončit registraci později</button>'}</div>
       </main>
     </div>`;
 }
@@ -2098,11 +2160,13 @@ function wire(){
   // verification method tabs (Bank iD / Osobní doklad)
   const tablist = app.querySelector('[role="tablist"]');
   if(tablist){
+    const order=[...tablist.querySelectorAll('[role="tab"]')].map(t=>t.dataset.method);
     const pick = m => { S.method=m; render(); app.querySelector('[role="tab"][aria-selected="true"]').focus(); };
     tablist.querySelectorAll('[role="tab"]').forEach(t=>t.addEventListener('click',()=>pick(t.dataset.method)));
     tablist.addEventListener('keydown',e=>{
       if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key)) return;
-      e.preventDefault(); pick(S.method==='bankid'?'doc':'bankid');
+      e.preventDefault(); const i=order.indexOf(S.method);
+      pick(e.key==='Home'?order[0] : e.key==='End'?order[order.length-1] : order[(i+(e.key==='ArrowRight'?1:-1)+order.length)%order.length]);
     });
   }
   // ID document + photo slots
@@ -2136,6 +2200,23 @@ function wire(){
     if(!S.consent) return blocked('Potvrďte prosím, že jste si přečetli Zásady zpracování osobních údajů.','#consent');
     S.completedUpTo=Math.min(S.completedUpTo,stepNo('identity')-1); S.via='bankid'; S.docFail=false; go('bankSite'); });
 
+  const sk = $('#skipForm');
+  if(sk){
+    const nm=$('#skName'), db=$('#skDob'), setErr=(inp,id,msg)=>{ $('#'+id).textContent=msg; inp.closest('.field').classList.toggle('err',!!msg); inp.setAttribute('aria-invalid',msg?'true':'false'); };
+    nm.addEventListener('input',()=>setErr(nm,'skNameErr',''));
+    db.addEventListener('input',()=>setErr(db,'skDobErr',''));
+    sk.addEventListener('submit',e=>{
+      e.preventDefault(); const name=nm.value.trim().replace(/\s+/g,' '), dob=parseDob(db.value);
+      const nErr = !name ? 'Zadejte své jméno a příjmení.' : nameTokens(name).length<2 ? 'Zadejte jméno i příjmení.' : '';
+      const dErr = !db.value.trim() ? 'Zadejte své datum narození.' : !dob ? 'Zadejte datum ve tvaru den. měsíc. rok, například 5. 1. 1988.' : dob.age<18 ? 'Firmu může zaregistrovat jen osoba starší 18 let.' : '';
+      setErr(nm,'skNameErr',nErr); setErr(db,'skDobErr',dErr);
+      const bad = nErr ? nm : dErr ? db : null; if(bad){ bad.focus(); return; }
+      S.completedUpTo=Math.min(S.completedUpTo,stepNo('identity')-1); S.method='skip'; S.docFail=false;
+      S.identity={verified:false,via:null,skipped:true,name,born:dob.born,bornIso:dob.iso};
+      go('idOk');
+    });
+  }
+  app.querySelectorAll('[data-verify]').forEach(b=>b.addEventListener('click',()=>{ S.method='bankid'; S.verifyLater=b.dataset.verify==='profile'; go('bank'); }));
   const bv = $('#bsVerify');
   if(bv) bv.addEventListener('click',()=>go('bankLoading'));
 
@@ -2157,6 +2238,7 @@ function wire(){
   const nx = app.querySelector('[data-next="company"]');
   if(nx) nx.addEventListener('click',()=>{
     if(S.poaState==='checking') return blocked('Počkejte prosím, plnou moc právě kontrolujeme.');
+    if(poaLocked()) return blocked('Bez ověření totožnosti nemůžeme registrovat firmu s plnou mocí. Ověřte prosím svou totožnost.','#verifyNow');
     if(!canContinueCompany()) return blocked('Nahrajte prosím plnou moc. Bez ní nemůžeme registraci dokončit.','#pick');
     go('summary');
   });
