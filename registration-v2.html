@@ -1794,13 +1794,13 @@ const VIEWS = {
           <div class="actions" style="margin-top:28px"><button class="btn cta-intro" type="submit" style="padding:14px 8px">Vytvořit přihlašovací účet</button></div>
         </form>
         ` : ''}
-        <ul class="assure">
+        ${native ? '' : `<ul class="assure">
           <li>Postup se průběžně ukládá. Registraci můžete přerušit a vrátit se později.</li>
           <li>Údaje o firmě doplníme z obchodního rejstříku, nemusíte je opisovat.</li>
           <li>Kdykoli vám pomůžeme: stačí zavolat.</li>
-        </ul>
+        </ul>`}
         ${native ? '' : `<button class="btn cta-intro" data-go="auth" style="padding:14px 8px">Vytvořit přihlašovací účet</button>`}
-        <p class="resume-hint" ${S.acct?'hidden':''}>Máte účet nebo rozpracovanou registraci? <button type="button" class="link" data-go="login">Přihlásit se</button></p>
+        <p class="resume-hint" ${S.acct?'hidden':''}${native?' style="margin-top:28px"':''}>Máte účet nebo rozpracovanou registraci? <button type="button" class="link" data-go="login">Přihlásit se</button></p>
         <div class="callrep"><b>Chcete registraci raději vyřídit osobně?</b>
           <p>Zavolejte nám a domluvíme schůzku s obchodním zástupcem. Pomůže vám s celou registrací.</p>
           <div class="phone">${INTRO_ICON.phone}<span>+420 271 005 005</span></div>
