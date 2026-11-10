@@ -1051,7 +1051,6 @@ const SCREENS = {
   icoDup:      { step:3, label:'3.x – Firma už existuje', back:'ico' },
   intro:       { step:1, label:'1.1 – Úvod k účtu' },
   auth:        { step:1, label:'1.2 – Registrace (modal, AAD)', bare:true },
-  signup:      { step:1, label:'1.2 – Vytvoření účtu (nativní formulář)' },
   account:     { step:1, label:'1.3 – Účet vytvořen' },
   ico:         { step:3, label:'3.1 – Zadejte IČO', back:'account' },
   icoLoading:  { step:3, label:'3.2 – Načítání z rejstříku', back:'ico' },
@@ -1126,7 +1125,7 @@ function focusPage(){    // after a screen change keyboard and screen-reader use
 const afterIdentity = () => 'idOk';   // the power of attorney is decided only after the company is known
 const nativeAcct = () => (document.querySelector('#sc-acct')||{}).value==='native';   // prototype scenario: native account form instead of the AAD modal
 function go(id){
-  if(id==='auth' && nativeAcct()) id='signup';
+  if(id==='auth' && nativeAcct()) id='intro';   // native form variant: the fields are on step 1 itself
   timers.splice(0).forEach(clearTimeout);
   if(id!=='hub') S.hubNotice='';
   if(id==='profile' && !isMobile()) id='profPersonal';   // the profile hub is a mobile page; desktop opens the first section
@@ -1190,7 +1189,7 @@ function leaveTo(target){   // ask first when a profile form has unsaved changes
 }
 function openExit(kind, extra){
   // nothing is saved until the user account exists: the intro and the account-creation modal
-  exitKind = kind || ((S.screen==='auth'||S.screen==='signup'||S.screen==='intro') ? 'confirm' : 'saved');
+  exitKind = kind || ((S.screen==='auth'||S.screen==='intro') ? 'confirm' : 'saved');
   const c = Object.assign({}, EXIT_COPY[exitKind], extra||{});
   $('#exitTitle').textContent=c.title; $('#exitText').textContent=c.text;
   $('#exitContinue').textContent=c.stay; $('#exitRestart').textContent=c.leave;
@@ -1411,7 +1410,7 @@ const draftName = d => d.snap.company ? d.snap.company.name : 'Firma zatím neza
 function saveDraft(){   // called when the user leaves after the user account exists
   const screen = STABLE[S.screen] || S.screen;
   const step = (SCREENS[screen]||{}).step || 0;
-  if(step<1 || screen==='intro' || screen==='auth' || screen==='signup' || screen==='done') return;
+  if(step<1 || screen==='intro' || screen==='auth' || screen==='done') return;
   const snap={}; REG_FIELDS.forEach(k=>{ snap[k]=S[k]; });
   snap.identity=Object.assign({},S.identity);
   const d={id:S.regId||('r'+Date.now()), variant:S.variant, screen, saved:todayIso(), snap};
@@ -1774,32 +1773,15 @@ const VIEWS = {
         <div class="av-actions"><button class="btn" id="avTryAgain">Zkusit jinou adresu</button><button class="link" data-go="landing">Zpět na úvod</button></div>
       </div>`),
 
-  intro: () => `${header(false)}
+  intro: () => {
+    const native = nativeAcct();
+    return `${header(false)}
     <div class="page">${sidebar('intro')}
       <main>
         ${topbar('intro',false)}
         <h1>Začněte vytvořením přihlašovacího účtu</h1>
         <p class="sub">Účet je váš osobní přístup do služby <b>makro distribuce</b>. S ním pak zaregistrujete firmu a budete objednávat. Registrace je zdarma.</p>
-        <ul class="assure">
-          <li>Postup se průběžně ukládá. Registraci můžete přerušit a vrátit se později.</li>
-          <li>Údaje o firmě doplníme z obchodního rejstříku, nemusíte je opisovat.</li>
-          <li>Kdykoli vám pomůžeme: stačí zavolat.</li>
-        </ul>
-        <button class="btn cta-intro" data-go="auth" style="padding:14px 8px">Vytvořit přihlašovací účet</button>
-        <p class="resume-hint" ${S.acct?'hidden':''}>Máte účet nebo rozpracovanou registraci? <button type="button" class="link" data-go="login">Přihlásit se</button></p>
-        <div class="callrep"><b>Chcete registraci raději vyřídit osobně?</b>
-          <p>Zavolejte nám a domluvíme schůzku s obchodním zástupcem. Pomůže vám s celou registrací.</p>
-          <div class="phone">${INTRO_ICON.phone}<span>+420 271 005 005</span></div>
-          <small>Po–Pá 7–19 h, Ne 12–19 h</small></div>
-      </main>
-    </div>`,
-
-  signup: () => `${header(false)}
-    <div class="page">${sidebar('signup')}
-      <main>
-        ${topbar('signup',false)}
-        <h1>Vytvořte si přihlašovací účet</h1>
-        <p class="sub">Zadejte e-mail a zvolte si heslo. E-mail budete používat k přihlášení.</p>
+        ${native ? `
         <form id="signupForm" class="stack" novalidate>
           <label class="lbl" for="suEmail" style="margin-top:20px">E-mail</label>
           <div class="field"><input id="suEmail" type="email" inputmode="email" autocomplete="email" autofocus aria-required="true" aria-describedby="suEmailErr suEmailHint" placeholder="jmeno@domena.cz" value="${esc(S.authEmail||'')}"></div>
@@ -1809,11 +1791,23 @@ const VIEWS = {
           <div class="field"><input id="suPw" type="password" autocomplete="new-password" aria-required="true" aria-describedby="suPwErr suPwHint"><button type="button" class="link small" id="suPwToggle" aria-controls="suPw" aria-pressed="false">Zobrazit</button></div>
           <div class="slot-err" id="suPwErr" role="alert" style="margin:4px 0 0"></div>
           <div class="hint" id="suPwHint" style="color:var(--muted);margin-top:6px;font-size:12px">Alespoň 8 znaků.</div>
-          <div class="actions" style="margin-top:36px"><button class="btn" type="submit">Vytvořit účet</button></div>
+          <div class="actions" style="margin-top:28px"><button class="btn cta-intro" type="submit" style="padding:14px 8px">Vytvořit přihlašovací účet</button></div>
         </form>
-        <p class="resume-hint" style="margin-top:20px">Už máte účet? <button type="button" class="link" data-go="login">Přihlásit se</button></p>
+        ` : ''}
+        <ul class="assure">
+          <li>Postup se průběžně ukládá. Registraci můžete přerušit a vrátit se později.</li>
+          <li>Údaje o firmě doplníme z obchodního rejstříku, nemusíte je opisovat.</li>
+          <li>Kdykoli vám pomůžeme: stačí zavolat.</li>
+        </ul>
+        ${native ? '' : `<button class="btn cta-intro" data-go="auth" style="padding:14px 8px">Vytvořit přihlašovací účet</button>`}
+        <p class="resume-hint" ${S.acct?'hidden':''}>Máte účet nebo rozpracovanou registraci? <button type="button" class="link" data-go="login">Přihlásit se</button></p>
+        <div class="callrep"><b>Chcete registraci raději vyřídit osobně?</b>
+          <p>Zavolejte nám a domluvíme schůzku s obchodním zástupcem. Pomůže vám s celou registrací.</p>
+          <div class="phone">${INTRO_ICON.phone}<span>+420 271 005 005</span></div>
+          <small>Po–Pá 7–19 h, Ne 12–19 h</small></div>
       </main>
-    </div>`,
+    </div>`;
+  },
 
   auth: () => {
     const content = `
@@ -2045,7 +2039,6 @@ function wire(){
   }));
   app.querySelectorAll('[data-step-go]').forEach(el=>el.addEventListener('click',()=>go(el.dataset.stepGo)));
   app.querySelectorAll('[data-back]').forEach(el=>el.addEventListener('click',()=>{
-    if(S.screen==='signup') return go('intro');
     if(SCREENS[S.screen].step<=1) return openExit(); // step 1: back = exit flow
     let b = SCREENS[S.screen].back || 'account';
     if(b==='ico'){ S.icoErr=false; }
@@ -2417,7 +2410,7 @@ $('#sc-drafts').addEventListener('change',e=>{ seedDrafts(e.target.value); if(S.
 seedDrafts('one');
 applyFlow();
 
-$('#sc-acct').addEventListener('change',()=>{ if(S.screen==='auth'||S.screen==='signup') go('auth'); });
+$('#sc-acct').addEventListener('change',()=>{ if(S.screen==='auth') go('auth'); else if(S.screen==='intro') render(); });
 /* prototype panel */
 $('#sc-reset').addEventListener('click',()=>{      // back to the state of a fresh page load: account, registration, saved registrations, scenario switches
   timers.splice(0).forEach(clearTimeout);
