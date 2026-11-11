@@ -458,6 +458,22 @@
   #bsOverlay{position:fixed;inset:0;z-index:200;overflow:auto;background:#f3f3f0;display:none}
   #bsOverlay.open{display:block}
 
+  /* change log document (opened from the button next to "Prototype scenarios") */
+  .doc-btn{position:fixed;right:250px;bottom:12px;z-index:10;background:#fff;border:1px solid var(--line);box-shadow:0 2px 12px rgba(0,0,0,.12);font-size:12px;font-weight:600;color:var(--muted);padding:8px 10px;line-height:normal}
+  .doc-btn:hover{background:#f3f5fe;color:var(--ink-strong)}
+  .dialog.doc{max-width:780px;max-height:calc(100vh - 32px);overflow:auto;padding:40px 44px}
+  .dialog.doc .doc-meta{color:var(--muted);font-size:14px;margin:0 0 20px}
+  .dialog.doc h2{font-size:26px;line-height:34px;margin:0 0 4px}
+  .dialog.doc h3{font-size:19px;line-height:26px;margin:28px 0 8px}
+  .dialog.doc p{margin:0 0 12px}
+  .dialog.doc ul,.dialog.doc ol{margin:0 0 12px;padding-left:22px;display:grid;gap:6px}
+  .dialog.doc table{width:100%;border-collapse:collapse;margin:0 0 12px;font-size:15px;line-height:22px}
+  .dialog.doc th,.dialog.doc td{text-align:left;vertical-align:top;padding:8px 12px 8px 0;border-bottom:1px solid var(--line)}
+  .dialog.doc th{color:var(--muted);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.03em}
+  .dialog.doc td:first-child{white-space:nowrap;font-weight:700;color:var(--ink-strong)}
+  .dialog.doc .doc-lead{background:var(--info);border-left:4px solid var(--blue);padding:14px 16px;margin:0 0 8px}
+  .dialog.doc .doc-lead p:last-child{margin:0}
+
   /* prototype panel */
   .proto{bottom:12px}
   .proto div button{width:100%}
@@ -520,6 +536,9 @@
     .dialog .actions{flex-wrap:wrap;gap:16px}
     .dialog .actions .btn{width:100%}
     .proto{left:4px;right:auto;bottom:4px;width:200px;opacity:.92}
+    .doc-btn{left:210px;right:auto;bottom:4px;opacity:.92}
+    .dialog.doc{padding:24px 16px}
+    .dialog.doc td:first-child{white-space:normal}
     .bsite-main{padding:24px 12px}
     .bsite-card{padding:28px 20px}
     .bsite-bar .bsite-wrap,.bsite-wrap{padding:0 12px}
@@ -559,6 +578,85 @@
     </label>
   </div>
 </details>
+
+<button type="button" class="doc-btn" id="docBtn" aria-haspopup="dialog">Popis změn</button>
+<div class="overlay" id="docOverlay" aria-hidden="true"><div class="dialog doc" id="docDialog" role="dialog" aria-modal="true" aria-labelledby="docTitle">
+  <button class="x" id="docClose" aria-label="Zavřít">✕</button>
+  <p class="doc-meta">Dokumentace prototypu · registrace makro distribuce, verze 2 · 11. 11. 2026</p>
+  <h2 id="docTitle" tabindex="-1">Od jednostránkového formuláře zpět k průvodci</h2>
+  <p class="doc-meta">Co se ve verzi 2 během dne změnilo, proč, a jak registrace vypadá teď.</p>
+
+  <div class="doc-lead">
+    <p><b>Shrnutí.</b> Den začal pokusem nahradit průvodce jedním formulářem, ve kterém je ověření totožnosti jen nepovinná odbočka. Z technických důvodů ale musí uživatelský účet vzniknout dřív než registrace firmy, a tak se z formuláře postupně stal znovu průvodce se třemi kroky.</p>
+    <p>Změna pohledu z ranního zadání zůstala: nejkratší cesta vede bez ověření totožnosti a omezení, která z toho plynou, jsou vidět předem.</p>
+  </div>
+
+  <h3>Jak se návrh během dne vyvíjel</h3>
+  <table>
+    <thead><tr><th>Fáze</th><th>Co se změnilo</th><th>Proč</th></tr></thead>
+    <tbody>
+      <tr><td>0 · Výchozí stav</td><td>Průvodce se čtyřmi kroky: přihlašovací účet, ověření totožnosti, registrace firmy, shrnutí. Ověření šlo přeskočit, ale bylo samostatným krokem.</td><td>Průvodce vedl uživatele krok za krokem a ověření totožnosti bylo součástí hlavní cesty.</td></tr>
+      <tr><td>1 · Jeden formulář</td><td>Celá registrace na jedné stránce, sekce místo kroků. Ověření totožnosti jako nepovinná karta nahoře, hned pod ní výčet omezení. Rozpracované registrace, modální přihlášení a seznam kroků zmizely.</td><td>Nový pohled: co nejjednodušší průchod bez ověření, ověření jako odbočka. Inspirace registracemi Bidfood a Frumos.</td></tr>
+      <tr><td>2 · Zpřesnění</td><td>Ověření totožnosti jen přes Bank iD (bez dokladu a fotografie). Ověření e-mailu kódem po odeslání formuláře. Druhé pole pro heslo.</td><td>Doplnění zadání: z ověření totožnosti zůstává jen Bank iD, e-mail se ověřuje kódem a heslo se zadává dvakrát.</td></tr>
+      <tr><td>3 · Nejdřív účet</td><td>Rozdělení na dva kroky: uživatelský účet (e-mail, heslo, kód) a registrace firmy. Souhlasy rozdělené mezi oba kroky.</td><td>Technické omezení: registraci firmy lze založit až k existujícímu uživatelskému účtu.</td></tr>
+      <tr><td>4 · Návrat k registraci</td><td>Přihlašovací obrazovka, odhlášení, „Dokončit později“ a výzva k pokračování na úvodní stránce. Ukládá se jedna rozpracovaná registrace.</td><td>Kdo odejde po vytvoření účtu, má účet bez firmy a musí se umět vrátit.</td></tr>
+      <tr><td>5 · Zpět k průvodci</td><td>Seznam kroků jako ve verzi 1, třetí krok Shrnutí, stav „Uloženo“, kontaktní e-mail, zástupný text data narození „dd. mm. rrrr“.</td><td>Tok měl mezitím tři oddělené fáze, takže seznam kroků ho popisuje přesněji než jedna stránka.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Jak registrace vypadá teď</h3>
+  <ol>
+    <li><b>Uživatelský účet.</b> E-mail, heslo a heslo znovu, souhlas se zpracováním osobních údajů a nepovinný souhlas s nabídkami. Následuje šestimístný kód z e-mailu. Po jeho zadání účet existuje a k tomuto kroku se už nelze vrátit.</li>
+    <li><b>Registrace firmy.</b> Nepovinná karta ověření přes Bank iD s výčtem omezení. Kontaktní osoba: jméno, příjmení, datum narození, kontaktní e-mail (předvyplněný přihlašovacím e-mailem) a telefon. Firma: IČO, podle kterého se doplní název, sídlo a DIČ, a kontrola oprávnění jednat za firmu. Změny se průběžně ukládají.</li>
+    <li><b>Shrnutí.</b> Přehled účtu, kontaktní osoby a firmy s možností úpravy, připomenutí omezení pro neověřené, souhlas s obchodními podmínkami a tlačítko „Dokončit registraci“.</li>
+  </ol>
+  <p>Po dokončení je firma zaregistrovaná a účet aktivní hned, u neověřených uživatelů s omezeními.</p>
+
+  <h3>Co z jednostránkového přístupu zůstalo</h3>
+  <ul>
+    <li>Ověření totožnosti není krok. Je to odbočka v dialogu, kterou lze udělat v kroku 2, ve shrnutí i po dokončení registrace.</li>
+    <li>Omezení bez ověření (v prototypu platba předem a nedostupný alkohol a tabák) jsou vidět před rozhodnutím, ve shrnutí i na závěrečné obrazovce.</li>
+    <li>Všechny údaje o osobě a firmě jsou na jedné obrazovce, ne rozdělené do několika kroků.</li>
+    <li>Po ověření se jméno a datum narození převezmou z banky a zamknou.</li>
+  </ul>
+
+  <h3>Pravidla, která prototyp předvádí</h3>
+  <ul>
+    <li><b>Oprávnění jednat za firmu.</b> Jméno a datum narození se porovnají s osobami v obchodním rejstříku. Při shodě není potřeba nic dalšího.</li>
+    <li><b>Plná moc.</b> Kdo v rejstříku není, potřebuje plnou moc. Nahrát ji může jen ověřená osoba, bez ověření tedy firmu zaregistruje jen osoba zapsaná v rejstříku.</li>
+    <li><b>Ověření ve shrnutí.</b> Pokud se po ověření ukáže, že ověřená osoba v rejstříku není, vrátí se uživatel do kroku 2 k nahrání plné moci.</li>
+    <li><b>Rozpracovaná registrace.</b> K účtu se ukládá jedna. „Registrovat se“ ji vždy znovu otevře a jinou firmu lze zaregistrovat změnou IČO.</li>
+    <li><b>Souhlasy.</b> Osobní údaje a nabídky patří k účtu (krok 1), obchodní podmínky k firmě (krok 3).</li>
+    <li><b>Už registrovaná firma.</b> Registraci nelze dokončit a uživatel dostane kontakt na zákaznickou linku.</li>
+  </ul>
+
+  <h3>Co oproti ranní verzi zmizelo</h3>
+  <ul>
+    <li>Ověření totožnosti jako samostatný krok a ověření osobním dokladem a fotografií.</li>
+    <li>Přihlášení přes modální okno a sociální účty.</li>
+    <li>Přehled více rozpracovaných registrací (až pět) a profil uživatele.</li>
+    <li>Kontakt firmy (e-mail a telefon) vyplňovaný až ve shrnutí. Kontaktní údaje jsou teď v kroku 2.</li>
+  </ul>
+
+  <h3>Otevřené otázky</h3>
+  <ul>
+    <li>Seznam omezení pro neověřené uživatele je jen příklad. Konečný výčet určí makro.</li>
+    <li>„Ověřit později v profilu“ prototyp slibuje, ale profil v této verzi není. Je potřeba rozhodnout, jestli a kde bude.</li>
+    <li>Jak dlouho se rozpracovaná registrace uchovává a co se stane s účtem, ke kterému firma nikdy nevznikne.</li>
+    <li>Jestli má být souhlas se zpracováním osobních údajů zaškrtávací pole, nebo jen informace u tlačítka.</li>
+    <li>Obnova zapomenutého hesla a vypršení ověřovacího kódu nejsou navržené.</li>
+    <li>Texty neprošly kontrolou podle B2B slovníku a tónu.</li>
+  </ul>
+
+  <h3>Jak si změny projít v prototypu</h3>
+  <ul>
+    <li>Panel „Prototype scenarios“ umí vyplnit ukázková data, přeskočit rovnou do kroku 2 a vrátit prototyp do výchozího stavu.</li>
+    <li>Ověřovací kód je 123456.</li>
+    <li>IČO 03255654 s osobou Jan Novák, 5. 1. 1988: shoda s rejstříkem. IČO 27082440: je potřeba plná moc. IČO 25596641: firma je už registrovaná.</li>
+    <li>Přihlášení e-mailem jan.novak@eremita.cz s libovolným heslem otevře účet s rozpracovanou registrací.</li>
+    <li>Rozpracovaná registrace žije jen v paměti stránky, obnovení stránky ji smaže.</li>
+  </ul>
+</div></div>
 
 <script>
 /* landing-page images from Figma, embedded so this file stays self-contained */
@@ -1234,6 +1332,16 @@ $('#bsOverlay').addEventListener('click',e=>{
   if(e.target.closest('#bsVerify')){ closeBankSite(); startCheck('bankid'); }
   if(e.target.closest('#bsCancel')){ closeBankSite(); S.vState='choose'; renderVerify(true); const o=$('#vOverlay'); o.classList.add('open'); o.setAttribute('aria-hidden','false'); document.body.classList.add('noscroll'); }
 });
+
+// change log document
+(()=>{
+  const o=$('#docOverlay'), d=$('#docDialog'), b=$('#docBtn');
+  const open=()=>{ o.classList.add('open'); o.setAttribute('aria-hidden','false'); document.body.classList.add('noscroll'); d.scrollTop=0; $('#docTitle').focus({preventScroll:true}); };
+  const close=()=>{ o.classList.remove('open'); o.setAttribute('aria-hidden','true'); document.body.classList.remove('noscroll'); b.focus({preventScroll:true}); };
+  b.addEventListener('click',open);
+  o.addEventListener('click',e=>{ if(e.target===o || e.target.closest('#docClose')) close(); });
+  o.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); if(e.key==='Tab'){ e.preventDefault(); $('#docClose').focus(); } });
+})();
 
 // prototype panel
 $('#sc-reset').addEventListener('click',()=>{
