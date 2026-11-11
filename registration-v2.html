@@ -393,6 +393,17 @@
   .done .cbox dl{grid-template-columns:150px 1fr}
   .done-act{margin-top:32px;display:flex;gap:24px;align-items:center;flex-wrap:wrap}
 
+  html[data-type] .eyebrow{margin:0 0 8px;font-size:14px;line-height:20px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  .hdr-user{display:flex;align-items:center;gap:10px;min-width:0}
+  .hdr-user .lt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .hdr-out{background:none;border:0;color:#fff;font-weight:700;font-size:inherit;padding:0;white-space:nowrap}
+  .hdr-out:hover{text-decoration:underline;text-underline-offset:4px}
+  .resume{margin-top:32px;background:#fff;border-left:6px solid var(--yellow);padding:20px 24px;display:flex;gap:16px 24px;align-items:center;justify-content:space-between;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .resume b{display:block;font-size:18px;color:#002d72}
+  .resume p{margin:2px 0 0}
+  .later{text-align:center;margin-top:16px}
+
   /* e-mail code */
   .code-fg .field{max-width:240px}
   .code-fg input{letter-spacing:.3em;font-size:22px !important;font-weight:700}
@@ -418,7 +429,11 @@
     .brand{font-size:26px;font-weight:700;gap:7px}
     .logo{font-size:26px;letter-spacing:-.5px}
     .hdr-actions{gap:12px}
-    .hdr-actions .login{display:none}
+    .hdr-actions .login .lt,.hdr-user .lt{display:none}
+    .hdr-user .avatar{width:32px;height:32px}
+    .hdr-out + .btn-reg{display:none}   /* signed in: the banner and the hero button lead to the registration */
+    .resume{margin-top:12px;padding:16px}
+    .resume .btn{width:100%}
     .btn-reg{padding:10px 12px;font-size:14px}
     .reg{padding:12px 0 96px}
     .reg-back{margin-left:16px}
@@ -477,6 +492,7 @@
   <div>
     <button type="button" class="proto-reset" id="sc-reset">Reset data to default</button>
     <button type="button" class="proto-reset" id="sc-fill">Fill in demo data</button>
+    <button type="button" class="proto-reset" id="sc-acct">Skip to step 2 (account created)</button>
     <label>Power of attorney check
       <select id="sc-poa"><option value="ok">Success</option><option value="fail">Fail</option></select>
     </label>
@@ -521,6 +537,7 @@ const PERSON = { first:'Jan', last:'Novák', name:'Jan Novák', born:'5. 1. 1988
 // Without identity verification the access is limited. The list is only an example for the prototype; the final list is for makro to decide.
 const SKIP_LIMITS = ['Objednávky budete platit předem.','Alkohol a tabákové výrobky vám nebudou k dispozici.'];
 const SKIP_LATER = 'Totožnost můžete ověřit kdykoli později ve svém profilu.';
+const DEMO_EMAIL = 'jan.novak@eremita.cz';   // an account that already exists, with one unfinished company registration
 const DEMO_CODE = '123456';   // the code "sent" to the e-mail in this prototype
 const COMPANIES = {
   // people = who may act for the company according to the public register (name, date of birth)
@@ -572,7 +589,8 @@ const LOCK = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-
 
 /* ---------- state ---------- */
 const S = {
-  screen:'landing',
+  screen:'landing', acct:false, privacy:false,
+  signedIn:false, resumed:false, lgEmail:'', lgPw:'', lgErr:'',   // one unfinished company registration is kept with the account
   first:'', last:'', dob:'', email:'', phone:'', pw:'', pw2:'', showPw:false,
   ico:'', lookup:'idle', company:null, dup:'',
   file:null, poaState:'none', poaFail:false, fileErr:'',
@@ -608,7 +626,17 @@ function matchNow(){
 const needPoa = () => { const m=matchNow(); return !!m && !m.pending && !m.ok; };
 const poaLocked = () => needPoa() && !verified();   // without verified identity only people listed in the register can register
 
-function errs(){
+// step 1: user account
+function errsAcct(){
+  const e={};
+  if(!S.email.trim()) e.email='Zadejte svůj e-mail.'; else if(!EMAIL_RE.test(S.email.trim())) e.email='Zadejte e-mail ve tvaru jmeno@domena.cz.';
+  if(S.pw.length<8) e.pw='Heslo musí mít aspoň 8 znaků.';
+  if(!S.pw2) e.pw2='Zadejte heslo ještě jednou.'; else if(S.pw2!==S.pw) e.pw2='Hesla se neshodují.';
+  if(!S.privacy) e.privacy='Pro vytvoření účtu musíte souhlasit se zpracováním osobních údajů.';
+  return e;
+}
+// step 2: company registration
+function errsCompany(){
   const e={}, v=verified();
   if(!v){
     if(!S.first.trim()) e.first='Zadejte své jméno.';
@@ -616,10 +644,7 @@ function errs(){
     if(!S.dob.trim()) e.dob='Zadejte své datum narození.';
     else { const d=parseDob(S.dob); if(!d) e.dob='Zadejte datum ve tvaru den. měsíc. rok, například 5. 1. 1988.'; else if(d.age<18) e.dob='Firmu může zaregistrovat jen osoba starší 18 let.'; }
   }
-  if(!S.email.trim()) e.email='Zadejte svůj e-mail.'; else if(!EMAIL_RE.test(S.email.trim())) e.email='Zadejte e-mail ve tvaru jmeno@domena.cz.';
   if(!S.phone.trim()) e.phone='Zadejte svůj telefon.'; else if(!PHONE_RE.test(S.phone.trim())) e.phone='Zadejte telefon ve tvaru 777 000 111.';
-  if(S.pw.length<8) e.pw='Heslo musí mít aspoň 8 znaků.';
-  if(!S.pw2) e.pw2='Zadejte heslo ještě jednou.'; else if(S.pw2!==S.pw) e.pw2='Hesla se neshodují.';
   if(!/^\d{8}$/.test(S.ico.trim())) e.ico='Zadejte IČO – 8 číslic.';
   else if(S.lookup==='notfound') e.ico='Firmu s tímto IČO jsme nenašli.';
   else if(S.lookup==='dup') e.ico='Tato firma už je registrovaná.';
@@ -631,7 +656,8 @@ function errs(){
   if(!S.terms) e.terms='Pro dokončení registrace musíte souhlasit s podmínkami.';
   return e;
 }
-const ERR_ORDER = ['first','last','dob','email','phone','pw','pw2','ico','poa','terms'];
+const errs = () => S.screen==='account' ? errsAcct() : S.screen==='register' ? errsCompany() : {};
+const ERR_ORDER = ['email','pw','pw2','privacy','first','last','dob','phone','ico','poa','terms'];
 function paintErrs(){
   const er=errs();
   ERR_ORDER.forEach(k=>{
@@ -648,8 +674,15 @@ function paintErrs(){
 const header = () => `
   <header class="hdr">
     <a class="brand" href="#landing" data-go="landing" aria-label="makro distribuce – úvodní stránka"><span class="logo">makro</span><span>distribuce</span></a>
-    <div class="hdr-actions"><button class="login" data-login aria-label="Přihlásit se">${svgIcon(ICON.user.replaceAll('#002D72','#fff'),20)}<span class="lt"> Přihlásit se</span></button>${S.screen==='landing'?`<button class="btn-reg" data-go="register">Registrovat se</button>`:''}</div>
+    <div class="hdr-actions">${S.signedIn
+      ? `<span class="hdr-user" title="Přihlášeni jako ${esc(S.email)}"><span class="avatar" aria-hidden="true">${svgIcon(ICON.user,20)}</span><span class="lt">${esc(S.email)}</span></span><button type="button" class="hdr-out" data-signout>Odhlásit se</button>`
+      : `<button class="login" data-login aria-label="Přihlásit se">${svgIcon(ICON.user.replaceAll('#002D72','#fff'),20)}<span class="lt"> Přihlásit se</span></button>`}${S.screen==='landing'?`<button class="btn-reg" data-go="register">${unfinished()?'Pokračovat v registraci':'Registrovat se'}</button>`:''}</div>
   </header>`;
+
+const unfinished = () => S.signedIn && S.acct && !S.submitted;   // signed in, account created, company not registered yet
+const resumeBanner = () => unfinished() ? `<section class="resume" aria-label="Rozpracovaná registrace"><div><b>Máte rozpracovanou registraci firmy</b>
+    <p>Přihlašovací účet už máte. Zbývá ${S.company?`dokončit registraci firmy ${esc(S.company.name.replace(/\.$/,''))}`:'doplnit údaje o firmě'}.</p></div>
+    <button type="button" class="btn" data-go="register">Pokračovat v registraci</button></section>` : '';
 
 const fld = (id,label,o={}) => {
   const {type='text',ac='off',ph='',hint='',ro=false,wrap='',pre='',suf='',im=''}=o;
@@ -717,7 +750,7 @@ const companyHtml = () => {
 const VIEWS = {
   landing: () => `${header()}
     <div class="lp">
-      <div class="lp-wrap">
+      <div class="lp-wrap">${resumeBanner()}
         <section class="lp-hero" style="--tile:url(${LP['hero-bg.png']})">
           <img class="truck" src="${LP['hero-truck.png']}" alt="">
           <p class="lp-eyebrow">makro distribuce</p>
@@ -741,7 +774,7 @@ const VIEWS = {
           </div>
         </section>
         <section class="lp-why lp-need"><h2>Co budete k registraci potřebovat</h2>
-          <p class="lp-need-sub">Registrace je jeden krátký formulář a trvá asi 5 minut. Můžete začít objednávat hned po jejím odeslání.</p>
+          <p class="lp-need-sub">Registrace má dva krátké kroky a trvá asi 5 minut: vytvoříte si přihlašovací účet a zaregistrujete firmu. Potom můžete hned objednávat.</p>
           <div class="lp-needs">
             <article><span class="ic">${INTRO_ICON.company}</span><h3>IČO vaší firmy</h3><p>Název a sídlo firmy doplníme sami z obchodního rejstříku.</p></article>
             <article><span class="ic">${INTRO_ICON.authority}</span><h3>Základní údaje o vás</h3><p>Jméno, datum narození, e-mail a telefon. Podle nich zkontrolujeme, že za firmu smíte jednat.</p></article>
@@ -753,22 +786,39 @@ const VIEWS = {
       ${lpFooter()}
     </div>`,
 
+  account: () => `${header()}
+    <main class="reg"><div class="reg-wrap">
+      <button type="button" class="reg-back" data-go="landing">‹ Zpět na úvod</button>
+      <div class="reg-card">
+        <p class="eyebrow">Krok 1 ze 2</p>
+        <h1>Vytvořte si přihlašovací účet</h1>
+        <p class="sub">Nejdřív si vytvoříte účet, potom zaregistrujete firmu. Už máte účet? <a href="#" data-login>Přihlaste se</a></p>
+        <form id="acctForm" novalidate style="margin-top:32px">
+          ${fld('email','E-mail',{type:'email',ac:'email',hint:'Na tento e-mail se budete přihlašovat. Pošleme vám na něj ověřovací kód.'})}
+          ${fld('pw','Heslo',{type:S.showPw?'text':'password',ac:'new-password',hint:'Aspoň 8 znaků.',suf:`<button type="button" class="tog" id="pwTog" aria-pressed="${S.showPw}">${S.showPw?'Skrýt':'Zobrazit'}</button>`})}
+          ${fld('pw2','Heslo znovu',{type:S.showPw?'text':'password',ac:'new-password',hint:'Pro kontrolu, že v hesle není překlep.'})}
+          <label class="chk" style="margin-top:4px"><input type="checkbox" id="privacy" ${S.privacy?'checked':''} aria-describedby="e-privacy"> <span>Souhlasím se <a href="#">zpracováním osobních údajů</a>.</span></label>
+          <div class="slot-err" id="e-privacy" role="alert"></div>
+          <label class="chk"><input type="checkbox" id="mkt" ${S.mkt?'checked':''}> <span>Chci dostávat nabídky a novinky e-mailem. (nepovinné)</span></label>
+          <div class="submit"><button type="submit" class="btn big" id="submitBtn">Vytvořit účet</button></div>
+        </form>
+        <div class="support"><b>Potřebujete poradit?</b><p>Zavolejte nám na ${PHONE} (${HOURS}) nebo napište na info@makro.cz.</p></div>
+      </div>
+    </div></main>`,
+
   register: () => `${header()}
     <main class="reg"><div class="reg-wrap">
       <button type="button" class="reg-back" data-go="landing">‹ Zpět na úvod</button>
       <div class="reg-card">
+        <p class="eyebrow">Krok 2 ze 2</p>
         <h1>Registrace firmy</h1>
-        <p class="sub">Vyplňte údaje o sobě a o firmě a můžete hned objednávat. Už máte účet? <a href="#" data-login>Přihlaste se</a></p>
+        <p class="sub">Vyplňte údaje o sobě a o firmě a můžete hned objednávat. Rozpracovanou registraci ukládáme, takže ji můžete dokončit i později.</p>
+        ${alertBox('ok',S.resumed?'Vítejte zpět. Pokračujte v registraci firmy tam, kde jste skončili.':`Účet ${esc(S.email)} je vytvořený a e-mail ověřený. Zbývá zaregistrovat firmu.`,'margin:24px 0 0')}
         <div id="idCard">${idCard()}</div>
         <form id="regForm" novalidate>
           <section class="sec" aria-labelledby="h-person"><h2 id="h-person">Kontaktní osoba</h2>
             <div id="personFields">${personFields()}</div>
-            ${fld('email','E-mail',{type:'email',ac:'email',hint:'Na tento e-mail se budete přihlašovat. Po odeslání formuláře vám na něj pošleme ověřovací kód.'})}
             ${fld('phone','Telefon',{type:'tel',ac:'tel',ph:'777 000 111',pre:'<span class="pfx">+420</span>',wrap:'w240'})}
-          </section>
-          <section class="sec" aria-labelledby="h-sec"><h2 id="h-sec">Zabezpečení</h2>
-            ${fld('pw','Heslo',{type:S.showPw?'text':'password',ac:'new-password',hint:'Aspoň 8 znaků.',suf:`<button type="button" class="tog" id="pwTog" aria-pressed="${S.showPw}">${S.showPw?'Skrýt':'Zobrazit'}</button>`})}
-            ${fld('pw2','Heslo znovu',{type:S.showPw?'text':'password',ac:'new-password',hint:'Pro kontrolu, že v hesle není překlep.'})}
           </section>
           <section class="sec" aria-labelledby="h-comp"><h2 id="h-comp">Firma</h2>
             <div class="fg"><label class="lbl" for="ico">IČO</label>
@@ -778,31 +828,47 @@ const VIEWS = {
               <div class="slot-err" id="e-ico" role="alert"></div></div>
             <div id="companyRes" aria-live="polite">${companyHtml()}</div>
           </section>
-          <section class="sec" aria-labelledby="h-cons"><h2 id="h-cons">Souhlasy</h2>
-            <label class="chk" style="margin-top:0"><input type="checkbox" id="terms" ${S.terms?'checked':''} aria-describedby="e-terms"> <span>Souhlasím s <a href="#">obchodními podmínkami</a> a se <a href="#">zpracováním osobních údajů</a>.</span></label>
+          <section class="sec" aria-labelledby="h-cons"><h2 id="h-cons">Souhlas</h2>
+            <label class="chk" style="margin-top:0"><input type="checkbox" id="terms" ${S.terms?'checked':''} aria-describedby="e-terms"> <span>Souhlasím s <a href="#">obchodními podmínkami</a>.</span></label>
             <div class="slot-err" id="e-terms" role="alert"></div>
-            <label class="chk"><input type="checkbox" id="mkt" ${S.mkt?'checked':''}> <span>Chci dostávat nabídky a novinky e-mailem. (nepovinné)</span></label>
           </section>
           <div class="submit"><div id="limitNote">${limitNote()}</div>
-            <div id="submitErr-slot"></div>
-            <button type="submit" class="btn big" id="submitBtn">Zaregistrovat firmu</button></div>
+            <button type="submit" class="btn big" id="submitBtn">Dokončit registraci</button>
+            <div class="later"><button type="button" class="link" id="laterBtn">Dokončit později</button></div></div>
         </form>
         <div class="support"><b>Potřebujete poradit?</b><p>Zavolejte nám na ${PHONE} (${HOURS}) nebo napište na info@makro.cz.</p></div>
       </div>
     </div></main>`,
 
+  login: () => `${header()}
+    <main class="reg"><div class="reg-wrap">
+      <button type="button" class="reg-back" data-go="landing">‹ Zpět na úvod</button>
+      <div class="reg-card">
+        <h1>Přihlášení</h1>
+        <p class="sub">Nemáte účet? <a href="#" data-go="account">Zaregistrujte se</a></p>
+        <form id="loginForm" novalidate style="margin-top:32px">
+          ${S.lgErr?alertBox('err',S.lgErr,'margin:0 0 20px'):''}
+          ${fld('lgEmail','E-mail',{type:'email',ac:'username'})}
+          ${fld('lgPw','Heslo',{type:'password',ac:'current-password',hint:S.acct?'Pro ukázku: přihlaste se e-mailem a heslem účtu, který jste právě vytvořili.':`Pro ukázku: e-mail ${DEMO_EMAIL} a libovolné heslo vás přihlásí k účtu s rozpracovanou registrací.`})}
+          <div class="submit" style="margin-top:8px"><button type="submit" class="btn big">Přihlásit se</button></div>
+        </form>
+        <p class="resend"><a href="#" data-forgot>Zapomněli jste heslo?</a></p>
+      </div>
+    </div></main>`,
+
   emailCode: () => `${header()}
     <main class="reg"><div class="reg-wrap">
-      <button type="button" class="reg-back" data-go="register">‹ Zpět na formulář</button>
+      <button type="button" class="reg-back" data-go="account">‹ Zpět</button>
       <div class="reg-card">
+        <p class="eyebrow">Krok 1 ze 2</p>
         <h1>Ověřte svůj e-mail</h1>
-        <p class="sub">Na <b>${esc(S.email)}</b> jsme poslali šestimístný kód. Zadejte ho a registraci dokončíme. <button type="button" class="link" data-go="register">Změnit e-mail</button></p>
+        <p class="sub">Na <b>${esc(S.email)}</b> jsme poslali šestimístný kód. Zadejte ho a účet bude vytvořený. <button type="button" class="link" data-go="account">Změnit e-mail</button></p>
         <form id="codeForm" novalidate style="margin-top:28px">
           <div class="fg code-fg"><label class="lbl" for="code">Kód z e-mailu</label>
             <div class="field${S.codeErr?' err':''}" id="f-code"><input id="code" name="code" value="${esc(S.code)}" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-required="true" aria-describedby="h-code e-code"></div>
             <div class="hint-s" id="h-code">Kód platí 10 minut. Pro ukázku: správný kód je ${DEMO_CODE}.</div>
             <div class="slot-err" id="e-code" role="alert">${S.codeErr}</div></div>
-          <button type="submit" class="btn big">Ověřit e-mail a dokončit registraci</button>
+          <button type="submit" class="btn big">Ověřit e-mail a vytvořit účet</button>
         </form>
         <p class="resend">E-mail nepřišel? Podívejte se do spamu, nebo si nechte poslat nový kód. <button type="button" class="link" id="codeResend">Poslat kód znovu</button></p>
         <div class="support"><b>Potřebujete poradit?</b><p>Zavolejte nám na ${PHONE} (${HOURS}) nebo napište na info@makro.cz.</p></div>
@@ -814,7 +880,7 @@ const VIEWS = {
     <main class="reg"><div class="reg-wrap"><div class="reg-card done">
       <div class="done-ic" aria-hidden="true">✓</div>
       <h1>Firma je zaregistrovaná</h1>
-      <p class="sub">Děkujeme. E-mail ${esc(S.email)} je ověřený a můžete začít objednávat.</p>
+      <p class="sub">Děkujeme, registrace je hotová a můžete začít objednávat.</p>
       <div class="cbox" style="margin-top:24px"><dl><dt>Firma</dt><dd>${esc(c.name)}</dd><dt>IČO</dt><dd>${esc(c.ico)}</dd><dt>Sídlo</dt><dd>${esc(c.seat)}</dd><dt>Kontaktní osoba</dt><dd>${esc(v?PERSON.name:(S.first+' '+S.last).trim())}</dd><dt>Přihlašovací e-mail</dt><dd>${esc(S.email)}</dd><dt>Totožnost</dt><dd>${v?`Ověřeno přes Bank iD ✓`:'Neověřeno'}</dd></dl></div>
       ${S.poaState==='ok'&&S.file?alertBox('ok','Plnou moc jsme zkontrolovali, jste oprávněni jednat za firmu.','margin-top:0'):''}
       ${v?alertBox('ok','Totožnost máte ověřenou, nákupy nejsou nijak omezené.','margin-top:0')
@@ -824,11 +890,11 @@ const VIEWS = {
 };
 
 /* ---------- rendering ---------- */
-const TITLES = {landing:'', register:'Registrace firmy', emailCode:'Ověření e-mailu', done:'Firma je zaregistrovaná'};
+const TITLES = {landing:'', login:'Přihlášení', account:'Přihlašovací účet', register:'Registrace firmy', emailCode:'Ověření e-mailu', done:'Firma je zaregistrovaná'};
 function render(){
   $('#app').innerHTML = VIEWS[S.screen]();
   document.title = 'makro distribuce' + (TITLES[S.screen]?' – '+TITLES[S.screen]:'');
-  if(S.screen==='register') paintErrs();
+  if(S.screen==='register'||S.screen==='account') paintErrs();
   if(S.screen==='emailCode') paintResend();
 }
 // e-mail verification: a code is "sent" when the form is submitted; a new one can be requested after 30 s
@@ -844,13 +910,22 @@ function focusPage(){ const t=document.querySelector('#app h1'); if(!t) return; 
 function go(id){
   timers.splice(0).forEach(clearTimeout);
   if(id==='register' && S.submitted) resetState();
-  if((id==='done'||id==='emailCode') && !S.company) id='register';
-  if(id==='done' && !S.submitted) id='emailCode';
+  if(id==='done' && !S.submitted) id='register';
+  if((id==='account'||id==='emailCode') && S.acct) id='register';      // account already created
+  if(id==='register' && !S.acct) id='account';                         // the user account comes first
+  if(id==='emailCode' && !S.resendAt) id='account';
+  if((id==='register'||id==='done') && !S.signedIn) id='login';        // the registration belongs to the account
+  if(id==='login' && S.signedIn) id=S.submitted?'done':'register';
+  if(id!=='login'){ S.lgErr=''; S.lgPw=''; }
   const prev=S.screen; S.screen=id;
   if(location.hash.slice(1)!==id) history.replaceState(null,'','#'+id);
   const wasFirst=firstPaint; firstPaint=false;
   const swap=()=>{ render(); window.scrollTo(0,0); if(prev!==id && !wasFirst) focusPage(); if(id==='emailCode') $('#code')?.focus({preventScroll:true}); };
-  if(prev!==id && !wasFirst && document.startViewTransition && !REDUCED.matches) document.startViewTransition(swap); else swap();
+  if(prev!==id && !wasFirst && document.startViewTransition && !REDUCED.matches){
+    // if the browser cannot start the transition (e.g. a tab that is not painting), swap the screen anyway
+    let ran=false; const once=()=>{ if(ran) return; ran=true; swap(); };
+    document.startViewTransition(once); setTimeout(once,400);
+  } else swap();
 }
 function resetState(){
   Object.keys(S).forEach(k=>{ delete S[k]; });
@@ -956,7 +1031,10 @@ app.addEventListener('click',e=>{
   const t=e.target;
   const go_=t.closest('[data-go]'); if(go_){ e.preventDefault(); return go(go_.dataset.go); }
   if(t.closest('[data-verify]')) return openVerify();
-  if(t.closest('[data-login]')){ e.preventDefault(); return toast('Přihlášení není součástí tohoto prototypu.'); }
+  if(t.closest('[data-login]')){ e.preventDefault(); return go('login'); }
+  if(t.closest('[data-signout]')){ const u=unfinished(); Object.assign(S,{signedIn:false,resumed:false}); go('landing'); return toast(u?'Odhlásili jste se. Rozpracovanou registraci jsme uložili.':'Odhlásili jste se.'); }
+  if(t.closest('#laterBtn')){ go('landing'); return toast('Registraci jsme uložili. Dokončit ji můžete kdykoli po přihlášení.'); }
+  if(t.closest('[data-forgot]')){ e.preventDefault(); return toast('Obnova hesla není součástí tohoto prototypu.'); }
   if(t.closest('[data-soon]')) return toast('Ověření dostupnosti doručení není součástí tohoto prototypu.');
   if(t.closest('#icoGo')) return lookup();
   if(t.closest('#pwTog')){ S.showPw=!S.showPw; const i=$('#pw'), b=$('#pwTog'); i.type=$('#pw2').type=S.showPw?'text':'password'; b.textContent=S.showPw?'Skrýt':'Zobrazit'; b.setAttribute('aria-pressed',S.showPw); return i.focus(); }
@@ -969,7 +1047,7 @@ app.addEventListener('click',e=>{
 });
 app.addEventListener('input',e=>{
   const el=e.target;
-  if(el.id==='terms'||el.id==='mkt') return;
+  if(el.id==='terms'||el.id==='mkt'||el.id==='privacy') return;
   if(el.id==='code'){ S.code=el.value; S.codeErr=''; $('#e-code').textContent=''; $('#f-code').classList.remove('err'); el.setAttribute('aria-invalid','false'); return; }
   const k=el.dataset.bind; if(!k) return;
   S[k]=el.value;
@@ -980,6 +1058,7 @@ app.addEventListener('input',e=>{
 app.addEventListener('change',e=>{
   const el=e.target;
   if(el.id==='terms'){ S.terms=el.checked; S.touch.terms=true; paintErrs(); }
+  if(el.id==='privacy'){ S.privacy=el.checked; S.touch.privacy=true; paintErrs(); }
   if(el.id==='mkt') S.mkt=el.checked;
   if(el.id==='fileIn') takeFile(el.files[0]);
 });
@@ -993,14 +1072,25 @@ app.addEventListener('dragover',e=>{ const d=e.target.closest('#drop'); if(d){ e
 app.addEventListener('dragleave',e=>{ e.target.closest?.('#drop')?.classList.remove('over'); });
 app.addEventListener('drop',e=>{ if(e.target.closest('#drop')){ e.preventDefault(); takeFile(e.dataTransfer.files[0]); } });
 app.addEventListener('submit',e=>{
+  if(e.target.id==='loginForm'){
+    e.preventDefault();
+    const em=S.lgEmail.trim().toLowerCase(), pw=S.lgPw; let ok=false; S.lgErr='';
+    if(!em||!pw) S.lgErr='Zadejte e-mail i heslo.';
+    else if(S.acct) ok = em===S.email.trim().toLowerCase() && pw===S.pw;
+    else if(em===DEMO_EMAIL){ ok=true;   // prototype: an existing account with one unfinished registration
+      Object.assign(S,{acct:true,email:DEMO_EMAIL,pw,pw2:pw,privacy:true,first:'Jan',last:'Novák',dob:'5. 1. 1988',phone:'777 123 456'}); }
+    if(!ok){ S.lgErr=S.lgErr||'Nesprávný e-mail nebo heslo.'; S.lgPw=''; render(); return $(S.lgEmail.trim()?'#lgPw':'#lgEmail').focus(); }
+    Object.assign(S,{signedIn:true,resumed:!S.submitted,tried:false,touch:{}});
+    return go(S.submitted?'done':'register');
+  }
   if(e.target.id==='codeForm'){
     e.preventDefault();
     const v=$('#code').value.replace(/\s/g,''); S.code=v;
     S.codeErr = !v ? 'Zadejte kód z e-mailu.' : !/^\d{6}$/.test(v) ? 'Kód má 6 číslic.' : v!==DEMO_CODE ? 'Kód nesouhlasí. Zkontrolujte ho, nebo si nechte poslat nový.' : '';
     if(S.codeErr){ $('#e-code').textContent=S.codeErr; $('#f-code').classList.add('err'); $('#code').setAttribute('aria-invalid','true'); return $('#code').focus(); }
-    S.submitted=true; return go('done');
+    Object.assign(S,{acct:true,signedIn:true,resumed:false,tried:false,touch:{}}); return go('register');   // the account exists from now on
   }
-  if(e.target.id!=='regForm') return;
+  if(e.target.id!=='regForm' && e.target.id!=='acctForm') return;
   e.preventDefault();
   S.tried=true; const er=errs(); paintErrs();
   const k=ERR_ORDER.find(x=>er[x]);
@@ -1012,7 +1102,8 @@ app.addEventListener('submit',e=>{
     if(target){ target.scrollIntoView({block:'center',behavior:REDUCED.matches?'auto':'smooth'}); target.focus({preventScroll:true}); }
     return;
   }
-  sendCode(); go('emailCode');
+  if(e.target.id==='acctForm'){ sendCode(); go('emailCode'); }
+  else { S.submitted=true; go('done'); }
 });
 
 // verification dialog
@@ -1045,13 +1136,25 @@ $('#sc-reset').addEventListener('click',()=>{
   go('landing'); toast('Prototype data reset to default.');
 });
 $('#sc-fill').addEventListener('click',()=>{
-  if(S.screen!=='register') go('register');
+  if(S.screen==='emailCode'){ S.code=DEMO_CODE; render(); return toast('Demo code filled in.'); }
+  if(S.screen==='login'){ Object.assign(S,{lgEmail:S.acct?S.email:DEMO_EMAIL,lgPw:S.acct?S.pw:'heslo1234',lgErr:''}); render(); return toast('Demo sign-in filled in.'); }
+  if(!S.acct){
+    Object.assign(S,{email:'jan.novak@eremita.cz',pw:'heslo1234',pw2:'heslo1234'});
+    if(S.screen!=='account') go('account'); else render();
+    return toast('Demo data filled in.');
+  }
   if(!verified()) Object.assign(S,{first:'Jan',last:'Novák',dob:'5. 1. 1988'});
-  Object.assign(S,{email:'jan.novak@eremita.cz',phone:'777 123 456',pw:'heslo1234',pw2:'heslo1234',terms:false});
-  render(); toast('Demo data filled in. Enter an IČO next, e.g. 03255654.');
+  S.phone='777 123 456';
+  if(S.screen!=='register') go('register'); else render();
+  toast('Demo data filled in. Enter an IČO next, e.g. 03255654.');
+});
+$('#sc-acct').addEventListener('click',()=>{
+  if(S.submitted) resetState();
+  Object.assign(S,{acct:true,signedIn:true,resumed:false,email:S.email||DEMO_EMAIL,pw:S.pw||'heslo1234',tried:false,touch:{}});
+  if(S.screen!=='register') go('register'); else render();
 });
 const start=location.hash.slice(1);
-go(VIEWS[start]?(start==='done'?'register':start):'landing');
+go(VIEWS[start]?start:'landing');
 </script>
 </body>
 </html>
