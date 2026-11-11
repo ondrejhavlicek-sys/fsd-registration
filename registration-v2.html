@@ -382,6 +382,8 @@
   .locked-note{display:flex;gap:8px;align-items:flex-start;margin:0 0 20px;font-size:14px;line-height:20px;color:var(--ink)}
   .locked-note svg{flex:none;width:18px;height:18px;margin-top:1px;color:var(--ok)}
 
+  .zipcity{grid-template-columns:140px 1fr}
+
   /* identity side-step */
   .idcard{background:var(--info);border-left:4px solid var(--blue);padding:24px;margin:32px 0 0}
   .idc-top{display:flex;gap:16px;align-items:flex-start}
@@ -520,7 +522,7 @@
     .reg{padding:12px 0 96px}
     .reg-back{margin-left:16px}
     .reg-card{padding:8px 16px 40px}
-    .row2{grid-template-columns:1fr}
+    .row2,.zipcity{grid-template-columns:1fr}
     .fg.w240 .field{max-width:none}
     .idcard{padding:20px 16px}
     .idc-top{flex-direction:column;gap:12px}
@@ -612,8 +614,8 @@
   <h3>Jak registrace vypadá teď</h3>
   <ol>
     <li><b>Uživatelský účet.</b> E-mail, heslo a heslo znovu, souhlas se zpracováním osobních údajů a nepovinný souhlas s nabídkami. Následuje šestimístný kód z e-mailu. Po jeho zadání účet existuje a k tomuto kroku se už nelze vrátit.</li>
-    <li><b>Registrace firmy.</b> Nepovinná karta ověření přes Bank iD s výčtem omezení. Kontaktní osoba: jméno, příjmení, datum narození, kontaktní e-mail (předvyplněný přihlašovacím e-mailem) a telefon. Firma: IČO, podle kterého se doplní název, sídlo a DIČ, a kontrola oprávnění jednat za firmu. Změny se průběžně ukládají.</li>
-    <li><b>Shrnutí.</b> Přehled účtu, kontaktní osoby a firmy s možností úpravy, připomenutí omezení pro neověřené, souhlas s obchodními podmínkami a tlačítko „Dokončit registraci“.</li>
+    <li><b>Registrace firmy.</b> Nepovinná karta ověření přes Bank iD s výčtem omezení. Kontaktní osoba: jméno, příjmení, datum narození, kontaktní e-mail (předvyplněný přihlašovacím e-mailem) a telefon. Firma: IČO, podle kterého se doplní název, sídlo a DIČ, a kontrola oprávnění jednat za firmu. Doručovací adresa: zpřístupní se po načtení údajů o firmě a lze ji převzít ze sídla. Změny se průběžně ukládají.</li>
+    <li><b>Shrnutí.</b> Přehled účtu, kontaktní osoby, firmy a doručovací adresy s možností úpravy, připomenutí omezení pro neověřené, souhlas s obchodními podmínkami a tlačítko „Dokončit registraci“.</li>
   </ol>
   <p>Po dokončení je firma zaregistrovaná a účet aktivní hned, u neověřených uživatelů s omezeními.</p>
 
@@ -705,10 +707,10 @@ const DEMO_EMAIL = 'jan.novak@eremita.cz';   // an account that already exists, 
 const DEMO_CODE = '123456';   // the code "sent" to the e-mail in this prototype
 const COMPANIES = {
   // people = who may act for the company according to the public register (name, date of birth)
-  '03255654': {ico:'03255654', dic:'CZ03255654', name:'EREMITA COMPANY s.r.o.', seat:'Jičínská 226/17, Žižkov, 13000 Praha 3', people:[{name:'Ing. Jan Novák', born:'1988-01-05', role:'jednatel'}]},                // match despite the title
-  '27082440': {ico:'27082440', dic:'CZ27082440', name:'Pekárna U Mostu s.r.o.', seat:'Mostecká 12/5, Malá Strana, 11800 Praha 1', people:[{name:'Petr Svoboda', born:'1975-06-14', role:'jednatel'}]},      // not listed
-  '05345456': {ico:'05345456', dic:'', name:'Bistro Na Rohu s.r.o.', seat:'Hlavní 22/8, Moravská Ostrava, 70200 Ostrava', people:[{name:'Novák Jan Karel', born:'1988-01-05', role:'jednatel'}]},      // match despite order and middle name
-  '08123456': {ico:'08123456', dic:'CZ08123456', name:'Hotel Vltava a.s.', seat:'Nábřeží 3/1, 37001 České Budějovice', people:[{name:'Jan Novák', born:'1979-03-12', role:'člen představenstva'}]}  // same name, different date of birth
+  '03255654': {ico:'03255654', addr:{street:'Jičínská 226/17',zip:'130 00',city:'Praha 3'}, dic:'CZ03255654', name:'EREMITA COMPANY s.r.o.', seat:'Jičínská 226/17, Žižkov, 13000 Praha 3', people:[{name:'Ing. Jan Novák', born:'1988-01-05', role:'jednatel'}]},                // match despite the title
+  '27082440': {ico:'27082440', addr:{street:'Mostecká 12/5',zip:'118 00',city:'Praha 1'}, dic:'CZ27082440', name:'Pekárna U Mostu s.r.o.', seat:'Mostecká 12/5, Malá Strana, 11800 Praha 1', people:[{name:'Petr Svoboda', born:'1975-06-14', role:'jednatel'}]},      // not listed
+  '05345456': {ico:'05345456', addr:{street:'Hlavní 22/8',zip:'702 00',city:'Ostrava'}, dic:'', name:'Bistro Na Rohu s.r.o.', seat:'Hlavní 22/8, Moravská Ostrava, 70200 Ostrava', people:[{name:'Novák Jan Karel', born:'1988-01-05', role:'jednatel'}]},      // match despite order and middle name
+  '08123456': {ico:'08123456', addr:{street:'Nábřeží 3/1',zip:'370 01',city:'České Budějovice'}, dic:'CZ08123456', name:'Hotel Vltava a.s.', seat:'Nábřeží 3/1, 37001 České Budějovice', people:[{name:'Jan Novák', born:'1979-03-12', role:'člen představenstva'}]}  // same name, different date of birth
 };
 const REGISTERED = { '25596641': {ico:'25596641', name:'Řeznictví Dvořák s.r.o.'} };   // already a customer
 
@@ -757,6 +759,7 @@ const S = {
   signedIn:false, resumed:false, lgEmail:'', lgPw:'', lgErr:'',   // one unfinished company registration is kept with the account
   first:'', last:'', dob:'', email:'', cemail:'', phone:'', pw:'', pw2:'', showPw:false,
   ico:'', lookup:'idle', company:null, dup:'',
+  dName:'', dStreet:'', dZip:'', dCity:'', dFor:'',   // delivery address, available once the company is loaded from the register
   file:null, poaState:'none', poaFail:false, fileErr:'',
   terms:false, mkt:false, touch:{}, tried:false, submitted:false,
   identity:{verified:false, via:null},
@@ -814,6 +817,11 @@ function errsCompany(){
   else if(S.lookup==='notfound') e.ico='Firmu s tímto IČO jsme nenašli.';
   else if(S.lookup==='dup') e.ico='Tato firma už je registrovaná.';
   else if(S.lookup!=='found') e.ico='Klikněte na „Doplnit údaje“, ať firmu najdeme v rejstříku.';
+  if(S.lookup==='found'){
+    if(!S.dStreet.trim()) e.dStreet='Zadejte ulici a číslo popisné.';
+    if(!S.dZip.trim()) e.dZip='Zadejte PSČ.'; else if(!/^\d{3}\s?\d{2}$/.test(S.dZip.trim())) e.dZip='Zadejte PSČ ve tvaru 130 00.';
+    if(!S.dCity.trim()) e.dCity='Zadejte město nebo obec.';
+  }
   if(needPoa()){
     if(poaLocked()) e.poa='Bez ověření totožnosti nemůžeme registrovat firmu, za kterou jednáte na základě plné moci. Ověřte prosím svou totožnost.';
     else if(S.poaState!=='ok') e.poa='Nahrajte plnou moc.';
@@ -823,7 +831,7 @@ function errsCompany(){
 // step 3: summary
 const errsSummary = () => S.terms ? {} : {terms:'Pro dokončení registrace musíte souhlasit s obchodními podmínkami.'};
 const errs = () => S.screen==='account' ? errsAcct() : S.screen==='register' ? errsCompany() : S.screen==='summary' ? errsSummary() : {};
-const ERR_ORDER = ['email','pw','pw2','privacy','first','last','dob','cemail','phone','ico','poa','terms'];
+const ERR_ORDER = ['email','pw','pw2','privacy','first','last','dob','cemail','phone','ico','poa','dStreet','dZip','dCity','terms'];
 function paintErrs(){
   const er=errs();
   ERR_ORDER.forEach(k=>{
@@ -853,7 +861,7 @@ const resumeBanner = () => unfinished() ? `<section class="resume" aria-label="R
 const fld = (id,label,o={}) => {
   const {type='text',ac='off',ph='',hint='',ro=false,wrap='',pre='',suf='',im=''}=o;
   return `<div class="fg ${wrap}"><label class="lbl" for="${id}">${label}</label>
-    <div class="field${ro?' ro':''}" id="f-${id}">${pre}<input id="${id}" name="${id}" type="${type}" value="${esc(S[id])}" autocomplete="${ac}"${ph?` placeholder="${ph}"`:''}${im?` inputmode="${im}"`:''}${ro?' readonly aria-readonly="true"':''} aria-required="true" aria-describedby="${hint?`h-${id} `:''}e-${id}" data-bind="${id}">${suf}</div>
+    <div class="field${ro?' ro':''}" id="f-${id}">${pre}<input id="${id}" name="${id}" type="${type}" value="${esc(S[id])}" autocomplete="${ac}"${ph?` placeholder="${ph}"`:''}${im?` inputmode="${im}"`:''}${ro?' readonly aria-readonly="true"':''}${o.req===false?'':' aria-required="true"'} aria-describedby="${hint?`h-${id} `:''}e-${id}" data-bind="${id}">${suf}</div>
     ${hint?`<div class="hint-s" id="h-${id}">${hint}</div>`:''}<div class="slot-err" id="e-${id}" role="alert"></div></div>`;
 };
 const personFields = () => { const v=verified(); return `
@@ -911,6 +919,17 @@ const companyHtml = () => {
     default: return '';
   }
 };
+
+// delivery address: opens once the company data is loaded from the register
+const fmtZip = z => z.replace(/\s/g,'').replace(/^(\d{3})(\d{2})$/,'$1 $2');
+const deliveryLine = () => `${esc(S.dStreet.trim())}, ${esc(fmtZip(S.dZip.trim()))} ${esc(S.dCity.trim())}`;
+const deliveryHtml = () => S.lookup!=='found'
+  ? `<p class="hint-s" style="margin:0;font-size:15px;line-height:22px">Adresu budete moci zadat, jakmile podle IČO načteme údaje o firmě.</p>`
+  : `<p style="margin:0 0 16px">Na tuto adresu vám budeme vozit objednávky. S ní můžete hned začít nakupovat.</p>
+     <p style="margin:0 0 20px"><button type="button" class="btn soft sm" id="useSeat">Použít adresu sídla firmy</button></p>
+     ${fld('dName','Název provozovny (nepovinné)',{ac:'organization',req:false,hint:'Například název restaurace nebo prodejny. Pomůže řidiči najít správné místo.'})}
+     ${fld('dStreet','Ulice a číslo popisné',{ac:'address-line1'})}
+     <div class="row2 zipcity">${fld('dZip','PSČ',{ac:'postal-code',im:'numeric',ph:'130 00'})}${fld('dCity','Město nebo obec',{ac:'address-level2'})}</div>`;
 
 /* ---------- step list (wizard) ---------- */
 const STEPS = [
@@ -1031,6 +1050,9 @@ const VIEWS = {
               <div class="slot-err" id="e-ico" role="alert"></div></div>
             <div id="companyRes" aria-live="polite">${companyHtml()}</div>
           </section>
+          <section class="sec" aria-labelledby="h-deliv"><h2 id="h-deliv">Doručovací adresa</h2>
+            <div id="delivRes">${deliveryHtml()}</div>
+          </section>
           <div class="actions"><button type="submit" class="btn" id="submitBtn">Pokračovat na shrnutí</button><button type="button" class="link" id="laterBtn">Dokončit později</button></div>
         </form>`, true),
 
@@ -1048,6 +1070,8 @@ const VIEWS = {
           <div class="cbox"><dl><dt>Jméno a příjmení</dt><dd>${esc(who.name)}</dd><dt>Datum narození</dt><dd>${esc(who.born)}</dd><dt>Kontaktní e-mail</dt><dd>${esc(S.cemail)}</dd><dt>Telefon</dt><dd>+420 ${esc(S.phone)}</dd><dt>Totožnost</dt><dd>${v?'Ověřeno přes Bank iD ✓':'Neověřeno'}</dd></dl></div>
           <div class="sum-h"><h3>Firma</h3>${edit}</div>
           <div class="cbox"><dl><dt>Název</dt><dd>${esc(c.name)}</dd><dt>IČO</dt><dd>${esc(c.ico)}</dd>${c.dic?`<dt>DIČ</dt><dd>${esc(c.dic)}</dd>`:''}<dt>Sídlo</dt><dd>${esc(c.seat)}</dd><dt>Oprávnění jednat za firmu</dt><dd>${role}</dd></dl></div>
+          <div class="sum-h"><h3>Doručovací adresa</h3>${edit}</div>
+          <div class="cbox"><dl>${S.dName.trim()?`<dt>Provozovna</dt><dd>${esc(S.dName.trim())}</dd>`:''}<dt>Adresa</dt><dd>${deliveryLine()}</dd></dl></div>
           ${v?'':limitsBox('Registrujete se bez ověření totožnosti. Budete mít omezený přístup ke službám:',SKIP_LATER)+'<div><button type="button" class="btn soft" data-verify>Ověřit přes Bank iD</button></div>'}
           <label class="chk" style="margin-top:28px"><input type="checkbox" id="terms" ${S.terms?'checked':''} aria-describedby="e-terms"> <span>Souhlasím s <a href="#">obchodními podmínkami</a>.</span></label>
           <div class="slot-err" id="e-terms" role="alert"></div>
@@ -1076,7 +1100,7 @@ const VIEWS = {
       <div class="done-ic" aria-hidden="true">✓</div>
       <h1>Firma je zaregistrovaná</h1>
       <p class="sub">Děkujeme, registrace je hotová a můžete začít objednávat.</p>
-      <div class="cbox" style="margin-top:24px"><dl><dt>Firma</dt><dd>${esc(c.name)}</dd><dt>IČO</dt><dd>${esc(c.ico)}</dd><dt>Sídlo</dt><dd>${esc(c.seat)}</dd><dt>Kontaktní osoba</dt><dd>${esc(v?PERSON.name:(S.first+' '+S.last).trim())}</dd><dt>Kontaktní e-mail</dt><dd>${esc(S.cemail)}</dd><dt>Přihlašovací e-mail</dt><dd>${esc(S.email)}</dd><dt>Totožnost</dt><dd>${v?'Ověřeno přes Bank iD ✓':'Neověřeno'}</dd></dl></div>
+      <div class="cbox" style="margin-top:24px"><dl><dt>Firma</dt><dd>${esc(c.name)}</dd><dt>IČO</dt><dd>${esc(c.ico)}</dd><dt>Sídlo</dt><dd>${esc(c.seat)}</dd><dt>Doručovací adresa</dt><dd>${S.dName.trim()?esc(S.dName.trim())+', ':''}${deliveryLine()}</dd><dt>Kontaktní osoba</dt><dd>${esc(v?PERSON.name:(S.first+' '+S.last).trim())}</dd><dt>Kontaktní e-mail</dt><dd>${esc(S.cemail)}</dd><dt>Přihlašovací e-mail</dt><dd>${esc(S.email)}</dd><dt>Totožnost</dt><dd>${v?'Ověřeno přes Bank iD ✓':'Neověřeno'}</dd></dl></div>
       ${v?alertBox('ok','Totožnost máte ověřenou, nákupy nejsou nijak omezené.','margin-top:0')
          :limitsBox('Zatím máte omezený přístup ke službám:',SKIP_LATER)+`<button type="button" class="btn soft" data-verify>Ověřit přes Bank iD</button>`}
       <div class="done-act"><button type="button" class="btn" id="doneShop">Začít nakupovat</button><button type="button" class="link" data-go="landing">Zpět na úvod</button></div>
@@ -1130,6 +1154,7 @@ function resetState(){
 }
 // partial updates keep the focus and typed text of the other fields
 function renderCompany(){ const el=$('#companyRes'); if(el){ el.innerHTML=companyHtml(); paintErrs(); } const b=$('#icoGo'); if(b) b.disabled=S.lookup==='loading'; }
+function renderDelivery(){ const el=$('#delivRes'); if(el){ el.innerHTML=deliveryHtml(); paintErrs(); } }
 function renderIdCard(){ const el=$('#idCard'); if(el) el.innerHTML=idCard(); }
 function renderPerson(){ const el=$('#personFields'); if(el) el.innerHTML=personFields(); }
 function renderNote(){ const el=$('#limitNote'); if(el) el.innerHTML=limitNote(); }
@@ -1143,15 +1168,17 @@ function lookup(){
   if(S.lookup==='loading') return;
   S.ico=S.ico.replace(/\s/g,''); const i=$('#ico'); if(i) i.value=S.ico;
   S.touch.ico=true;
-  if(!/^\d{8}$/.test(S.ico)){ S.lookup='idle'; S.company=null; renderCompany(); $('#ico')?.focus(); return; }
-  S.lookup='loading'; S.company=null; renderCompany();
+  if(!/^\d{8}$/.test(S.ico)){ S.lookup='idle'; S.company=null; renderCompany(); renderDelivery(); $('#ico')?.focus(); return; }
+  S.lookup='loading'; S.company=null; renderCompany(); renderDelivery();
   const ico=S.ico;
   later(1200,()=>{
     const c=COMPANIES[ico], reg=REGISTERED[ico];
     if(reg){ S.lookup='dup'; S.dup=reg.name; }
-    else if(c){ S.lookup='found'; S.company=c; S.poaState='none'; S.file=null; S.poaFail=false; S.fileErr=''; }
+    else if(c){ S.lookup='found'; S.company=c;
+      if(S.dFor && S.dFor!==c.ico) Object.assign(S,{dName:'',dStreet:'',dZip:'',dCity:''});   // a different company: the delivery address starts empty
+      S.dFor=c.ico; ['dStreet','dZip','dCity'].forEach(k=>{ S.touch[k]=false; }); S.poaState='none'; S.file=null; S.poaFail=false; S.fileErr=''; }
     else S.lookup='notfound';
-    renderCompany();
+    renderCompany(); renderDelivery();
   });
 }
 function takeFile(f){
@@ -1244,6 +1271,7 @@ app.addEventListener('click',e=>{
   if(t.closest('[data-forgot]')){ e.preventDefault(); return toast('Obnova hesla není součástí tohoto prototypu.'); }
   if(t.closest('[data-soon]')) return toast('Ověření dostupnosti doručení není součástí tohoto prototypu.');
   if(t.closest('#icoGo')) return lookup();
+  if(t.closest('#useSeat')){ const a=S.company.addr; Object.assign(S,{dStreet:a.street,dZip:a.zip,dCity:a.city}); renderDelivery(); markSaving(); return $('#useSeat').focus(); }
   if(t.closest('#pwTog')){ S.showPw=!S.showPw; const i=$('#pw'), b=$('#pwTog'); i.type=$('#pw2').type=S.showPw?'text':'password'; b.textContent=S.showPw?'Skrýt':'Zobrazit'; b.setAttribute('aria-pressed',S.showPw); return i.focus(); }
   if(t.closest('#pick')) return $('#fileIn').click();
   if(t.closest('[data-poa-remove]')){ S.file=null; S.poaState='none'; S.poaFail=false; return renderCompany(); }
@@ -1258,7 +1286,7 @@ app.addEventListener('input',e=>{
   if(el.id==='code'){ S.code=el.value; S.codeErr=''; $('#e-code').textContent=''; $('#f-code').classList.remove('err'); el.setAttribute('aria-invalid','false'); return; }
   const k=el.dataset.bind; if(!k) return;
   S[k]=el.value;
-  if(k==='ico' && S.lookup!=='idle'){ S.lookup='idle'; S.company=null; renderCompany(); }
+  if(k==='ico' && S.lookup!=='idle'){ S.lookup='idle'; S.company=null; renderCompany(); renderDelivery(); }
   if((k==='first'||k==='last'||k==='dob') && S.lookup==='found') renderCompany();
   paintErrs();
 });
