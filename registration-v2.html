@@ -393,6 +393,12 @@
   .done .cbox dl{grid-template-columns:150px 1fr}
   .done-act{margin-top:32px;display:flex;gap:24px;align-items:center;flex-wrap:wrap}
 
+  /* e-mail code */
+  .code-fg .field{max-width:240px}
+  .code-fg input{letter-spacing:.3em;font-size:22px !important;font-weight:700}
+  .link:disabled{color:var(--muted);text-decoration:none}
+  .resend{margin:24px 0 0}
+
   /* dialogs */
   .dialog.wide{max-width:680px;max-height:calc(100vh - 32px);overflow:auto}
   .dialog .seg{margin:20px 0 16px}
@@ -474,9 +480,6 @@
     <label>Power of attorney check
       <select id="sc-poa"><option value="ok">Success</option><option value="fail">Fail</option></select>
     </label>
-    <label>ID + photo check
-      <select id="sc-doc"><option value="ok">Success</option><option value="fail">Fail</option></select>
-    </label>
   </div>
 </details>
 
@@ -518,11 +521,7 @@ const PERSON = { first:'Jan', last:'Novák', name:'Jan Novák', born:'5. 1. 1988
 // Without identity verification the access is limited. The list is only an example for the prototype; the final list is for makro to decide.
 const SKIP_LIMITS = ['Objednávky budete platit předem.','Alkohol a tabákové výrobky vám nebudou k dispozici.'];
 const SKIP_LATER = 'Totožnost můžete ověřit kdykoli později ve svém profilu.';
-const DOC_SLOTS = [
-  ['front','Osobní doklad – přední strana','Občanský průkaz, cestovní pas nebo řidičský průkaz'],
-  ['back','Osobní doklad – zadní strana','U dokladu bez zadní strany nahrajte stranu s osobními údaji'],
-  ['selfie','Vaše fotografie','Dobře osvětlený obličej, bez brýlí a čepice']
-];
+const DEMO_CODE = '123456';   // the code "sent" to the e-mail in this prototype
 const COMPANIES = {
   // people = who may act for the company according to the public register (name, date of birth)
   '03255654': {ico:'03255654', dic:'CZ03255654', name:'EREMITA COMPANY s.r.o.', seat:'Jičínská 226/17, Žižkov, 13000 Praha 3', people:[{name:'Ing. Jan Novák', born:'1988-01-05', role:'jednatel'}]},                // match despite the title
@@ -574,12 +573,13 @@ const LOCK = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-
 /* ---------- state ---------- */
 const S = {
   screen:'landing',
-  first:'', last:'', dob:'', email:'', phone:'', pw:'', showPw:false,
+  first:'', last:'', dob:'', email:'', phone:'', pw:'', pw2:'', showPw:false,
   ico:'', lookup:'idle', company:null, dup:'',
   file:null, poaState:'none', poaFail:false, fileErr:'',
   terms:false, mkt:false, touch:{}, tried:false, submitted:false,
   identity:{verified:false, via:null},
-  vTab:'bank', vState:'choose', bank:null, bankAll:false, vConsent:false, docs:{}, docErr:{}, docFail:false
+  vState:'choose', bank:null, bankAll:false, vConsent:false,
+  code:'', codeErr:'', resendAt:0
 };
 const S_INIT = JSON.parse(JSON.stringify(S));
 
@@ -619,6 +619,7 @@ function errs(){
   if(!S.email.trim()) e.email='Zadejte svůj e-mail.'; else if(!EMAIL_RE.test(S.email.trim())) e.email='Zadejte e-mail ve tvaru jmeno@domena.cz.';
   if(!S.phone.trim()) e.phone='Zadejte svůj telefon.'; else if(!PHONE_RE.test(S.phone.trim())) e.phone='Zadejte telefon ve tvaru 777 000 111.';
   if(S.pw.length<8) e.pw='Heslo musí mít aspoň 8 znaků.';
+  if(!S.pw2) e.pw2='Zadejte heslo ještě jednou.'; else if(S.pw2!==S.pw) e.pw2='Hesla se neshodují.';
   if(!/^\d{8}$/.test(S.ico.trim())) e.ico='Zadejte IČO – 8 číslic.';
   else if(S.lookup==='notfound') e.ico='Firmu s tímto IČO jsme nenašli.';
   else if(S.lookup==='dup') e.ico='Tato firma už je registrovaná.';
@@ -630,7 +631,7 @@ function errs(){
   if(!S.terms) e.terms='Pro dokončení registrace musíte souhlasit s podmínkami.';
   return e;
 }
-const ERR_ORDER = ['first','last','dob','email','phone','pw','ico','poa','terms'];
+const ERR_ORDER = ['first','last','dob','email','phone','pw','pw2','ico','poa','terms'];
 function paintErrs(){
   const er=errs();
   ERR_ORDER.forEach(k=>{
@@ -661,13 +662,12 @@ const personFields = () => { const v=verified(); return `
   <div class="row2">${fld('first','Jméno',{ac:'given-name',ro:v})}${fld('last','Příjmení',{ac:'family-name',ro:v})}</div>
   ${fld('dob','Datum narození',{ac:'bday',ph:'5. 1. 1988',im:'numeric',ro:v,wrap:'w240',hint:v?'':'Porovnáme ho s obchodním rejstříkem, abychom věděli, že za firmu smíte jednat.'})}`; };
 
-const viaName = () => S.identity.via==='doc' ? 'osobní doklad a fotografii' : 'Bank iD';
 const idCard = () => verified()
   ? `<section class="idcard ok" aria-label="Ověření totožnosti"><div class="idc-top"><span class="idc-ic">${svgIcon(ICON.id,26)}</span>
-      <div><h2>Totožnost je ověřená ✓</h2><p>Ověřili jsme vás přes ${S.identity.via==='doc'?'osobní doklad a fotografii':'Bank iD'}. Máte plný přístup ke službám bez omezení.</p></div></div></section>`
+      <div><h2>Totožnost je ověřená ✓</h2><p>Ověřili jsme vás přes Bank iD. Máte plný přístup ke službám bez omezení.</p></div></div></section>`
   : `<section class="idcard" aria-label="Ověření totožnosti"><div class="idc-top"><span class="idc-ic">${svgIcon(ICON.id,26)}</span>
-      <div><h2>Ověřte totožnost a odemkněte plný přístup</h2><p>Nepovinné a trvá asi 2 minuty. Přes Bank iD nebo fotografii dokladu. Jméno a datum narození za vás doplníme.</p>
-      <div class="idc-act"><button type="button" class="btn" data-verify>Ověřit totožnost</button></div></div></div>
+      <div><h2>Ověřte totožnost a odemkněte plný přístup</h2><p>Nepovinné a trvá asi 2 minuty. Přihlásíte se do své banky přes Bank iD a jméno i datum narození doplníme za vás.</p>
+      <div class="idc-act"><button type="button" class="btn" data-verify>Ověřit přes Bank iD</button></div></div></div>
       <div class="idc-limits">${ALERT_ICONS.warn}<div><b>Bez ověření budete mít omezený přístup:</b>${limitsList()}</div></div></section>`;
 
 const limitNote = () => verified() ? '' : limitsBox('Registrujete se bez ověření totožnosti. Budete mít omezený přístup ke službám:', `${SKIP_LATER} <button type="button" class="link small" data-verify>Ověřit nyní</button>`);
@@ -745,7 +745,7 @@ const VIEWS = {
           <div class="lp-needs">
             <article><span class="ic">${INTRO_ICON.company}</span><h3>IČO vaší firmy</h3><p>Název a sídlo firmy doplníme sami z obchodního rejstříku.</p></article>
             <article><span class="ic">${INTRO_ICON.authority}</span><h3>Základní údaje o vás</h3><p>Jméno, datum narození, e-mail a telefon. Podle nich zkontrolujeme, že za firmu smíte jednat.</p></article>
-            <article><span class="ic">${INTRO_ICON.bank}</span><h3>Ověření totožnosti (nepovinné)</h3><p>Přes Bank iD nebo fotografii dokladu odemknete plný přístup. Bez ověření můžete objednávat, ale s omezeními.</p></article>
+            <article><span class="ic">${INTRO_ICON.bank}</span><h3>Ověření totožnosti (nepovinné)</h3><p>Přes Bank iD odemknete plný přístup. Bez ověření můžete objednávat, ale s omezeními.</p></article>
           </div>
           <div class="lp-need-cta"><button class="lp-pill primary" data-go="register">Registrovat se</button></div>
         </section>
@@ -763,11 +763,12 @@ const VIEWS = {
         <form id="regForm" novalidate>
           <section class="sec" aria-labelledby="h-person"><h2 id="h-person">Kontaktní osoba</h2>
             <div id="personFields">${personFields()}</div>
-            ${fld('email','E-mail',{type:'email',ac:'email',hint:'Na tento e-mail se budete přihlašovat.'})}
+            ${fld('email','E-mail',{type:'email',ac:'email',hint:'Na tento e-mail se budete přihlašovat. Po odeslání formuláře vám na něj pošleme ověřovací kód.'})}
             ${fld('phone','Telefon',{type:'tel',ac:'tel',ph:'777 000 111',pre:'<span class="pfx">+420</span>',wrap:'w240'})}
           </section>
           <section class="sec" aria-labelledby="h-sec"><h2 id="h-sec">Zabezpečení</h2>
             ${fld('pw','Heslo',{type:S.showPw?'text':'password',ac:'new-password',hint:'Aspoň 8 znaků.',suf:`<button type="button" class="tog" id="pwTog" aria-pressed="${S.showPw}">${S.showPw?'Skrýt':'Zobrazit'}</button>`})}
+            ${fld('pw2','Heslo znovu',{type:S.showPw?'text':'password',ac:'new-password',hint:'Pro kontrolu, že v hesle není překlep.'})}
           </section>
           <section class="sec" aria-labelledby="h-comp"><h2 id="h-comp">Firma</h2>
             <div class="fg"><label class="lbl" for="ico">IČO</label>
@@ -784,8 +785,26 @@ const VIEWS = {
           </section>
           <div class="submit"><div id="limitNote">${limitNote()}</div>
             <div id="submitErr-slot"></div>
-            <button type="submit" class="btn big" id="submitBtn">Dokončit registraci</button></div>
+            <button type="submit" class="btn big" id="submitBtn">Zaregistrovat firmu</button></div>
         </form>
+        <div class="support"><b>Potřebujete poradit?</b><p>Zavolejte nám na ${PHONE} (${HOURS}) nebo napište na info@makro.cz.</p></div>
+      </div>
+    </div></main>`,
+
+  emailCode: () => `${header()}
+    <main class="reg"><div class="reg-wrap">
+      <button type="button" class="reg-back" data-go="register">‹ Zpět na formulář</button>
+      <div class="reg-card">
+        <h1>Ověřte svůj e-mail</h1>
+        <p class="sub">Na <b>${esc(S.email)}</b> jsme poslali šestimístný kód. Zadejte ho a registraci dokončíme. <button type="button" class="link" data-go="register">Změnit e-mail</button></p>
+        <form id="codeForm" novalidate style="margin-top:28px">
+          <div class="fg code-fg"><label class="lbl" for="code">Kód z e-mailu</label>
+            <div class="field${S.codeErr?' err':''}" id="f-code"><input id="code" name="code" value="${esc(S.code)}" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-required="true" aria-describedby="h-code e-code"></div>
+            <div class="hint-s" id="h-code">Kód platí 10 minut. Pro ukázku: správný kód je ${DEMO_CODE}.</div>
+            <div class="slot-err" id="e-code" role="alert">${S.codeErr}</div></div>
+          <button type="submit" class="btn big">Ověřit e-mail a dokončit registraci</button>
+        </form>
+        <p class="resend">E-mail nepřišel? Podívejte se do spamu, nebo si nechte poslat nový kód. <button type="button" class="link" id="codeResend">Poslat kód znovu</button></p>
         <div class="support"><b>Potřebujete poradit?</b><p>Zavolejte nám na ${PHONE} (${HOURS}) nebo napište na info@makro.cz.</p></div>
       </div>
     </div></main>`,
@@ -795,8 +814,8 @@ const VIEWS = {
     <main class="reg"><div class="reg-wrap"><div class="reg-card done">
       <div class="done-ic" aria-hidden="true">✓</div>
       <h1>Firma je zaregistrovaná</h1>
-      <p class="sub">Děkujeme. Na ${esc(S.email)} jsme vám poslali potvrzení a můžete začít objednávat.</p>
-      <div class="cbox" style="margin-top:24px"><dl><dt>Firma</dt><dd>${esc(c.name)}</dd><dt>IČO</dt><dd>${esc(c.ico)}</dd><dt>Sídlo</dt><dd>${esc(c.seat)}</dd><dt>Kontaktní osoba</dt><dd>${esc(v?PERSON.name:(S.first+' '+S.last).trim())}</dd><dt>Přihlašovací e-mail</dt><dd>${esc(S.email)}</dd><dt>Totožnost</dt><dd>${v?`Ověřeno přes ${S.identity.via==='doc'?'osobní doklad a fotografii':'Bank iD'} ✓`:'Neověřeno'}</dd></dl></div>
+      <p class="sub">Děkujeme. E-mail ${esc(S.email)} je ověřený a můžete začít objednávat.</p>
+      <div class="cbox" style="margin-top:24px"><dl><dt>Firma</dt><dd>${esc(c.name)}</dd><dt>IČO</dt><dd>${esc(c.ico)}</dd><dt>Sídlo</dt><dd>${esc(c.seat)}</dd><dt>Kontaktní osoba</dt><dd>${esc(v?PERSON.name:(S.first+' '+S.last).trim())}</dd><dt>Přihlašovací e-mail</dt><dd>${esc(S.email)}</dd><dt>Totožnost</dt><dd>${v?`Ověřeno přes Bank iD ✓`:'Neověřeno'}</dd></dl></div>
       ${S.poaState==='ok'&&S.file?alertBox('ok','Plnou moc jsme zkontrolovali, jste oprávněni jednat za firmu.','margin-top:0'):''}
       ${v?alertBox('ok','Totožnost máte ověřenou, nákupy nejsou nijak omezené.','margin-top:0')
          :limitsBox('Zatím máte omezený přístup ke službám:',SKIP_LATER)+`<button type="button" class="btn soft" data-verify>Ověřit totožnost</button>`}
@@ -805,21 +824,32 @@ const VIEWS = {
 };
 
 /* ---------- rendering ---------- */
-const TITLES = {landing:'', register:'Registrace firmy', done:'Firma je zaregistrovaná'};
+const TITLES = {landing:'', register:'Registrace firmy', emailCode:'Ověření e-mailu', done:'Firma je zaregistrovaná'};
 function render(){
   $('#app').innerHTML = VIEWS[S.screen]();
   document.title = 'makro distribuce' + (TITLES[S.screen]?' – '+TITLES[S.screen]:'');
   if(S.screen==='register') paintErrs();
+  if(S.screen==='emailCode') paintResend();
 }
+// e-mail verification: a code is "sent" when the form is submitted; a new one can be requested after 30 s
+let resendTick=null;
+function paintResend(){
+  const b=$('#codeResend'); if(!b){ clearInterval(resendTick); resendTick=null; return; }
+  const left=Math.ceil((S.resendAt-Date.now())/1000);
+  b.disabled=left>0; b.textContent=left>0?`Poslat kód znovu (za ${left} s)`:'Poslat kód znovu';
+  if(left<=0){ clearInterval(resendTick); resendTick=null; }
+}
+function sendCode(){ S.code=''; S.codeErr=''; S.resendAt=Date.now()+30000; clearInterval(resendTick); resendTick=setInterval(paintResend,1000); }
 function focusPage(){ const t=document.querySelector('#app h1'); if(!t) return; t.setAttribute('tabindex','-1'); t.focus({preventScroll:true}); }
 function go(id){
   timers.splice(0).forEach(clearTimeout);
   if(id==='register' && S.submitted) resetState();
-  if(id==='done' && !S.company) id='register';
+  if((id==='done'||id==='emailCode') && !S.company) id='register';
+  if(id==='done' && !S.submitted) id='emailCode';
   const prev=S.screen; S.screen=id;
   if(location.hash.slice(1)!==id) history.replaceState(null,'','#'+id);
   const wasFirst=firstPaint; firstPaint=false;
-  const swap=()=>{ render(); window.scrollTo(0,0); if(prev!==id && !wasFirst) focusPage(); };
+  const swap=()=>{ render(); window.scrollTo(0,0); if(prev!==id && !wasFirst) focusPage(); if(id==='emailCode') $('#code')?.focus({preventScroll:true}); };
   if(prev!==id && !wasFirst && document.startViewTransition && !REDUCED.matches) document.startViewTransition(swap); else swap();
 }
 function resetState(){
@@ -867,37 +897,21 @@ function takeFile(f){
 
 /* ---------- identity verification (side-step in a dialog) ---------- */
 let vReturn=null;
-const slotHtml = ([k,t,s]) => { const d=S.docs[k]; return `<div>
-  <div class="slot-h"><b>${t}</b><span>${s}</span></div>
-  ${d?`<div class="file"><span class="fi">🖼</span><span class="fname">${esc(d.name)}</span><span class="sz">${fmtSize(d.size)}</span><button type="button" class="link small" data-dremove="${k}" aria-label="Odebrat: ${t}">Odebrat</button></div>`
-     :`<div class="drop"><span class="up">⇪</span><div class="t"><b>Nahrát fotografii</b><small>Přijímáme JPG nebo PNG do 10 MB</small></div>
-        <button type="button" class="btn soft sm" data-dpick="${k}">${k==='selfie'?'Vyfotit nebo vybrat':'Vybrat soubor'}</button>
-        <input type="file" hidden accept="image/jpeg,image/png" data-dinput="${k}"${k==='selfie'?' capture="user"':''}></div>`}
-  ${S.docErr[k]?`<div class="slot-err" role="alert">${S.docErr[k]}</div>`:''}</div>`; };
 function verifyHtml(){
-  if(S.vState==='loading') return `<h2 id="vTitle" tabindex="-1">Ověřujeme vaši totožnost</h2><p>Chvíli strpení, probíhá kontrola…</p><div style="margin-top:20px">${loadingBox(180)}</div>`;
-  const tab=S.vTab, list=S.bankAll?BANKS:BANKS.slice(0,BANK_SHORT);
-  const bank=`<div class="banks" role="group" aria-label="Vyberte svou banku">${list.map(([n,logo])=>`<button type="button" class="bank${S.bank===n?' sel':''}" data-bank="${esc(n)}" aria-pressed="${S.bank===n}"><span class="lg"><img src="${logo}" alt=""></span><span class="name">${esc(n)}</span><span class="radio" aria-hidden="true"></span></button>`).join('')}
+  if(S.vState==='loading') return `<h2 id="vTitle" tabindex="-1">Ověřujeme vaši totožnost</h2><p>Chvíli strpení, probíhá komunikace s ${esc(S.bank||'bankou')}…</p><div style="margin-top:20px">${loadingBox(180)}</div>`;
+  const list=S.bankAll?BANKS:BANKS.slice(0,BANK_SHORT);
+  return `<button class="x" data-vclose aria-label="Zavřít">✕</button>
+    <h2 id="vTitle" tabindex="-1">Ověření totožnosti přes Bank iD</h2>
+    <p>Ověření je nepovinné. Vyberte svou banku a přihlaste se do internetového bankovnictví. Jméno a datum narození převezmeme z banky, takže je nemusíte psát.</p>
+    <div class="banks" style="margin-top:20px" role="group" aria-label="Vyberte svou banku">${list.map(([n,logo])=>`<button type="button" class="bank${S.bank===n?' sel':''}" data-bank="${esc(n)}" aria-pressed="${S.bank===n}"><span class="lg"><img src="${logo}" alt=""></span><span class="name">${esc(n)}</span><span class="radio" aria-hidden="true"></span></button>`).join('')}
       <button type="button" class="toggle" id="bankMore">${S.bankAll?'Zobrazit méně bank':'Zobrazit všechny banky'}</button></div>
     <label class="chk"><input type="checkbox" id="vConsentBank" ${S.vConsent?'checked':''}> <span>Souhlasím s předáním jména a data narození z mé banky (Bank iD).</span></label>
     <div class="actions"><button type="button" class="btn" id="vBankGo" ${S.bank&&S.vConsent?'':'disabled'}>Pokračovat do banky</button><button type="button" class="link" data-vclose>Zavřít</button></div>`;
-  const ready=S.docs.front&&S.docs.back&&S.docs.selfie&&S.vConsent;
-  const doc=`${S.docFail?alertBox('warn','Doklad nebo fotografii se nám nepodařilo ověřit. Nahrajte je prosím znovu, nebo zvolte ověření přes Bank iD.','margin:0 0 16px'):''}
-    <div class="docpanel">${DOC_SLOTS.map(slotHtml).join('')}</div>
-    <label class="chk"><input type="checkbox" id="vConsentDoc" ${S.vConsent?'checked':''}> <span>Souhlasím se zpracováním údajů z dokladu a fotografie za účelem ověření totožnosti. <a href="#">Zásady zpracování osobních údajů</a></span></label>
-    <div class="actions"><button type="button" class="btn" id="dGo" ${ready?'':'disabled'}>Zkontrolovat doklad a fotografii</button><button type="button" class="link" data-vclose>Zavřít</button></div>`;
-  return `<button class="x" data-vclose aria-label="Zavřít">✕</button>
-    <h2 id="vTitle" tabindex="-1">Ověření totožnosti</h2>
-    <p>Ověření je nepovinné. Jméno a datum narození z něj převezmeme, takže je nemusíte psát. Stačí jedna z možností.</p>
-    <div class="seg" role="tablist" aria-label="Způsob ověření">
-      <button type="button" role="tab" id="tab-bank" aria-selected="${tab==='bank'}" data-vtab="bank">Bank iD<span class="rec">Rychlé</span></button>
-      <button type="button" role="tab" id="tab-doc" aria-selected="${tab==='doc'}" data-vtab="doc">Osobní doklad a fotografie</button></div>
-    <div role="tabpanel" aria-labelledby="tab-${tab}">${tab==='bank'?bank:doc}</div>`;
 }
 function renderVerify(focus){ $('#vDialog').innerHTML=verifyHtml(); if(focus) $('#vTitle')?.focus({preventScroll:true}); }
-function openVerify(tab){
+function openVerify(){
   vReturn=document.activeElement;
-  Object.assign(S,{vState:'choose',docFail:false,docErr:{},vConsent:false}); if(tab) S.vTab=tab;
+  Object.assign(S,{vState:'choose',vConsent:false});
   renderVerify(true);
   const o=$('#vOverlay'); o.classList.add('open'); o.setAttribute('aria-hidden','false'); document.body.classList.add('noscroll');
 }
@@ -908,19 +922,15 @@ function closeVerify(restore=true){
 function finishVerify(via){
   S.identity={verified:true,via};
   Object.assign(S,{first:PERSON.first,last:PERSON.last,dob:PERSON.born});
-  S.touch.first=S.touch.last=S.touch.dob=false; S.docs={}; S.docErr={}; S.bank=S.bank;
+  S.touch.first=S.touch.last=S.touch.dob=false;
   closeVerify(false); refreshAll();
   toast('Totožnost je ověřena.');
   if(S.screen==='register') $('#idCard h2')?.focus?.();
 }
-function startCheck(via){
+function startCheck(){
   S.vState='loading'; renderVerify(true);
   const o=$('#vOverlay'); if(!o.classList.contains('open')){ o.classList.add('open'); o.setAttribute('aria-hidden','false'); document.body.classList.add('noscroll'); }
-  if(via==='bankid') later(1400,()=>finishVerify('bankid'));
-  else later(1800,()=>{
-    if($('#sc-doc').value==='fail'){ S.docs={}; S.vConsent=false; S.docFail=true; S.vState='choose'; S.vTab='doc'; renderVerify(true); }
-    else finishVerify('doc');
-  });
+  later(1400,()=>finishVerify('bankid'));
 }
 function openBankSite(){
   const name=S.bank||'Raiffeisen Bank', logo=(BANKS.find(b=>b[0]===name)||BANKS[0])[1];
@@ -949,16 +959,18 @@ app.addEventListener('click',e=>{
   if(t.closest('[data-login]')){ e.preventDefault(); return toast('Přihlášení není součástí tohoto prototypu.'); }
   if(t.closest('[data-soon]')) return toast('Ověření dostupnosti doručení není součástí tohoto prototypu.');
   if(t.closest('#icoGo')) return lookup();
-  if(t.closest('#pwTog')){ S.showPw=!S.showPw; const i=$('#pw'), b=$('#pwTog'); i.type=S.showPw?'text':'password'; b.textContent=S.showPw?'Skrýt':'Zobrazit'; b.setAttribute('aria-pressed',S.showPw); return i.focus(); }
+  if(t.closest('#pwTog')){ S.showPw=!S.showPw; const i=$('#pw'), b=$('#pwTog'); i.type=$('#pw2').type=S.showPw?'text':'password'; b.textContent=S.showPw?'Skrýt':'Zobrazit'; b.setAttribute('aria-pressed',S.showPw); return i.focus(); }
   if(t.closest('#pick')) return $('#fileIn').click();
   if(t.closest('[data-poa-remove]')){ S.file=null; S.poaState='none'; S.poaFail=false; return renderCompany(); }
   if(t.closest('[data-poa-sample]')){ e.preventDefault(); return toast('Vzor plné moci by se zde stáhl (v prototypu nedostupné).'); }
+  if(t.closest('#codeResend')){ sendCode(); render(); $('#code')?.focus(); return toast('Nový kód jsme poslali na váš e-mail.'); }
   if(t.closest('#doneShop')) return toast('Nákupy nejsou součástí tohoto prototypu.');
   if(t.closest('a[href="#"]')) e.preventDefault();
 });
 app.addEventListener('input',e=>{
   const el=e.target;
   if(el.id==='terms'||el.id==='mkt') return;
+  if(el.id==='code'){ S.code=el.value; S.codeErr=''; $('#e-code').textContent=''; $('#f-code').classList.remove('err'); el.setAttribute('aria-invalid','false'); return; }
   const k=el.dataset.bind; if(!k) return;
   S[k]=el.value;
   if(k==='ico' && S.lookup!=='idle'){ S.lookup='idle'; S.company=null; renderCompany(); }
@@ -981,6 +993,13 @@ app.addEventListener('dragover',e=>{ const d=e.target.closest('#drop'); if(d){ e
 app.addEventListener('dragleave',e=>{ e.target.closest?.('#drop')?.classList.remove('over'); });
 app.addEventListener('drop',e=>{ if(e.target.closest('#drop')){ e.preventDefault(); takeFile(e.dataTransfer.files[0]); } });
 app.addEventListener('submit',e=>{
+  if(e.target.id==='codeForm'){
+    e.preventDefault();
+    const v=$('#code').value.replace(/\s/g,''); S.code=v;
+    S.codeErr = !v ? 'Zadejte kód z e-mailu.' : !/^\d{6}$/.test(v) ? 'Kód má 6 číslic.' : v!==DEMO_CODE ? 'Kód nesouhlasí. Zkontrolujte ho, nebo si nechte poslat nový.' : '';
+    if(S.codeErr){ $('#e-code').textContent=S.codeErr; $('#f-code').classList.add('err'); $('#code').setAttribute('aria-invalid','true'); return $('#code').focus(); }
+    S.submitted=true; return go('done');
+  }
   if(e.target.id!=='regForm') return;
   e.preventDefault();
   S.tried=true; const er=errs(); paintErrs();
@@ -993,37 +1012,23 @@ app.addEventListener('submit',e=>{
     if(target){ target.scrollIntoView({block:'center',behavior:REDUCED.matches?'auto':'smooth'}); target.focus({preventScroll:true}); }
     return;
   }
-  S.submitted=true; go('done');
+  sendCode(); go('emailCode');
 });
 
 // verification dialog
 $('#vOverlay').addEventListener('click',e=>{
   const t=e.target;
   if(t.id==='vOverlay' || t.closest('[data-vclose]')) return closeVerify();
-  const tab=t.closest('[data-vtab]'); if(tab){ S.vTab=tab.dataset.vtab; S.vConsent=false; S.docFail=false; renderVerify(); return $('#tab-'+S.vTab).focus(); }
   const bk=t.closest('[data-bank]'); if(bk){ S.bank=bk.dataset.bank; renderVerify(); return $('#vDialog [data-bank="'+S.bank.replace(/"/g,'\\"')+'"]')?.focus(); }
   if(t.closest('#bankMore')){ S.bankAll=!S.bankAll; renderVerify(); return $('#bankMore').focus(); }
   if(t.closest('#vBankGo')) return openBankSite();
-  const pk=t.closest('[data-dpick]'); if(pk) return $('#vDialog [data-dinput="'+pk.dataset.dpick+'"]').click();
-  const rm=t.closest('[data-dremove]'); if(rm){ delete S.docs[rm.dataset.dremove]; renderVerify(); return; }
-  if(t.closest('#dGo')) return startCheck('doc');
   if(t.closest('a[href="#"]')) e.preventDefault();
 });
 $('#vOverlay').addEventListener('change',e=>{
-  const el=e.target;
-  if(el.id==='vConsentBank'||el.id==='vConsentDoc'){ S.vConsent=el.checked; const b=$('#vBankGo')||$('#dGo'); if(b){ b.disabled=!(S.vTab==='bank'?S.bank&&S.vConsent:(S.docs.front&&S.docs.back&&S.docs.selfie&&S.vConsent)); } }
-  const k=el.dataset.dinput;
-  if(k){
-    const f=el.files[0]; if(!f) return; S.docErr[k]='';
-    if(!/\.(jpe?g|png)$/i.test(f.name)) S.docErr[k]='Nahrajte fotografii ve formátu JPG nebo PNG.';
-    else if(f.size>10*1048576) S.docErr[k]='Soubor je větší než 10 MB.';
-    else S.docs[k]={name:f.name,size:f.size};
-    renderVerify();
-  }
+  if(e.target.id==='vConsentBank'){ S.vConsent=e.target.checked; $('#vBankGo').disabled=!(S.bank&&S.vConsent); }
 });
 $('#vOverlay').addEventListener('keydown',e=>{
   if(e.key==='Escape' && S.vState!=='loading') return closeVerify();
-  if(e.key==='ArrowRight'||e.key==='ArrowLeft'){ const tb=e.target.closest?.('[data-vtab]'); if(tb){ S.vTab=S.vTab==='bank'?'doc':'bank'; S.vConsent=false; renderVerify(); $('#tab-'+S.vTab).focus(); } }
   if(e.key==='Tab'){ const f=[...$('#vDialog').querySelectorAll('button:not(:disabled),input:not([hidden]),a[href]')]; if(!f.length) return; const i=f.indexOf(document.activeElement);
     if(e.shiftKey && i<=0){ e.preventDefault(); f[f.length-1].focus(); } else if(!e.shiftKey && i===f.length-1){ e.preventDefault(); f[0].focus(); } }
 });
@@ -1036,13 +1041,13 @@ $('#bsOverlay').addEventListener('click',e=>{
 // prototype panel
 $('#sc-reset').addEventListener('click',()=>{
   timers.splice(0).forEach(clearTimeout); closeVerify(false); closeBankSite(); resetState();
-  $('#sc-poa').value='ok'; $('#sc-doc').value='ok';
+  $('#sc-poa').value='ok';
   go('landing'); toast('Prototype data reset to default.');
 });
 $('#sc-fill').addEventListener('click',()=>{
   if(S.screen!=='register') go('register');
   if(!verified()) Object.assign(S,{first:'Jan',last:'Novák',dob:'5. 1. 1988'});
-  Object.assign(S,{email:'jan.novak@eremita.cz',phone:'777 123 456',pw:'heslo1234',terms:false});
+  Object.assign(S,{email:'jan.novak@eremita.cz',phone:'777 123 456',pw:'heslo1234',pw2:'heslo1234',terms:false});
   render(); toast('Demo data filled in. Enter an IČO next, e.g. 03255654.');
 });
 const start=location.hash.slice(1);
