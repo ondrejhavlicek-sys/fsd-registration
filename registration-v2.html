@@ -493,6 +493,11 @@
   .resume-hint{margin:16px 0 0}
   .acct-panel{max-width:480px;align-items:flex-start;margin-top:0}
 
+  /* alternative flow: identity verification as its own step */
+  .id-panel dl{grid-template-columns:170px 1fr;flex:1}
+  .page .banks{margin-bottom:0}
+  #skipOverlay .dialog .limits{margin:10px 0 14px}
+
   /* e-mail code */
   .code-fg .field{max-width:240px}
   .code-fg input{letter-spacing:.3em;font-size:22px !important;font-weight:700}
@@ -567,6 +572,8 @@
     .reg-back{margin-left:16px}
     .reg-card{padding:8px 16px 40px}
     .row2,.zipcity{grid-template-columns:1fr}
+    .id-panel dl{grid-template-columns:1fr;gap:2px 0}
+    .id-panel dd{margin-bottom:8px}
     .cta-intro{width:100%;min-height:48px}
     .acct-panel{max-width:none}
     .page main>.stack.fill{display:flex;flex-direction:column;flex:1}
@@ -620,6 +627,12 @@
 
 <div class="overlay" id="vOverlay" aria-hidden="true"><div class="dialog wide" id="vDialog" role="dialog" aria-modal="true" aria-labelledby="vTitle"></div></div>
 <div id="bsOverlay" aria-hidden="true"></div>
+<div class="overlay" id="skipOverlay" aria-hidden="true"><div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="skipTitle" aria-describedby="skipText">
+  <button class="x" id="skipX" aria-label="Zavřít">✕</button>
+  <h2 id="skipTitle" tabindex="-1">Opravdu chcete ověření totožnosti přeskočit?</h2>
+  <div id="skipText"></div>
+  <div class="actions"><button type="button" class="btn" id="skipStay">Ověřit totožnost</button><button type="button" class="link" id="skipGo">Přeskočit ověření</button></div>
+</div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <details class="proto" id="proto">
@@ -628,6 +641,9 @@
     <button type="button" class="proto-reset" id="sc-reset">Reset data to default</button>
     <button type="button" class="proto-reset" id="sc-fill">Fill in demo data</button>
     <button type="button" class="proto-reset" id="sc-acct">Skip to "Registrace firmy" (account created)</button>
+    <label>Identity verification
+      <select id="sc-id"><option value="card">Card inside "Registrace firmy" (default)</option><option value="step">Separate step, can be skipped</option></select>
+    </label>
     <label>Power of attorney check
       <select id="sc-poa"><option value="ok">Success</option><option value="fail">Fail</option></select>
     </label>
@@ -676,6 +692,7 @@
     <li>Krok se znovu jmenuje „Přihlašovací účet“ (11. 11. se krátce jmenoval „Uživatelský účet“).</li>
     <li>Krok Registrace firmy se zjednodušil: zmizela sekce Kontaktní osoba (jméno, příjmení, datum narození) i doručovací adresa, přibyla sekce Kontaktní údaje firmy.</li>
     <li>Bez ověření totožnosti se oprávnění jednat za firmu nekontroluje, protože o osobě nejsou žádné údaje. Uživatel má omezený přístup (platba předem, bez alkoholu a tabáku).</li>
+    <li>Alternativní tok (přepínač „Identity verification“ v panelu Prototype scenarios): ověření totožnosti je samostatný krok jako ve verzi 1. Lze ho přeskočit tlačítkem „Přeskočit ověření totožnosti“, před tím se zobrazí upozornění na omezení.</li>
     <li>Písmo Lato se načítá ve verzi 2.0, která obsahuje všechny české znaky.</li>
   </ul>
 
@@ -827,7 +844,7 @@ const S = {
   ico:'', lookup:'idle', company:null, dup:'',
   file:null, poaState:'none', poaFail:false, fileErr:'',
   terms:false, mkt:false, touch:{}, tried:false, submitted:false,
-  identity:{verified:false, via:null},
+  identity:{verified:false, via:null}, idSkipped:false,   // idSkipped: alternative flow, the user chose to skip the identity step
   vState:'choose', bank:null, bankAll:false, vConsent:false,
   code:'', codeErr:'', resendAt:0
 };
@@ -910,10 +927,12 @@ const fld = (id,label,o={}) => {
     <div class="field${ro?' ro':''}" id="f-${id}">${pre}<input id="${id}" name="${id}" type="${type}" value="${esc(S[id])}" autocomplete="${ac}"${ph?` placeholder="${ph}"`:''}${im?` inputmode="${im}"`:''}${ro?' readonly aria-readonly="true"':''}${o.req===false?'':' aria-required="true"'} aria-describedby="${hint?`h-${id} `:''}e-${id}" data-bind="${id}">${suf}</div>
     ${hint?`<div class="hint-s" id="h-${id}">${hint}</div>`:''}<div class="slot-err" id="e-${id}" role="alert"></div></div>`;
 };
-const idCard = () => verified()
-  ? `<section class="idcard ok" aria-label="Ověření totožnosti"><div class="idc-top"><span class="idc-ic">${svgIcon(ICON.id,26)}</span>
-      <div><h2>Totožnost je ověřená ✓</h2><p><b>${esc(PERSON.name)}</b>, datum narození ${PERSON.born}. Ověřeno přes Bank iD. Máte plný přístup ke službám bez omezení.</p></div></div></section>`
-  : `<section class="idcard" aria-label="Ověření totožnosti"><div class="idc-top"><span class="idc-ic">${svgIcon(ICON.id,26)}</span>
+const idCard = () => verified() ? idCardOk() : altFlow()
+  ? limitsBox('Ověření totožnosti jste přeskočili. Budete mít omezený přístup ke službám:', '<button type="button" class="link" data-verify>Vrátit se k ověření totožnosti</button>').replace('class="alert warn"','class="alert warn" style="margin:24px 0 0"')
+  : idCardOffer();
+const idCardOk = () => `<section class="idcard ok" aria-label="Ověření totožnosti"><div class="idc-top"><span class="idc-ic">${svgIcon(ICON.id,26)}</span>
+      <div><h2>Totožnost je ověřená ✓</h2><p><b>${esc(PERSON.name)}</b>, datum narození ${PERSON.born}. Ověřeno přes Bank iD. Máte plný přístup ke službám bez omezení.</p></div></div></section>`;
+const idCardOffer = () => `<section class="idcard" aria-label="Ověření totožnosti"><div class="idc-top"><span class="idc-ic">${svgIcon(ICON.id,26)}</span>
       <div><h2>Ověřte totožnost a odemkněte plný přístup</h2><p>Nepovinné a trvá asi 2 minuty. Přihlásíte se do své banky přes Bank iD. Potom zkontrolujeme, že za firmu smíte jednat.</p>
       <div class="idc-act"><button type="button" class="btn" data-verify>Ověřit přes Bank iD</button></div></div></div>
       <div class="idc-limits">${ALERT_ICONS.warn}<div><b>Bez ověření bude registrace kratší, ale s omezeným přístupem:</b>${limitsList()}</div></div></section>`;
@@ -953,18 +972,26 @@ const companyHtml = () => {
 };
 
 /* ---------- step list (wizard) ---------- */
-const STEPS = [
-  ['Úvod','Co je potřeba k registraci'],
-  ['Přihlašovací účet','Účet pro přihlášení do služby'],
-  ['Registrace firmy','IČO a kontaktní údaje'],
-  ['Shrnutí','Kontrola údajů a dokončení']
-];
-const STEP_OF = {intro:1, account:2, emailCode:2, acctDone:2, register:3, summary:4};
-// where a completed step in the list leads back to (step 2 only once the account exists)
-const stepTarget = n => n===1 ? 'intro' : n===2 ? (S.acct ? 'acctDone' : '') : n===3 ? 'register' : '';
+// Two flows, switched in "Prototype scenarios":
+//   card (default): identity verification is an optional card inside "Registrace firmy"
+//   step:           identity verification is its own step (as in v1), which can be skipped after a warning
+const altFlow = () => $('#sc-id').value==='step';
+const STEPS = [], STEP_OF = {};
+function applyFlow(){
+  const a=altFlow();
+  STEPS.length=0;
+  STEPS.push(['Úvod','Co je potřeba k registraci','intro'],['Přihlašovací účet','Účet pro přihlášení do služby','account']);
+  if(a) STEPS.push(['Ověření totožnosti','Bank iD, lze přeskočit','identity']);
+  STEPS.push(['Registrace firmy','IČO a kontaktní údaje','company'],['Shrnutí','Kontrola údajů a dokončení','summary']);
+  Object.keys(STEP_OF).forEach(k=>{ delete STEP_OF[k]; });
+  Object.assign(STEP_OF, a ? {intro:1,account:2,emailCode:2,acctDone:2,identity:3,register:4,summary:5} : {intro:1,account:2,emailCode:2,acctDone:2,register:3,summary:4});
+}
+// where a completed step in the list leads back to (the account step only once the account exists)
+const stepTarget = n => ({intro:'intro', account:S.acct?'acctDone':'', identity:'identity', company:'register', summary:''})[STEPS[n-1][2]];
+const stepSub = s => s[2]==='identity' && S.idSkipped && !verified() ? 'Přeskočeno' : s[1];
 const sidebar = cur => `<nav class="steps" aria-label="Kroky registrace">${STEPS.map((s,i)=>{
   const n=i+1, st=n===cur?'active':n<cur?'done':'', to=st==='done'?stepTarget(n):'';
-  const inner=`<div class="dot">${st==='done'?'✓':n}</div><div class="txt"><b>${s[0]}</b><span>${s[1]}</span></div>`;
+  const inner=`<div class="dot">${st==='done'?'✓':n}</div><div class="txt"><b>${s[0]}</b><span>${stepSub(s)}</span></div>`;
   return to
     ? `<button type="button" class="step done" data-go="${to}" aria-label="Krok ${n}: ${s[0]} (dokončeno) – vrátit se">${inner}</button>`
     : `<div class="step ${st}"${st==='active'?' aria-current="step"':''}>${inner}</div>`;
@@ -1097,8 +1124,22 @@ const VIEWS = {
           <div class="panel acct-panel"><div class="badge">${svgIcon(ICON.user)}</div>
             <div><div>Přihlášeni jako</div><b style="display:block;margin:6px 0 12px;color:var(--ink-strong);overflow-wrap:anywhere">${esc(S.email)}</b>
             <button type="button" class="btn soft sm" id="otherAcct">Přihlásit se jiným účtem</button></div></div>
-          <p style="margin:0">V dalším kroku k účtu zaregistrujete firmu.</p>
+          <p style="margin:0">${altFlow()?'V dalším kroku můžete ověřit svou totožnost.':'V dalším kroku k účtu zaregistrujete firmu.'}</p>
+          <div class="actions">${altFlow()?'<button type="button" class="btn" data-go="identity">Pokračovat na ověření totožnosti</button>':'<button type="button" class="btn" data-go="register">Pokračovat na registraci firmy</button>'}<button type="button" class="link" id="laterBtn">Dokončit později</button></div>
+        </div>`, true),
+
+  identity: () => wizard('identity', verified() ? `
+        <h1>Ověření totožnosti</h1>
+        <div class="stack fill">
+          ${alertBox('ok','Vaše totožnost byla úspěšně ověřena přes Bank iD. V dalším kroku zaregistrujete firmu a my zkontrolujeme, že za ni smíte jednat.','margin:16px 0 20px')}
+          <div class="panel id-panel" style="margin-bottom:0"><div class="badge">${svgIcon(ICON.id)}</div><dl><dt>Jméno a příjmení</dt><dd>${esc(PERSON.name)}</dd><dt>Datum narození</dt><dd>${PERSON.born}</dd><dt>Ověřeno přes</dt><dd>Bank iD ✓</dd></dl></div>
           <div class="actions"><button type="button" class="btn" data-go="register">Pokračovat na registraci firmy</button><button type="button" class="link" id="laterBtn">Dokončit později</button></div>
+        </div>` : `
+        <h1>Ověřte svou totožnost</h1>
+        <p class="sub">Vyberte svou banku a přihlaste se do internetového bankovnictví přes Bank iD. Trvá to asi 2 minuty a získáte plný přístup ke službám. Ověření můžete přeskočit.</p>
+        <div class="stack fill">
+          <div id="idStep">${banksHtml()}</div>
+          <div class="actions"><button type="button" class="btn" id="vBankGo" ${S.bank&&S.vConsent?'':'disabled'}>Pokračovat do banky</button><button type="button" class="link" id="skipId">Přeskočit ověření totožnosti</button></div>
         </div>`, true),
 
   register: () => wizard('register',`
@@ -1137,7 +1178,7 @@ const VIEWS = {
           <div class="cbox"><dl><dt>Kontaktní e-mail</dt><dd>${esc(S.cemail)}</dd><dt>Telefon</dt><dd>+420 ${esc(S.phone)}</dd></dl></div>
           <div class="sum-h"><h3>Ověření totožnosti</h3></div>
           ${v?`<div class="cbox"><dl><dt>Stav</dt><dd>Ověřeno přes Bank iD ✓</dd><dt>Jméno a příjmení</dt><dd>${esc(PERSON.name)}</dd><dt>Datum narození</dt><dd>${PERSON.born}</dd><dt>Oprávnění jednat za firmu</dt><dd>${role}</dd></dl></div>`
-             :`<div class="cbox"><dl><dt>Stav</dt><dd>Neověřeno</dd></dl></div>
+             :`<div class="cbox"><dl><dt>Stav</dt><dd>${S.idSkipped?'Přeskočeno':'Neověřeno'}</dd></dl></div>
                ${limitsBox('Registrujete se bez ověření totožnosti. Budete mít omezený přístup ke službám:',SKIP_LATER)}<div><button type="button" class="btn soft" data-verify>Ověřit přes Bank iD</button></div>`}
           <label class="chk" style="margin-top:28px"><input type="checkbox" id="terms" ${S.terms?'checked':''} aria-describedby="e-terms"> <span>Souhlasím s <a href="#">obchodními podmínkami</a>.</span></label>
           <div class="slot-err" id="e-terms" role="alert"></div>
@@ -1174,7 +1215,7 @@ const VIEWS = {
 };
 
 /* ---------- rendering ---------- */
-const TITLES = {landing:'', login:'Přihlášení', intro:'Úvod', acctDone:'Přihlašovací účet', account:'Přihlašovací účet', register:'Registrace firmy', summary:'Shrnutí', emailCode:'Ověření e-mailu', done:'Firma je zaregistrovaná'};
+const TITLES = {landing:'', login:'Přihlášení', intro:'Úvod', acctDone:'Přihlašovací účet', account:'Přihlašovací účet', register:'Registrace firmy', identity:'Ověření totožnosti', summary:'Shrnutí', emailCode:'Ověření e-mailu', done:'Firma je zaregistrovaná'};
 function render(){
   $('#app').innerHTML = VIEWS[S.screen]();
   document.title = 'makro distribuce' + (TITLES[S.screen]?' – '+TITLES[S.screen]:'');
@@ -1196,10 +1237,13 @@ function go(id){
   if((id==='register'||id==='intro') && S.submitted) resetState();
   if(id==='done' && !S.submitted) id='summary';
   if((id==='account'||id==='emailCode') && S.acct) id='acctDone';                  // account already created: its confirmation
-  if((id==='register'||id==='summary'||id==='acctDone') && !S.acct) id='account';                   // the user account comes first
+  if(id==='identity' && !altFlow()) id='register';
+  if((id==='register'||id==='summary'||id==='acctDone'||id==='identity') && !S.acct) id='account';                   // the user account comes first
   if(id==='emailCode' && !S.resendAt) id='account';
-  if((id==='register'||id==='summary'||id==='done'||id==='acctDone') && !S.signedIn) id='login';    // the registration belongs to the account
+  if((id==='register'||id==='summary'||id==='done'||id==='acctDone'||id==='identity') && !S.signedIn) id='login';    // the registration belongs to the account
   if(id==='login' && S.signedIn) id=S.submitted?'done':'register';
+  if(altFlow() && (id==='register'||id==='summary') && !verified() && !S.idSkipped) id='identity';   // alternative flow: verify or skip first
+  if(id==='identity') S.vConsent=false;
   if(S.lookup==='loading') S.lookup='idle';                                        // a lookup interrupted by leaving the page
   if(id==='summary' && Object.keys(errsCompany()).length) id='register';           // the summary needs a complete step 2
   if(id==='register' && !S.cemail) S.cemail=S.email;                               // contact e-mail starts as the sign-in e-mail
@@ -1211,7 +1255,8 @@ function go(id){
   if(prev!==id && !wasFirst && document.startViewTransition && !REDUCED.matches){
     // if the browser cannot start the transition (e.g. a tab that is not painting), swap the screen anyway
     let ran=false; const once=()=>{ if(ran) return; ran=true; swap(); };
-    document.startViewTransition(once); setTimeout(once,400);
+    const vt=document.startViewTransition(once); setTimeout(once,400);
+    [vt.ready,vt.finished,vt.updateCallbackDone].forEach(pr=>pr&&pr.catch(()=>{}));   // a transition replaced by the next one is not an error
   } else swap();
 }
 function resetState(){
@@ -1258,15 +1303,25 @@ function takeFile(f){
 
 /* ---------- identity verification (side-step in a dialog) ---------- */
 let vReturn=null;
+const banksHtml = () => { const list=S.bankAll?BANKS:BANKS.slice(0,BANK_SHORT); return `
+    <div class="banks" role="group" aria-label="Vyberte svou banku">${list.map(([n,logo])=>`<button type="button" class="bank${S.bank===n?' sel':''}" data-bank="${esc(n)}" aria-pressed="${S.bank===n}"><span class="lg"><img src="${logo}" alt=""></span><span class="name">${esc(n)}</span><span class="radio" aria-hidden="true"></span></button>`).join('')}
+      <button type="button" class="toggle" id="bankMore">${S.bankAll?'Zobrazit méně bank':'Zobrazit všechny banky'}</button></div>
+    <label class="chk"><input type="checkbox" id="vConsentBank" ${S.vConsent?'checked':''}> <span>Souhlasím s předáním jména a data narození z mé banky (Bank iD).</span></label>`; };
+const inDialog = () => $('#vOverlay').classList.contains('open');
+function bankUi(t){   // clicks in the bank picker, in the dialog or on the identity step
+  const rer=()=>{ if(inDialog()) renderVerify(); else { const el=$('#idStep'); if(el) el.innerHTML=banksHtml(); const b=$('#vBankGo'); if(b) b.disabled=!(S.bank&&S.vConsent); } };
+  const bk=t.closest('[data-bank]');
+  if(bk){ S.bank=bk.dataset.bank; rer(); document.querySelector((inDialog()?'#vDialog ':'#idStep ')+'[data-bank="'+S.bank.replace(/"/g,'\\"')+'"]')?.focus(); return true; }
+  if(t.closest('#bankMore')){ S.bankAll=!S.bankAll; rer(); document.querySelector((inDialog()?'#vDialog ':'#idStep ')+'#bankMore')?.focus(); return true; }
+  if(t.closest('#vBankGo')){ openBankSite(); return true; }
+  return false;
+}
 function verifyHtml(){
   if(S.vState==='loading') return `<h2 id="vTitle" tabindex="-1">Ověřujeme vaši totožnost</h2><p>Chvíli strpení, probíhá komunikace s ${esc(S.bank||'bankou')}…</p><div style="margin-top:20px">${loadingBox(180)}</div>`;
-  const list=S.bankAll?BANKS:BANKS.slice(0,BANK_SHORT);
   return `<button class="x" data-vclose aria-label="Zavřít">✕</button>
     <h2 id="vTitle" tabindex="-1">Ověření totožnosti přes Bank iD</h2>
-    <p>Ověření je nepovinné. Vyberte svou banku a přihlaste se do internetového bankovnictví. Jméno a datum narození převezmeme z banky, takže je nemusíte psát.</p>
-    <div class="banks" style="margin-top:20px" role="group" aria-label="Vyberte svou banku">${list.map(([n,logo])=>`<button type="button" class="bank${S.bank===n?' sel':''}" data-bank="${esc(n)}" aria-pressed="${S.bank===n}"><span class="lg"><img src="${logo}" alt=""></span><span class="name">${esc(n)}</span><span class="radio" aria-hidden="true"></span></button>`).join('')}
-      <button type="button" class="toggle" id="bankMore">${S.bankAll?'Zobrazit méně bank':'Zobrazit všechny banky'}</button></div>
-    <label class="chk"><input type="checkbox" id="vConsentBank" ${S.vConsent?'checked':''}> <span>Souhlasím s předáním jména a data narození z mé banky (Bank iD).</span></label>
+    <p style="margin-bottom:20px">Ověření je nepovinné. Vyberte svou banku a přihlaste se do internetového bankovnictví. Jméno a datum narození převezmeme z banky.</p>
+    ${banksHtml()}
     <div class="actions"><button type="button" class="btn" id="vBankGo" ${S.bank&&S.vConsent?'':'disabled'}>Pokračovat do banky</button><button type="button" class="link" data-vclose>Zavřít</button></div>`;
 }
 function renderVerify(focus){ $('#vDialog').innerHTML=verifyHtml(); if(focus) $('#vTitle')?.focus({preventScroll:true}); }
@@ -1278,10 +1333,11 @@ function openVerify(){
 }
 function closeVerify(restore=true){
   const o=$('#vOverlay'); o.classList.remove('open'); o.setAttribute('aria-hidden','true'); document.body.classList.remove('noscroll');
+  $('#vDialog').innerHTML='';
   if(restore && vReturn && document.contains(vReturn)) vReturn.focus({preventScroll:true});
 }
 function finishVerify(via){
-  S.identity={verified:true,via};
+  S.identity={verified:true,via}; S.idSkipped=false;
   closeVerify(false); refreshAll();
   if(S.screen==='summary' && Object.keys(errsCompany()).length){ S.tried=true; go('register'); }   // e.g. the verified person is not in the register: power of attorney needed
   toast('Totožnost je ověřena.');
@@ -1306,6 +1362,7 @@ function openBankSite(){
         <button class="link" id="bsCancel" style="margin-top:20px">Zrušit a vrátit se do registrace</button>
       </section></main></div>`;
   el.classList.add('open'); el.setAttribute('aria-hidden','false'); el.scrollTop=0;
+  S.vFromPage=!inDialog();   // started from the identity step, not from the dialog
   closeVerify(false); $('#bsTitle').focus({preventScroll:true});
 }
 function closeBankSite(){ const el=$('#bsOverlay'); el.classList.remove('open'); el.setAttribute('aria-hidden','true'); el.innerHTML=''; }
@@ -1322,13 +1379,15 @@ const app=$('#app');
 app.addEventListener('click',e=>{
   const t=e.target;
   const go_=t.closest('[data-go]'); if(go_){ e.preventDefault(); const to=go_.dataset.go; return go(to==='start' ? (unfinished()?'register':'intro') : to); }   // "Registrovat se" on public pages
-  if(t.closest('[data-verify]')) return openVerify();
+  if(t.closest('[data-verify]')) return altFlow() && S.screen!=='done' ? go('identity') : openVerify();
+  if(bankUi(t)) return;
+  if(t.closest('#skipId')) return openSkip();
   if(t.closest('[data-login]')){ e.preventDefault(); return go('login'); }
   if(t.closest('[data-signout]')){ const u=unfinished(); Object.assign(S,{signedIn:false,resumed:false}); go('landing'); return toast(u?'Odhlásili jste se. Rozpracovanou registraci jsme uložili.':'Odhlásili jste se.'); }
   if(t.closest('#laterBtn')) return leaveSaved();
   if(t.closest('[data-back]')){
     if(S.screen==='account' && S.acctForm){ S.acctForm=false; render(); return focusPage(); }
-    return go({intro:'landing',account:'intro',emailCode:'account',acctDone:'intro',register:'acctDone',summary:'register'}[S.screen]||'landing');
+    return go({intro:'landing',account:'intro',emailCode:'account',acctDone:'intro',identity:'acctDone',register:altFlow()?'identity':'acctDone',summary:'register'}[S.screen]||'landing');
   }
   if(t.closest('[data-close]')) return STEP_OF[S.screen]>=2 && S.acct ? leaveSaved() : go('landing');
   if(t.closest('#otherAcct')){ Object.assign(S,{signedIn:false,resumed:false}); return go('login'); }
@@ -1364,6 +1423,7 @@ app.addEventListener('change',e=>{
   const el=e.target;
   if(el.id==='fileIn') markSaving();
   if(el.id==='terms'){ S.terms=el.checked; S.touch.terms=true; paintErrs(); }
+  if(el.id==='vConsentBank'){ S.vConsent=el.checked; const b=$('#vBankGo'); if(b) b.disabled=!(S.bank&&S.vConsent); }
   if(el.id==='privacy'){ S.privacy=el.checked; S.touch.privacy=true; paintErrs(); }
   if(el.id==='mkt') S.mkt=el.checked;
   if(el.id==='fileIn') takeFile(el.files[0]);
@@ -1417,9 +1477,7 @@ app.addEventListener('submit',e=>{
 $('#vOverlay').addEventListener('click',e=>{
   const t=e.target;
   if(t.id==='vOverlay' || t.closest('[data-vclose]')) return closeVerify();
-  const bk=t.closest('[data-bank]'); if(bk){ S.bank=bk.dataset.bank; renderVerify(); return $('#vDialog [data-bank="'+S.bank.replace(/"/g,'\\"')+'"]')?.focus(); }
-  if(t.closest('#bankMore')){ S.bankAll=!S.bankAll; renderVerify(); return $('#bankMore').focus(); }
-  if(t.closest('#vBankGo')) return openBankSite();
+  if(bankUi(t)) return;
   if(t.closest('a[href="#"]')) e.preventDefault();
 });
 $('#vOverlay').addEventListener('change',e=>{
@@ -1433,6 +1491,7 @@ $('#vOverlay').addEventListener('keydown',e=>{
 // bank stand-in
 $('#bsOverlay').addEventListener('click',e=>{
   if(e.target.closest('#bsVerify')){ closeBankSite(); startCheck('bankid'); }
+  if(e.target.closest('#bsCancel') && S.vFromPage){ closeBankSite(); return $('#vBankGo')?.focus(); }
   if(e.target.closest('#bsCancel')){ closeBankSite(); S.vState='choose'; renderVerify(true); const o=$('#vOverlay'); o.classList.add('open'); o.setAttribute('aria-hidden','false'); document.body.classList.add('noscroll'); }
 });
 
@@ -1446,10 +1505,34 @@ $('#bsOverlay').addEventListener('click',e=>{
   o.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); if(e.key==='Tab'){ e.preventDefault(); $('#docClose').focus(); } });
 })();
 
+// alternative flow: warning before skipping the identity step
+let skipReturn=null;
+function openSkip(){
+  skipReturn=document.activeElement;
+  $('#skipText').innerHTML=`<p>Bez ověření totožnosti budete mít omezený přístup ke službám:</p>${limitsList()}<p>${SKIP_LATER}</p>`;
+  const o=$('#skipOverlay'); o.classList.add('open'); o.setAttribute('aria-hidden','false'); document.body.classList.add('noscroll');
+  $('#skipTitle').focus({preventScroll:true});
+}
+function closeSkip(restore=true){
+  const o=$('#skipOverlay'); o.classList.remove('open'); o.setAttribute('aria-hidden','true'); document.body.classList.remove('noscroll');
+  if(restore && skipReturn && document.contains(skipReturn)) skipReturn.focus({preventScroll:true});
+}
+$('#skipOverlay').addEventListener('click',e=>{
+  const t=e.target;
+  if(t.id==='skipOverlay' || t.closest('#skipX')) return closeSkip();
+  if(t.closest('#skipStay')){ closeSkip(false); return (document.querySelector('#idStep [data-bank]')||$('#app h1')).focus(); }
+  if(t.closest('#skipGo')){ S.idSkipped=true; closeSkip(false); go('register'); }
+});
+$('#skipOverlay').addEventListener('keydown',e=>{
+  if(e.key==='Escape') return closeSkip();
+  if(e.key==='Tab'){ const f=[...$('#skipOverlay').querySelectorAll('button')]; const i=f.indexOf(document.activeElement); e.preventDefault(); f[(i+(e.shiftKey?-1:1)+f.length)%f.length].focus(); }
+});
+$('#sc-id').addEventListener('change',()=>{ applyFlow(); if(STEP_OF[S.screen]||S.screen==='identity') go(S.screen==='identity'&&!altFlow()?'register':S.screen); else render(); if(STEP_OF[S.screen]) render(); });
+
 // prototype panel
 $('#sc-reset').addEventListener('click',()=>{
-  timers.splice(0).forEach(clearTimeout); closeVerify(false); closeBankSite(); resetState();
-  $('#sc-poa').value='ok';
+  timers.splice(0).forEach(clearTimeout); closeVerify(false); closeBankSite(); closeSkip(false); resetState();
+  $('#sc-poa').value='ok'; $('#sc-id').value='card'; applyFlow();
   go('landing'); toast('Prototype data reset to default.');
 });
 $('#sc-fill').addEventListener('click',()=>{
@@ -1470,6 +1553,7 @@ $('#sc-acct').addEventListener('click',()=>{
   Object.assign(S,{acct:true,signedIn:true,resumed:false,email:S.email||DEMO_EMAIL,pw:S.pw||'heslo1234',tried:false,touch:{}});
   if(S.screen!=='register') go('register'); else render();
 });
+applyFlow();
 const start=location.hash.slice(1);
 go(VIEWS[start]?start:'landing');
 </script>
