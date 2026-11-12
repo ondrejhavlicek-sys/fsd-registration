@@ -1058,16 +1058,12 @@ const VIEWS = {
 
   intro: () => wizard('intro',`
         <h1>Vítejte v registraci</h1>
-        <p class="sub">do služby <b>makro distribuce</b> – vytvoření firemního účtu je zdarma. Registrace trvá asi 5 minut. Po vytvoření přihlašovacího účtu se postup ukládá, takže ji můžete přerušit a vrátit se později.</p>
+        <p class="sub">do služby <b>makro distribuce</b> – vytvoření firemního účtu je zdarma. Registrace trvá asi <b>5 minut</b>.</p>
         <div class="stack">
           <h3 style="font-size:14px">Co budete pro registraci potřebovat</h3>
           <div class="info"><span class="tag">${INTRO_ICON.company}</span><div class="ib">IČO vaší firmy. Název a sídlo doplníme z obchodního rejstříku.</div></div>
           <div class="info"><span class="tag">${INTRO_ICON.phone}</span><div class="ib">Kontaktní e-mail a telefon firmy.</div></div>
-          <div class="info"><span class="tag">${INTRO_ICON.bank}</span><div class="ib">Ověření totožnosti přes Bank iD je nepovinné. Bez něj je registrace kratší, ale s omezeným přístupem:
-            <ul>${SKIP_LIMITS.map(x=>`<li>${x}</li>`).join('')}</ul></div></div>
-          <div class="info"><span class="tag">${INTRO_ICON.authority}</span><div class="ib">Pokud totožnost ověříte, zkontrolujeme i oprávnění jednat za vaši firmu
-            <ul><li>v obchodním rejstříku jste zapsáni jako osoba oprávněná jednat za firmu, nebo</li>
-            <li>máte plnou moc, kterou při registraci nahrajete. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></li></ul></div></div>
+          <div class="info"><span class="tag">${INTRO_ICON.bank}</span><div class="ib">Ověření totožnosti přes Bank iD pro plný přístup.</div></div>
           <p style="margin:16px 0 20px">Nejdřív si vytvoříte přihlašovací účet. S ním se pak budete přihlašovat do služby <b>makro distribuce</b>.</p>
           <button type="button" class="btn cta-intro" data-go="account">${S.acct&&S.signedIn?'Pokračovat v registraci':'Vytvořit přihlašovací účet'}</button>
           <p class="resume-hint" ${S.signedIn?'hidden':''}>Máte rozpracovanou registraci? <button type="button" class="link" data-login>Přihlásit se</button></p>
