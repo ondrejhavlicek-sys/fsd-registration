@@ -449,6 +449,31 @@
   .sum .cbox dl{grid-template-columns:210px 1fr}
   .sum .alert{margin-top:28px}
 
+  /* step 1: account creation styled as the makro sign-in service (AAD): narrow centred column */
+  .aad{max-width:400px;text-align:center}
+  html[data-type] .aad h1{font-size:24px;line-height:32px;margin:8px 0 4px}
+  html[data-type] .aad .aad-sub{font-size:14px;line-height:20px;margin:0 0 16px}
+  .aad-social{display:flex;justify-content:center;gap:10px}
+  .aad-social button{width:70px;height:40px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;padding:0}
+  .aad-social button:hover{border-color:#9aa3b0;background:#fafafa}
+  .aad-social svg{width:20px;height:20px;display:block}
+  .aad-how{text-align:right;margin:14px 0 0;font-size:14px;line-height:20px}
+  .aad-how summary{display:inline-block;list-style:none;cursor:pointer;color:#005ae0;border-bottom:1px dashed #005ae0;line-height:18px}
+  .aad-how summary::-webkit-details-marker{display:none}
+  .aad-how summary:focus-visible{outline:2px solid #005ae0;outline-offset:2px}
+  html[data-type] .aad .aad-how p{text-align:left;font-size:14px;line-height:20px;margin:8px 0 0;background:var(--info);padding:10px 12px}
+  .aad-or{display:flex;align-items:center;gap:20px;text-transform:uppercase;font-size:14px;line-height:20px;margin:16px 0 14px}
+  .aad-or::before,.aad-or::after{content:"";flex:1;height:1px;background:var(--line)}
+  html[data-type] .aad .aad-btn{width:100%;min-height:50px;font-size:14px !important;line-height:20px;padding:10px 16px}
+  html[data-type] .aad .aad-have{margin:8px 0 0;padding-top:16px;border-top:1px solid var(--line);font-size:16px;line-height:24px}
+  .aad-have a,.aad-have .link{font-weight:700}
+  .aad-form{text-align:left;margin-top:20px}
+  .aad-form .aad-btn{margin-top:24px}
+  .aad .code-fg .field{max-width:none}
+  .aad .code-fg input{text-align:center}
+  html[data-type] .aad .aad-note{font-size:14px;line-height:20px;margin:16px 0 12px}
+  .aad-alt{margin:16px 0 12px}
+
   /* e-mail code */
   .code-fg .field{max-width:240px}
   .code-fg input{letter-spacing:.3em;font-size:22px !important;font-weight:700}
@@ -523,6 +548,7 @@
     .reg-back{margin-left:16px}
     .reg-card{padding:8px 16px 40px}
     .row2,.zipcity{grid-template-columns:1fr}
+    .aad{max-width:none}
     .fg.w240 .field{max-width:none}
     .idcard{padding:20px 16px}
     .idc-top{flex-direction:column;gap:12px}
@@ -734,6 +760,12 @@ const ICON = {
   company:'<path d="M10.9219 13.5612C11.3858 13.5612 11.7621 13.9375 11.7621 14.4014C11.7621 14.8653 11.3858 15.2416 10.9219 15.2416H7.32187C6.85796 15.2416 6.48164 14.8653 6.48164 14.4014C6.48164 13.9375 6.85796 13.5612 7.32187 13.5612H10.9219Z" fill="#002D72"/><path d="M10.9219 8.76117C11.3858 8.76117 11.7621 9.13749 11.7621 9.60141C11.7621 10.0653 11.3858 10.4416 10.9219 10.4416H7.32187C6.85796 10.4416 6.48164 10.0653 6.48164 9.60141C6.48164 9.13749 6.85796 8.76117 7.32187 8.76117H10.9219Z" fill="#002D72"/><path fill-rule="evenodd" clip-rule="evenodd" d="M13.3207 2.16C15.0582 2.16 16.5609 3.49343 16.5609 5.25023V7.785H20.5207C21.5955 7.785 22.5609 8.61475 22.5609 9.75023V19.8002C22.5609 20.9269 21.6474 21.8405 20.5207 21.8405H3.7207C2.59404 21.8405 1.68047 20.9269 1.68047 19.8002V5.25023C1.68047 3.49343 3.18319 2.16 4.9207 2.16H13.3207ZM4.9207 3.84047C4.00725 3.84047 3.36094 4.52176 3.36094 5.25023V19.8002C3.36094 19.9991 3.52188 20.16 3.7207 20.16H14.8805V5.25023C14.8805 4.52176 14.2342 3.84047 13.3207 3.84047H4.9207ZM16.5609 20.16H20.5207C20.7195 20.16 20.8805 19.9991 20.8805 19.8002V9.75023C20.8805 9.64308 20.7714 9.46547 20.5207 9.46547H16.5609V20.16Z" fill="#002D72"/>',
   id:'<path fill-rule="evenodd" clip-rule="evenodd" d="M17.9249 4.65564C13.9952 4.44812 10.0574 4.44812 6.12769 4.65564C5.29121 4.69438 4.49761 5.03695 3.89572 5.61912C3.29383 6.20129 2.92502 6.98304 2.85845 7.81776C2.64744 10.5378 2.64744 13.2701 2.85845 15.9901C2.92528 16.8241 3.29383 17.6052 3.89509 18.187C4.49636 18.7688 5.28909 19.1115 6.12483 19.1508C10.1296 19.3579 13.9201 19.3579 17.9249 19.1508C18.7609 19.1118 19.554 18.7693 20.1556 18.1874C20.7571 17.6056 21.1259 16.8244 21.1927 15.9901C21.4027 13.2308 21.4027 10.5771 21.1927 7.81776C21.1259 6.98353 20.7571 6.20231 20.1556 5.62047C19.554 5.03863 18.7609 4.6961 17.9249 4.65707V4.65564Z" fill="#E0ECFC"/><path fill-rule="evenodd" clip-rule="evenodd" d="M11.5863 9.80872C11.5863 11.1884 10.8107 11.9639 9.43249 11.9639C8.05281 11.9639 7.27728 11.1884 7.27728 9.80872C7.27728 8.43047 8.05281 7.65493 9.43249 7.65493C10.8107 7.65493 11.5863 8.43047 11.5863 9.80872ZM15.0783 9.21314C14.8416 9.21314 14.6145 9.30719 14.4471 9.47459C14.2797 9.642 14.1857 9.86905 14.1857 10.1058C14.1857 10.3425 14.2797 10.5696 14.4471 10.737C14.6145 10.9044 14.8416 10.9984 15.0783 10.9984H17.2364C17.4731 10.9984 17.7002 10.9044 17.8676 10.737C18.035 10.5696 18.129 10.3425 18.129 10.1058C18.129 9.86905 18.035 9.642 17.8676 9.47459C17.7002 9.30719 17.4731 9.21314 17.2364 9.21314H15.0783ZM15.0783 12.8066C14.9611 12.8066 14.845 12.8297 14.7367 12.8745C14.6284 12.9194 14.53 12.9851 14.4471 13.068C14.3642 13.1509 14.2985 13.2493 14.2536 13.3576C14.2087 13.4659 14.1857 13.582 14.1857 13.6992C14.1857 13.8165 14.2087 13.9325 14.2536 14.0408C14.2985 14.1491 14.3642 14.2475 14.4471 14.3304C14.53 14.4133 14.6284 14.4791 14.7367 14.5239C14.845 14.5688 14.9611 14.5919 15.0783 14.5919H17.2364C17.4731 14.5919 17.7002 14.4978 17.8676 14.3304C18.035 14.163 18.129 13.936 18.129 13.6992C18.129 13.4625 18.035 13.2354 17.8676 13.068C17.7002 12.9006 17.4731 12.8066 17.2364 12.8066H15.0783ZM9.43249 13.0337C11.2663 13.0337 12.6375 14.0991 12.9231 15.5845C12.9831 15.9016 12.7146 16.1672 12.3918 16.1672H6.47318C6.1504 16.1672 5.88189 15.9016 5.94188 15.5845C6.22752 14.0991 7.59863 13.0337 9.43249 13.0337Z" fill="#002D72"/>'
 };
+const SOCIAL = {
+  facebook:['Facebook','<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>'],
+  apple:['Apple','<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#000" d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>'],
+  google:['Google','<svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2045c0-.6381-.0573-1.2518-.1636-1.8409H9v3.4814h4.8436c-.2086 1.125-.8427 2.0782-1.7959 2.7164v2.2581h2.9087c1.7018-1.5668 2.6836-3.874 2.6836-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.4673-.806 5.9564-2.1805l-2.9087-2.2581c-.8059.54-1.8368.859-3.0477.859-2.344 0-4.3282-1.5831-5.036-3.7104H.9574v2.3318C2.4382 15.9832 5.4818 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.2822-1.1168-.2822-1.71s.1023-1.17.2823-1.71V4.9582H.9573C.3477 6.1732 0 7.5477 0 9s.3477 2.8268.9573 4.0418L3.964 10.71z"/><path fill="#EA4335" d="M9 3.5795c1.3214 0 2.5077.4541 3.4405 1.346l2.5813-2.5814C13.4636.8918 11.4259 0 9 0 5.4818 0 2.4382 2.0168.9573 4.9582L3.964 7.29C4.6718 5.1627 6.6559 3.5795 9 3.5795z"/></svg>'],
+  seznam:['Seznam','<svg viewBox="0 0 41 42.5" aria-hidden="true"><path fill="#CC0000" d="M20.727 2.804a67.546 67.546 0 0 0-3.522.659c-.773.163-1.545.315-2.308.506-.704.177-1.426.334-2.116.552a33.98 33.98 0 0 0-1.977.675 12.68 12.68 0 0 0-3.517 2.052c-.64.534-1.237 1.114-1.738 1.783a12.6 12.6 0 0 0-.933 1.497c-.267.497-.45 1.086-.456 1.656-.009 1.676 1.062 3.08 2.295 4.122.405.34.836.654 1.273.953 1.297.89 2.709 1.672 4.143 2.353 1.48.7 2.97 1.372 4.478 2.012 1.426.603 2.883 1.113 4.354 1.6.423.138.851.276 1.274.415 1.333.44 2.695.847 4.018 1.324.824.296 1.702.573 2.525.943.855.384 1.743.767 2.497 1.319a4.63 4.63 0 0 1 1.264 1.347c.317.522.515 1.12.529 1.73a2.886 2.886 0 0 1-.47 1.652c-.827 1.285-2.266 2.161-3.654 2.745a59.954 59.954 0 0 1-6.36 2.253c-1.232.359-2.464.715-3.705 1.036-1.246.322-2.516.66-3.775.974-1.255.314-2.51.597-3.77.867-.722.153-1.449.304-2.166.453-.432.086-.855.177-1.288.27-.901.195-1.802.388-2.707.58-1.03.226-2.06.445-3.09.669-.3.065-.598.144-.897.21-.267.061-1.264.291-.524.247 1.03-.056 3.78-.295 9.655-1.076 2.13-.35 4.267-.65 6.4-.996a114.42 114.42 0 0 0 7.918-1.555c.75-.176 1.494-.364 2.24-.566.492-.136.979-.277 1.462-.427 2.06-.634 5.365-1.754 6.147-2.092 2.989-1.3 4.85-2.278 5.821-4.608.331-.827.487-1.753.386-2.64a5.972 5.972 0 0 0-.804-2.338c-.41-.675-.97-1.251-1.555-1.783-1.09-.986-2.312-1.782-3.618-2.457a22.905 22.905 0 0 0-1.126-.545 50.831 50.831 0 0 0-1.426-.618 33.808 33.808 0 0 0-2.046-.756c-1.793-.61-3.614-1.154-5.416-1.738a38.353 38.353 0 0 1-3.017-1.103 23.41 23.41 0 0 1-1.236-.554c-.478-.23-.943-.482-1.403-.752-.565-.339-1.49-.922-1.232-1.715.18-.565.8-.785 1.306-.988.469-.188.965-.32 1.453-.447 1.49-.38 3.011-.636 4.515-.954a72.59 72.59 0 0 0 1.324-.29c1.173-.273 2.382-.477 3.5-.918.96-.375 2.192-.974 2.551-2.02.515-1.523-.07-3.17-.91-4.455a44.62 44.62 0 0 0-.938-1.365c-.442-.613-.93-1.19-1.407-1.774-.216-.265-.479-.245-.7-.177-.294.1-1.098 1.034-7.521 2.253"/></svg>']
+};
 const fmtSize = n => n < 1048576 ? Math.max(1,Math.round(n/1024))+' kB' : (n/1048576).toFixed(1)+' MB';
 const lpFooter = () => `<footer class="lp-foot"><div class="lp-wrap"><div class="cols"><div><b>Pro vaše podnikání</b><ul><li>Můj obchod</li><li>Vzor plné moci ke stažení</li><li>Vše pro maloobchod</li><li>Vše pro gastronomii</li><li>Track &amp; Trace</li><li>ProTrace</li><li>Kvalita a standardy</li><li>Compliance</li></ul></div><div><b>O nás</b><ul><li>O makro</li><li>Pro dodavatele</li><li>Pro novináře</li><li>Nejčastější otázky</li><li>Kariéra</li><li>Udržitelnost</li><li>Metro AG</li></ul></div><div><b>Užitečné odkazy</b><ul><li>Získat makro kartu</li><li>Bonusový program</li><li>Energetické štítky</li><li>Informace o stažení výrobku</li><li>makro akademie</li><li>makro newsletter</li></ul></div><div><b>Kontakty</b><ul><li>+420 271 005 005</li><li>Po–Pá: 7:00–19:00, Ne: 12:00–19:00</li><li>info@makro.cz</li></ul><b style="margin-top:16px">Sledujte nás</b><div class="soc"><img src="${LP['fb.svg']}" alt="Facebook" style="height:23px"><img src="${LP['ig.svg']}" alt="Instagram"><img src="${LP['yt.svg']}" alt="YouTube" style="height:18px"></div></div></div><div class="copy">© Makro Cash &amp; Carry ČR, s.r.o.</div></div></footer>`;
 const INTRO_ICON = {
@@ -755,7 +787,7 @@ const LOCK = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-
 
 /* ---------- state ---------- */
 const S = {
-  screen:'landing', acct:false, privacy:false,
+  screen:'landing', acct:false, privacy:false, acctForm:false,
   signedIn:false, resumed:false, lgEmail:'', lgPw:'', lgErr:'',   // one unfinished company registration is kept with the account
   first:'', last:'', dob:'', email:'', cemail:'', phone:'', pw:'', pw2:'', showPw:false,
   ico:'', lookup:'idle', company:null, dup:'',
@@ -1000,36 +1032,53 @@ const VIEWS = {
             <article><span class="ic">${INTRO_ICON.authority}</span><h3>Základní údaje o vás</h3><p>Jméno, datum narození, e-mail a telefon. Podle nich zkontrolujeme, že za firmu smíte jednat.</p></article>
             <article><span class="ic">${INTRO_ICON.bank}</span><h3>Ověření totožnosti (nepovinné)</h3><p>Přes Bank iD odemknete plný přístup. Bez ověření můžete objednávat, ale s omezeními.</p></article>
           </div>
-          <div class="lp-need-cta"><button class="lp-pill primary" data-go="register">Registrovat se</button></div>
+          <div class="lp-need-cta"><button class="lp-pill primary" data-go="register">Vytvořit přihlašovací účet</button></div>
         </section>
       </div>
       ${lpFooter()}
     </div>`,
 
-  account: () => wizard('account',`
-        <h1>Vytvořte si uživatelský účet</h1>
-        <p class="sub">Účtem se budete přihlašovat. V dalším kroku k němu zaregistrujete firmu. Už účet máte? <a href="#" data-login>Přihlaste se</a></p>
-        <form id="acctForm" class="stack" novalidate>
-          ${fld('email','E-mail',{type:'email',ac:'email',hint:'Na tento e-mail se budete přihlašovat. Pošleme vám na něj ověřovací kód.'})}
-          ${fld('pw','Heslo',{type:S.showPw?'text':'password',ac:'new-password',hint:'Aspoň 8 znaků.',suf:`<button type="button" class="tog" id="pwTog" aria-pressed="${S.showPw}">${S.showPw?'Skrýt':'Zobrazit'}</button>`})}
-          ${fld('pw2','Heslo znovu',{type:S.showPw?'text':'password',ac:'new-password',hint:'Pro kontrolu, že v hesle není překlep.'})}
-          <label class="chk" style="margin-top:4px"><input type="checkbox" id="privacy" ${S.privacy?'checked':''} aria-describedby="e-privacy"> <span>Souhlasím se <a href="#">zpracováním osobních údajů</a>.</span></label>
-          <div class="slot-err" id="e-privacy" role="alert"></div>
-          <label class="chk"><input type="checkbox" id="mkt" ${S.mkt?'checked':''}> <span>Chci dostávat nabídky a novinky e-mailem. (nepovinné)</span></label>
-          <div class="actions"><button type="submit" class="btn" id="submitBtn">Vytvořit účet</button></div>
-        </form>`),
+  account: () => wizard('account', S.acctForm ? `
+        <div class="aad">
+          <h1>Registrace e-mailem</h1>
+          <p class="aad-sub">Zadejte e-mail a heslo, kterými se budete přihlašovat.</p>
+          <form id="acctForm" class="aad-form" novalidate>
+            ${fld('email','E-mail',{type:'email',ac:'email',hint:'Pošleme vám na něj ověřovací kód.'})}
+            ${fld('pw','Heslo',{type:S.showPw?'text':'password',ac:'new-password',hint:'Aspoň 8 znaků.',suf:`<button type="button" class="tog" id="pwTog" aria-pressed="${S.showPw}">${S.showPw?'Skrýt':'Zobrazit'}</button>`})}
+            ${fld('pw2','Heslo znovu',{type:S.showPw?'text':'password',ac:'new-password'})}
+            <label class="chk" style="margin-top:4px"><input type="checkbox" id="privacy" ${S.privacy?'checked':''} aria-describedby="e-privacy"> <span>Souhlasím se <a href="#">zpracováním osobních údajů</a>.</span></label>
+            <div class="slot-err" id="e-privacy" role="alert"></div>
+            <label class="chk"><input type="checkbox" id="mkt" ${S.mkt?'checked':''}> <span>Chci dostávat nabídky a novinky e-mailem. (nepovinné)</span></label>
+            <button type="submit" class="btn aad-btn" id="submitBtn">Vytvořit účet</button>
+          </form>
+          <button type="button" class="link aad-alt" id="acctBack">Zvolit jiný způsob registrace</button>
+          <p class="aad-have">Máte účet v makro? <a href="#" data-login>Přihlásit se</a></p>
+        </div>` : `
+        <div class="aad">
+          <h1>Registrace</h1>
+          <p class="aad-sub">Nemáte u nás účet? Založte si ho přes</p>
+          <div class="aad-social">${['apple','google','seznam'].map(k=>`<button type="button" data-social="${k}" aria-label="Registrovat se přes ${SOCIAL[k][0]}">${SOCIAL[k][1]}</button>`).join('')}</div>
+          <details class="aad-how"><summary>Jak to funguje?</summary><p>Účet založíte přes svůj účet u Applu, Googlu nebo Seznamu. Nemusíte si pamatovat další heslo a e-mail už není potřeba ověřovat.</p></details>
+          <div class="aad-or">nebo</div>
+          <button type="button" class="btn aad-btn" id="acctMail">Registrovat se e-mailem</button>
+          <details class="aad-how"><summary>Jak to funguje?</summary><p>Zadáte e-mail a heslo. Na e-mail vám pošleme kód, kterým ho ověříte.</p></details>
+          <p class="aad-have">Máte účet v makro? <a href="#" data-login>Přihlásit se</a></p>
+        </div>`),
 
   emailCode: () => wizard('emailCode',`
-        <h1>Ověřte svůj e-mail</h1>
-        <p class="sub">Na <b>${esc(S.email)}</b> jsme poslali šestimístný kód. Po jeho zadání bude uživatelský účet vytvořený. <button type="button" class="link" data-go="account">Změnit e-mail</button></p>
-        <form id="codeForm" class="stack" novalidate>
-          <div class="fg code-fg"><label class="lbl" for="code">Kód z e-mailu</label>
-            <div class="field${S.codeErr?' err':''}" id="f-code"><input id="code" name="code" value="${esc(S.code)}" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-required="true" aria-describedby="h-code e-code"></div>
-            <div class="hint-s" id="h-code">Kód platí 10 minut. Pro ukázku: správný kód je ${DEMO_CODE}.</div>
-            <div class="slot-err" id="e-code" role="alert">${S.codeErr}</div></div>
-          <p class="resend" style="margin:0">E-mail nepřišel? Podívejte se do spamu, nebo si nechte poslat nový kód. <button type="button" class="link" id="codeResend">Poslat kód znovu</button></p>
-          <div class="actions"><button type="submit" class="btn">Ověřit e-mail a vytvořit účet</button></div>
-        </form>`),
+        <div class="aad">
+          <h1>Ověřte svůj e-mail</h1>
+          <p class="aad-sub">Na <b>${esc(S.email)}</b> jsme poslali šestimístný kód. Po jeho zadání bude účet vytvořený.</p>
+          <form id="codeForm" class="aad-form" novalidate>
+            <div class="fg code-fg"><label class="lbl" for="code">Kód z e-mailu</label>
+              <div class="field${S.codeErr?' err':''}" id="f-code"><input id="code" name="code" value="${esc(S.code)}" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-required="true" aria-describedby="h-code e-code"></div>
+              <div class="hint-s" id="h-code">Kód platí 10 minut. Pro ukázku: správný kód je ${DEMO_CODE}.</div>
+              <div class="slot-err" id="e-code" role="alert">${S.codeErr}</div></div>
+            <button type="submit" class="btn aad-btn" style="margin-top:4px">Ověřit e-mail a vytvořit účet</button>
+          </form>
+          <p class="aad-note">E-mail nepřišel? Podívejte se do spamu, nebo si nechte poslat nový kód.<br><button type="button" class="link" id="codeResend">Poslat kód znovu</button></p>
+          <p class="aad-have">Špatný e-mail? <button type="button" class="link" data-go="account">Změnit e-mail</button></p>
+        </div>`),
 
   register: () => wizard('register',`
         <h1>Registrace firmy</h1>
@@ -1266,10 +1315,18 @@ app.addEventListener('click',e=>{
   if(t.closest('[data-login]')){ e.preventDefault(); return go('login'); }
   if(t.closest('[data-signout]')){ const u=unfinished(); Object.assign(S,{signedIn:false,resumed:false}); go('landing'); return toast(u?'Odhlásili jste se. Rozpracovanou registraci jsme uložili.':'Odhlásili jste se.'); }
   if(t.closest('#laterBtn')) return leaveSaved();
-  if(t.closest('[data-back]')){ if(S.screen==='register') return leaveSaved(); return go({account:'landing',emailCode:'account',summary:'register'}[S.screen]||'landing'); }
+  if(t.closest('[data-back]')){ if(S.screen==='register') return leaveSaved(); if(S.screen==='account' && S.acctForm){ S.acctForm=false; render(); return focusPage(); } return go({account:'landing',emailCode:'account',summary:'register'}[S.screen]||'landing'); }
   if(t.closest('[data-close]')) return STEP_OF[S.screen]>=2 ? leaveSaved() : go('landing');
   if(t.closest('[data-forgot]')){ e.preventDefault(); return toast('Obnova hesla není součástí tohoto prototypu.'); }
   if(t.closest('[data-soon]')) return toast('Ověření dostupnosti doručení není součástí tohoto prototypu.');
+  if(t.closest('#acctMail')){ S.acctForm=true; render(); return $('#email').focus(); }
+  if(t.closest('#acctBack')){ S.acctForm=false; render(); return focusPage(); }
+  const soc=t.closest('[data-social]');
+  if(soc){   // prototype: the provider confirms the e-mail, so the account exists right away
+    const mail={apple:'jan.novak@icloud.com',google:'jan.novak@gmail.com',seznam:'jan.novak@seznam.cz'}[soc.dataset.social];
+    Object.assign(S,{acct:true,signedIn:true,resumed:false,email:mail,pw:'heslo1234',pw2:'heslo1234',tried:false,touch:{}});
+    return go('register');
+  }
   if(t.closest('#icoGo')) return lookup();
   if(t.closest('#useSeat')){ const a=S.company.addr; Object.assign(S,{dStreet:a.street,dZip:a.zip,dCity:a.city}); renderDelivery(); markSaving(); return $('#useSeat').focus(); }
   if(t.closest('#pwTog')){ S.showPw=!S.showPw; const i=$('#pw'), b=$('#pwTog'); i.type=$('#pw2').type=S.showPw?'text':'password'; b.textContent=S.showPw?'Skrýt':'Zobrazit'; b.setAttribute('aria-pressed',S.showPw); return i.focus(); }
@@ -1333,7 +1390,7 @@ app.addEventListener('submit',e=>{
   $('#submitErr')?.remove();
   if(k){
     const p=document.createElement('div'); p.id='submitErr'; p.className='submit-err'; p.setAttribute('role','alert');
-    p.textContent='Zkontrolujte prosím označená pole.'; $('#submitBtn').closest('.actions').before(p);
+    p.textContent='Zkontrolujte prosím označená pole.'; ($('#submitBtn').closest('.actions')||$('#submitBtn')).before(p);
     const target = k==='poa' ? ($('#verifyNow')||$('#pick')||$('#e-poa')) : k==='terms' ? $('#terms') : $('#'+k);
     if(target){ target.scrollIntoView({block:'center',behavior:REDUCED.matches?'auto':'smooth'}); target.focus({preventScroll:true}); }
     return;
@@ -1386,7 +1443,7 @@ $('#sc-fill').addEventListener('click',()=>{
   if(S.screen==='emailCode'){ S.code=DEMO_CODE; render(); return toast('Demo code filled in.'); }
   if(S.screen==='login'){ Object.assign(S,{lgEmail:S.acct?S.email:DEMO_EMAIL,lgPw:S.acct?S.pw:'heslo1234',lgErr:''}); render(); return toast('Demo sign-in filled in.'); }
   if(!S.acct){
-    Object.assign(S,{email:'jan.novak@eremita.cz',pw:'heslo1234',pw2:'heslo1234'});
+    Object.assign(S,{acctForm:true,email:'jan.novak@eremita.cz',pw:'heslo1234',pw2:'heslo1234'});
     if(S.screen!=='account') go('account'); else render();
     return toast('Demo data filled in.');
   }
