@@ -664,8 +664,8 @@
   <ol>
     <li><b>Úvod.</b> Co je k registraci potřeba, tlačítko „Vytvořit přihlašovací účet“, odkaz na přihlášení pro ty, kdo mají registraci rozpracovanou, a kontakt na obchodního zástupce.</li>
     <li><b>Přihlašovací účet.</b> Dva dílčí kroky. První: registrace ve vzhledu přihlašovací služby makro, buď přes Apple, Google nebo Seznam, nebo e-mailem (e-mail, heslo, heslo znovu, souhlasy a šestimístný kód z e-mailu). Druhý: potvrzení „Přihlašovací účet byl vytvořen“. Seznam kroků zůstává celou dobu vidět.</li>
-    <li><b>Registrace firmy.</b> Nepovinná karta ověření přes Bank iD s výčtem omezení. Kontaktní osoba: jméno, příjmení, datum narození, kontaktní e-mail (předvyplněný přihlašovacím e-mailem) a telefon. Firma: IČO, podle kterého se doplní název, sídlo a DIČ, a kontrola oprávnění jednat za firmu. Doručovací adresa: zpřístupní se po načtení údajů o firmě a lze ji převzít ze sídla. Změny se průběžně ukládají.</li>
-    <li><b>Shrnutí.</b> Přehled účtu, kontaktní osoby, firmy a doručovací adresy s možností úpravy, připomenutí omezení pro neověřené, souhlas s obchodními podmínkami a tlačítko „Dokončit registraci“.</li>
+    <li><b>Registrace firmy.</b> Nepovinná karta ověření přes Bank iD s výčtem omezení. Firma: IČO, podle kterého se doplní název, sídlo a DIČ. Kontaktní údaje firmy: kontaktní e-mail (předvyplněný přihlašovacím e-mailem) a telefon. Kdo totožnost ověří, u toho se navíc zkontroluje oprávnění jednat za firmu. Změny se průběžně ukládají.</li>
+    <li><b>Shrnutí.</b> Přehled účtu, firmy, kontaktních údajů a stavu ověření totožnosti s možností úpravy, připomenutí omezení pro neověřené, souhlas s obchodními podmínkami a tlačítko „Dokončit registraci“.</li>
   </ol>
   <p>Po dokončení je firma zaregistrovaná a účet aktivní hned, u neověřených uživatelů s omezeními.</p>
 
@@ -674,7 +674,8 @@
     <li>Vrátil se krok Úvod z verze 1, průvodce má tedy čtyři kroky.</li>
     <li>Vytvoření přihlašovacího účtu má dva dílčí kroky jako ve verzi 1: registrace a potvrzení vytvořeného účtu. Registrace už není v modálním okně, je součástí stránky se seznamem kroků.</li>
     <li>Krok se znovu jmenuje „Přihlašovací účet“ (11. 11. se krátce jmenoval „Uživatelský účet“).</li>
-    <li>V kroku Registrace firmy přibyla doručovací adresa.</li>
+    <li>Krok Registrace firmy se zjednodušil: zmizela sekce Kontaktní osoba (jméno, příjmení, datum narození) i doručovací adresa, přibyla sekce Kontaktní údaje firmy.</li>
+    <li>Bez ověření totožnosti se oprávnění jednat za firmu nekontroluje, protože o osobě nejsou žádné údaje. Uživatel má omezený přístup (platba předem, bez alkoholu a tabáku).</li>
     <li>Písmo Lato se načítá ve verzi 2.0, která obsahuje všechny české znaky.</li>
   </ul>
 
@@ -682,15 +683,15 @@
   <ul>
     <li>Ověření totožnosti není krok. Je to odbočka v dialogu, kterou lze udělat v kroku 2, ve shrnutí i po dokončení registrace.</li>
     <li>Omezení bez ověření (v prototypu platba předem a nedostupný alkohol a tabák) jsou vidět před rozhodnutím, ve shrnutí i na závěrečné obrazovce.</li>
-    <li>Všechny údaje o osobě a firmě jsou na jedné obrazovce, ne rozdělené do několika kroků.</li>
-    <li>Po ověření se jméno a datum narození převezmou z banky a zamknou.</li>
+    <li>Údaje o firmě a kontakt jsou na jedné obrazovce, ne rozdělené do několika kroků.</li>
+    <li>Jméno a datum narození se nikde nevyplňují. Po ověření se převezmou z banky.</li>
   </ul>
 
   <h3>Pravidla, která prototyp předvádí</h3>
   <ul>
-    <li><b>Oprávnění jednat za firmu.</b> Jméno a datum narození se porovnají s osobami v obchodním rejstříku. Při shodě není potřeba nic dalšího.</li>
-    <li><b>Plná moc.</b> Kdo v rejstříku není, potřebuje plnou moc. Nahrát ji může jen ověřená osoba, bez ověření tedy firmu zaregistruje jen osoba zapsaná v rejstříku.</li>
-    <li><b>Ověření ve shrnutí.</b> Pokud se po ověření ukáže, že ověřená osoba v rejstříku není, vrátí se uživatel do kroku 2 k nahrání plné moci.</li>
+    <li><b>Bez ověření totožnosti.</b> Stačí IČO a kontakt na firmu. Oprávnění jednat za firmu se nekontroluje a přístup ke službám je omezený.</li>
+    <li><b>S ověřením přes Bank iD.</b> Jméno a datum narození z banky se porovnají s osobami v obchodním rejstříku. Při shodě není potřeba nic dalšího.</li>
+    <li><b>Plná moc.</b> Ověřená osoba, která v rejstříku není, nahraje plnou moc. Pokud se to ukáže až po ověření ve shrnutí, vrátí se uživatel do kroku Registrace firmy.</li>
     <li><b>Rozpracovaná registrace.</b> K účtu se ukládá jedna. „Registrovat se“ ji vždy znovu otevře a jinou firmu lze zaregistrovat změnou IČO.</li>
     <li><b>Souhlasy.</b> Osobní údaje a nabídky patří k účtu (krok 1), obchodní podmínky k firmě (krok 3).</li>
     <li><b>Už registrovaná firma.</b> Registraci nelze dokončit a uživatel dostane kontakt na zákaznickou linku.</li>
@@ -718,7 +719,7 @@
   <ul>
     <li>Panel „Prototype scenarios“ umí vyplnit ukázková data, přeskočit rovnou do kroku 2 a vrátit prototyp do výchozího stavu.</li>
     <li>Ověřovací kód je 123456.</li>
-    <li>IČO 03255654 s osobou Jan Novák, 5. 1. 1988: shoda s rejstříkem. IČO 27082440: je potřeba plná moc. IČO 25596641: firma je už registrovaná.</li>
+    <li>Po ověření přes Bank iD (Jan Novák, 5. 1. 1988): IČO 03255654 znamená shodu s rejstříkem, IČO 27082440 potřebu plné moci. IČO 25596641: firma je už registrovaná.</li>
     <li>Přihlášení e-mailem jan.novak@eremita.cz s libovolným heslem otevře účet s rozpracovanou registrací.</li>
     <li>Rozpracovaná registrace žije jen v paměti stránky, obnovení stránky ji smaže.</li>
   </ul>
@@ -822,9 +823,8 @@ const LOCK = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-
 const S = {
   screen:'landing', acct:false, privacy:false, acctForm:false,
   signedIn:false, resumed:false, lgEmail:'', lgPw:'', lgErr:'',   // one unfinished company registration is kept with the account
-  first:'', last:'', dob:'', email:'', cemail:'', phone:'', pw:'', pw2:'', showPw:false,
+  email:'', cemail:'', phone:'', pw:'', pw2:'', showPw:false,
   ico:'', lookup:'idle', company:null, dup:'',
-  dName:'', dStreet:'', dZip:'', dCity:'', dFor:'',   // delivery address, available once the company is loaded from the register
   file:null, poaState:'none', poaFail:false, fileErr:'',
   terms:false, mkt:false, touch:{}, tried:false, submitted:false,
   identity:{verified:false, via:null},
@@ -843,20 +843,15 @@ function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('sh
 
 /* ---------- logic ---------- */
 const verified = () => S.identity.verified;
-const me = () => verified() ? {name:PERSON.name, bornIso:PERSON.bornIso} : {name:(S.first+' '+S.last).trim(), bornIso:(parseDob(S.dob)||{}).iso};
 function matchPerson(company, m){
   const people=(company.people||[]).map(p=>{ const nameOk=sameName(m.name,p.name); return {name:p.name,role:p.role,nameOk,ok:nameOk && p.born===m.bornIso}; });
   const ok=people.some(p=>p.ok);
   return {ok, reason: ok?'match':(people.some(p=>p.nameOk)?'dob':'none'), people};
 }
-// result of comparing the typed (or verified) person with the people listed in the register
-function matchNow(){
-  if(S.lookup!=='found') return null;
-  const m=me(); if(nameTokens(m.name).length<2 || !m.bornIso) return {pending:true};
-  return matchPerson(S.company,m);
-}
-const needPoa = () => { const m=matchNow(); return !!m && !m.pending && !m.ok; };
-const poaLocked = () => needPoa() && !verified();   // without verified identity only people listed in the register can register
+// Authority to act for the company is checked only for a verified person: the name and date of birth come from Bank iD.
+// Without verification nothing is known about the person, so there is no check (and the access is limited).
+const matchNow = () => S.lookup==='found' && verified() ? matchPerson(S.company,{name:PERSON.name,bornIso:PERSON.bornIso}) : null;
+const needPoa = () => { const m=matchNow(); return !!m && !m.ok; };
 
 // step 1: user account
 function errsAcct(){
@@ -869,34 +864,20 @@ function errsAcct(){
 }
 // step 2: company registration
 function errsCompany(){
-  const e={}, v=verified();
-  if(!v){
-    if(!S.first.trim()) e.first='Zadejte své jméno.';
-    if(!S.last.trim()) e.last='Zadejte své příjmení.';
-    if(!S.dob.trim()) e.dob='Zadejte své datum narození.';
-    else { const d=parseDob(S.dob); if(!d) e.dob='Zadejte datum ve tvaru den. měsíc. rok, například 5. 1. 1988.'; else if(d.age<18) e.dob='Firmu může zaregistrovat jen osoba starší 18 let.'; }
-  }
-  if(!S.cemail.trim()) e.cemail='Zadejte kontaktní e-mail.'; else if(!EMAIL_RE.test(S.cemail.trim())) e.cemail='Zadejte e-mail ve tvaru jmeno@domena.cz.';
-  if(!S.phone.trim()) e.phone='Zadejte svůj telefon.'; else if(!PHONE_RE.test(S.phone.trim())) e.phone='Zadejte telefon ve tvaru 777 000 111.';
+  const e={};
   if(!/^\d{8}$/.test(S.ico.trim())) e.ico='Zadejte IČO – 8 číslic.';
   else if(S.lookup==='notfound') e.ico='Firmu s tímto IČO jsme nenašli.';
   else if(S.lookup==='dup') e.ico='Tato firma už je registrovaná.';
   else if(S.lookup!=='found') e.ico='Klikněte na „Doplnit údaje“, ať firmu najdeme v rejstříku.';
-  if(S.lookup==='found'){
-    if(!S.dStreet.trim()) e.dStreet='Zadejte ulici a číslo popisné.';
-    if(!S.dZip.trim()) e.dZip='Zadejte PSČ.'; else if(!/^\d{3}\s?\d{2}$/.test(S.dZip.trim())) e.dZip='Zadejte PSČ ve tvaru 130 00.';
-    if(!S.dCity.trim()) e.dCity='Zadejte město nebo obec.';
-  }
-  if(needPoa()){
-    if(poaLocked()) e.poa='Bez ověření totožnosti nemůžeme registrovat firmu, za kterou jednáte na základě plné moci. Ověřte prosím svou totožnost.';
-    else if(S.poaState!=='ok') e.poa='Nahrajte plnou moc.';
-  }
+  if(needPoa() && S.poaState!=='ok') e.poa='Nahrajte plnou moc.';
+  if(!S.cemail.trim()) e.cemail='Zadejte kontaktní e-mail.'; else if(!EMAIL_RE.test(S.cemail.trim())) e.cemail='Zadejte e-mail ve tvaru jmeno@domena.cz.';
+  if(!S.phone.trim()) e.phone='Zadejte telefon.'; else if(!PHONE_RE.test(S.phone.trim())) e.phone='Zadejte telefon ve tvaru 777 000 111.';
   return e;
 }
 // step 3: summary
 const errsSummary = () => S.terms ? {} : {terms:'Pro dokončení registrace musíte souhlasit s obchodními podmínkami.'};
 const errs = () => S.screen==='account' ? errsAcct() : S.screen==='register' ? errsCompany() : S.screen==='summary' ? errsSummary() : {};
-const ERR_ORDER = ['email','pw','pw2','privacy','first','last','dob','cemail','phone','ico','poa','dStreet','dZip','dCity','terms'];
+const ERR_ORDER = ['email','pw','pw2','privacy','ico','poa','cemail','phone','terms'];
 function paintErrs(){
   const er=errs();
   ERR_ORDER.forEach(k=>{
@@ -929,39 +910,25 @@ const fld = (id,label,o={}) => {
     <div class="field${ro?' ro':''}" id="f-${id}">${pre}<input id="${id}" name="${id}" type="${type}" value="${esc(S[id])}" autocomplete="${ac}"${ph?` placeholder="${ph}"`:''}${im?` inputmode="${im}"`:''}${ro?' readonly aria-readonly="true"':''}${o.req===false?'':' aria-required="true"'} aria-describedby="${hint?`h-${id} `:''}e-${id}" data-bind="${id}">${suf}</div>
     ${hint?`<div class="hint-s" id="h-${id}">${hint}</div>`:''}<div class="slot-err" id="e-${id}" role="alert"></div></div>`;
 };
-const personFields = () => { const v=verified(); return `
-  ${v?`<p class="locked-note">${LOCK}<span>Jméno a datum narození jsme převzali z ověření totožnosti, proto je nelze upravit.</span></p>`:''}
-  <div class="row2">${fld('first','Jméno',{ac:'given-name',ro:v})}${fld('last','Příjmení',{ac:'family-name',ro:v})}</div>
-  ${fld('dob','Datum narození',{ac:'bday',ph:'dd. mm. rrrr',im:'numeric',ro:v,wrap:'w240',hint:v?'':'Porovnáme ho s obchodním rejstříkem, abychom věděli, že za firmu smíte jednat.'})}`; };
-
 const idCard = () => verified()
   ? `<section class="idcard ok" aria-label="Ověření totožnosti"><div class="idc-top"><span class="idc-ic">${svgIcon(ICON.id,26)}</span>
-      <div><h2>Totožnost je ověřená ✓</h2><p>Ověřili jsme vás přes Bank iD. Máte plný přístup ke službám bez omezení.</p></div></div></section>`
+      <div><h2>Totožnost je ověřená ✓</h2><p><b>${esc(PERSON.name)}</b>, datum narození ${PERSON.born}. Ověřeno přes Bank iD. Máte plný přístup ke službám bez omezení.</p></div></div></section>`
   : `<section class="idcard" aria-label="Ověření totožnosti"><div class="idc-top"><span class="idc-ic">${svgIcon(ICON.id,26)}</span>
-      <div><h2>Ověřte totožnost a odemkněte plný přístup</h2><p>Nepovinné a trvá asi 2 minuty. Přihlásíte se do své banky přes Bank iD a jméno i datum narození doplníme za vás.</p>
+      <div><h2>Ověřte totožnost a odemkněte plný přístup</h2><p>Nepovinné a trvá asi 2 minuty. Přihlásíte se do své banky přes Bank iD. Potom zkontrolujeme, že za firmu smíte jednat.</p>
       <div class="idc-act"><button type="button" class="btn" data-verify>Ověřit přes Bank iD</button></div></div></div>
-      <div class="idc-limits">${ALERT_ICONS.warn}<div><b>Bez ověření budete mít omezený přístup:</b>${limitsList()}</div></div></section>`;
-
-const limitNote = () => verified() ? '' : limitsBox('Registrujete se bez ověření totožnosti. Budete mít omezený přístup ke službám:', `${SKIP_LATER} <button type="button" class="link small" data-verify>Ověřit nyní</button>`);
+      <div class="idc-limits">${ALERT_ICONS.warn}<div><b>Bez ověření bude registrace kratší, ale s omezeným přístupem:</b>${limitsList()}</div></div></section>`;
 
 const matchBlock = m => {
-  if(m.pending) return `<p class="hint-s" style="margin:0 0 8px">Jakmile vyplníte jméno a datum narození, zkontrolujeme v rejstříku, že za firmu smíte jednat.</p>`;
-  const v=verified(), lock=poaLocked();
-  const msg = m.ok ? `V obchodním rejstříku jste ${v?'':'podle zadaných údajů '}uvedeni jako osoba oprávněná jednat za firmu. Plnou moc nepotřebujete.`
-    : lock ? (m.reason==='dob' ? 'V rejstříku jsme našli osobu se stejným jménem, ale s jiným datem narození, než jste zadali.' : 'V rejstříku vás podle zadaného jména a data narození jako osobu oprávněnou jednat za firmu nevidíme.')
+  if(!m) return '';   // not verified: no authority check
+  const msg = m.ok ? 'V obchodním rejstříku jste uvedeni jako osoba oprávněná jednat za firmu. Plnou moc nepotřebujete.'
     : m.reason==='dob' ? 'V rejstříku jsme našli osobu se stejným jménem, ale s jiným datem narození, proto vás nemůžeme spárovat. Nevadí – stačí nahrát plnou moc.'
     : 'V rejstříku vás jako osobu oprávněnou jednat za firmu nevidíme. Nevadí – stačí nahrát plnou moc.';
   const ppl=m.people.map(p=>`${esc(p.name)} (${esc(p.role)})${p.ok?' ✓':''}`).join(', ');
   return alertBox(m.ok?'ok':'warn',msg,'margin:0 0 8px')
-    + `<p class="hint-s" style="margin:0">${m.ok||lock?'Za firmu podle rejstříku jednají':'Plnou moc musí podepsat někdo z osob, které za firmu podle rejstříku jednají'}: ${ppl}.</p>`;
+    + `<p class="hint-s" style="margin:0">${m.ok?'Za firmu podle rejstříku jednají':'Plnou moc musí podepsat někdo z osob, které za firmu podle rejstříku jednají'}: ${ppl}.</p>`;
 };
 const poaSection = () => {
   if(!needPoa()) return '';
-  if(poaLocked()) return `<div class="poa-sec"><h3>Plná moc</h3>
-    ${alertBox('warn','Plnou moc může nahrát jen ověřená osoba. Nejdřív proto ověřte svou totožnost.','margin:8px 0 12px')}
-    <button type="button" class="btn soft" id="verifyNow" data-verify>Ověřit totožnost</button>
-    <p class="hint-s" style="margin-top:12px">Nebo registraci vyřiďte s obchodním zástupcem – zavolejte nám na ${PHONE} (${HOURS}).</p>
-    <div class="slot-err" id="e-poa" role="alert"></div></div>`;
   const st=S.poaState; let body;
   if(st==='checking') body=`<div class="file"><span class="fi">🖼</span><span class="fname">${esc(S.file.name)}</span></div>${loadingBox(110)}`;
   else if(st==='ok') body=`${alertBox('ok','Plnou moc jsme zkontrolovali. Jste oprávněni jednat za tuto firmu.','margin:0 0 12px')}
@@ -985,22 +952,11 @@ const companyHtml = () => {
   }
 };
 
-// delivery address: opens once the company data is loaded from the register
-const fmtZip = z => z.replace(/\s/g,'').replace(/^(\d{3})(\d{2})$/,'$1 $2');
-const deliveryLine = () => `${esc(S.dStreet.trim())}, ${esc(fmtZip(S.dZip.trim()))} ${esc(S.dCity.trim())}`;
-const deliveryHtml = () => S.lookup!=='found'
-  ? `<p class="hint-s" style="margin:0;font-size:15px;line-height:22px">Adresu budete moci zadat, jakmile podle IČO načteme údaje o firmě.</p>`
-  : `<p style="margin:0 0 16px">Na tuto adresu vám budeme vozit objednávky. S ní můžete hned začít nakupovat.</p>
-     <p style="margin:0 0 20px"><button type="button" class="btn soft sm" id="useSeat">Použít adresu sídla firmy</button></p>
-     ${fld('dName','Název provozovny (nepovinné)',{ac:'organization',req:false,hint:'Například název restaurace nebo prodejny. Pomůže řidiči najít správné místo.'})}
-     ${fld('dStreet','Ulice a číslo popisné',{ac:'address-line1'})}
-     <div class="row2 zipcity">${fld('dZip','PSČ',{ac:'postal-code',im:'numeric',ph:'130 00'})}${fld('dCity','Město nebo obec',{ac:'address-level2'})}</div>`;
-
 /* ---------- step list (wizard) ---------- */
 const STEPS = [
   ['Úvod','Co je potřeba k registraci'],
   ['Přihlašovací účet','Účet pro přihlášení do služby'],
-  ['Registrace firmy','Údaje o vás a o firmě'],
+  ['Registrace firmy','IČO a kontaktní údaje'],
   ['Shrnutí','Kontrola údajů a dokončení']
 ];
 const STEP_OF = {intro:1, account:2, emailCode:2, acctDone:2, register:3, summary:4};
@@ -1064,7 +1020,7 @@ const VIEWS = {
           <p class="lp-need-sub">Registrace má tři krátké kroky a trvá asi 5 minut: vytvoříte si přihlašovací účet, zaregistrujete firmu a zkontrolujete shrnutí. Potom můžete hned objednávat.</p>
           <div class="lp-needs">
             <article><span class="ic">${INTRO_ICON.company}</span><h3>IČO vaší firmy</h3><p>Název a sídlo firmy doplníme sami z obchodního rejstříku.</p></article>
-            <article><span class="ic">${INTRO_ICON.authority}</span><h3>Základní údaje o vás</h3><p>Jméno, datum narození, e-mail a telefon. Podle nich zkontrolujeme, že za firmu smíte jednat.</p></article>
+            <article><span class="ic">${INTRO_ICON.authority}</span><h3>Kontakt na firmu</h3><p>Kontaktní e-mail a telefon, na kterých vás zastihneme.</p></article>
             <article><span class="ic">${INTRO_ICON.bank}</span><h3>Ověření totožnosti (nepovinné)</h3><p>Přes Bank iD odemknete plný přístup. Bez ověření můžete objednávat, ale s omezeními.</p></article>
           </div>
           <div class="lp-need-cta"><button class="lp-pill primary" data-go="start">Registrovat se</button></div>
@@ -1079,10 +1035,12 @@ const VIEWS = {
         <div class="stack">
           <h3 style="font-size:14px">Co budete pro registraci potřebovat</h3>
           <div class="info"><span class="tag">${INTRO_ICON.company}</span><div class="ib">IČO vaší firmy. Název a sídlo doplníme z obchodního rejstříku.</div></div>
-          <div class="info"><span class="tag">${INTRO_ICON.authority}</span><div class="ib">Oprávnění jednat za vaši firmu
+          <div class="info"><span class="tag">${INTRO_ICON.phone}</span><div class="ib">Kontaktní e-mail a telefon firmy.</div></div>
+          <div class="info"><span class="tag">${INTRO_ICON.bank}</span><div class="ib">Ověření totožnosti přes Bank iD je nepovinné. Bez něj je registrace kratší, ale s omezeným přístupem:
+            <ul>${SKIP_LIMITS.map(x=>`<li>${x}</li>`).join('')}</ul></div></div>
+          <div class="info"><span class="tag">${INTRO_ICON.authority}</span><div class="ib">Pokud totožnost ověříte, zkontrolujeme i oprávnění jednat za vaši firmu
             <ul><li>v obchodním rejstříku jste zapsáni jako osoba oprávněná jednat za firmu, nebo</li>
-            <li>máte plnou moc, kterou při registraci nahrajete. K tomu je potřeba ověřit totožnost přes Bank iD. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></li></ul></div></div>
-          <div class="info"><span class="tag">${INTRO_ICON.bank}</span><div class="ib">Ověření totožnosti přes Bank iD je nepovinné. Bez něj budete mít omezený přístup ke službám.</div></div>
+            <li>máte plnou moc, kterou při registraci nahrajete. <a href="#" data-poa-sample><b>Vzor plné moci ke stažení</b></a></li></ul></div></div>
           <p style="margin:16px 0 20px">Nejdřív si vytvoříte přihlašovací účet. S ním se pak budete přihlašovat do služby <b>makro distribuce</b>.</p>
           <button type="button" class="btn cta-intro" data-go="account">${S.acct&&S.signedIn?'Pokračovat v registraci':'Vytvořit přihlašovací účet'}</button>
           <p class="resume-hint" ${S.signedIn?'hidden':''}>Máte rozpracovanou registraci? <button type="button" class="link" data-login>Přihlásit se</button></p>
@@ -1145,32 +1103,27 @@ const VIEWS = {
 
   register: () => wizard('register',`
         <h1>Registrace firmy</h1>
-        <p class="sub">Vyplňte údaje o sobě a o firmě. Vše průběžně ukládáme, takže registraci můžete dokončit i později.</p>
+        <p class="sub">Zadejte IČO a kontakt na firmu. Vše průběžně ukládáme, takže registraci můžete dokončit i později.</p>
         ${S.resumed?`<div class="stack">${alertBox('ok','Vítejte zpět. Pokračujte v registraci firmy tam, kde jste skončili.','margin:0')}</div>`:''}
         <div id="idCard" class="stack">${idCard()}</div>
         <form id="regForm" class="stack" novalidate>
-          <section class="sec" aria-labelledby="h-person"><h2 id="h-person">Kontaktní osoba</h2>
-            <div id="personFields">${personFields()}</div>
-            ${fld('cemail','Kontaktní e-mail',{type:'email',ac:'email',hint:'Sem budeme posílat informace k objednávkám a fakturám. Může se lišit od přihlašovacího e-mailu.'})}
-            ${fld('phone','Telefon',{type:'tel',ac:'tel',ph:'777 000 111',pre:'<span class="pfx">+420</span>',wrap:'w240'})}
-          </section>
           <section class="sec" aria-labelledby="h-comp"><h2 id="h-comp">Firma</h2>
             <div class="fg"><label class="lbl" for="ico">IČO</label>
               <div class="ico-row"><div class="field" id="f-ico"><input id="ico" name="ico" value="${esc(S.ico)}" inputmode="numeric" maxlength="8" autocomplete="off" aria-required="true" aria-describedby="h-ico e-ico" data-bind="ico"></div>
                 <button type="button" class="btn soft" id="icoGo"${S.lookup==='loading'?' disabled':''}>Doplnit údaje</button></div>
-              <div class="hint-s" id="h-ico">Název a sídlo firmy doplníme z obchodního rejstříku. Pro ukázku: Jan Novák, 5. 1. 1988 je osoba uvedená v rejstříku u IČO 03255654.</div>
+              <div class="hint-s" id="h-ico">Název a sídlo firmy doplníme z obchodního rejstříku. Pro ukázku: IČO 03255654. Po ověření přes Bank iD (Jan Novák) je u něj shoda s rejstříkem, u IČO 27082440 je potřeba plná moc.</div>
               <div class="slot-err" id="e-ico" role="alert"></div></div>
             <div id="companyRes" aria-live="polite">${companyHtml()}</div>
           </section>
-          <section class="sec" aria-labelledby="h-deliv"><h2 id="h-deliv">Doručovací adresa</h2>
-            <div id="delivRes">${deliveryHtml()}</div>
+          <section class="sec" aria-labelledby="h-contact"><h2 id="h-contact">Kontaktní údaje firmy</h2>
+            ${fld('cemail','Kontaktní e-mail',{type:'email',ac:'email',hint:'Sem budeme posílat informace k objednávkám a fakturám. Může se lišit od přihlašovacího e-mailu.'})}
+            ${fld('phone','Telefon',{type:'tel',ac:'tel',ph:'777 000 111',pre:'<span class="pfx">+420</span>',wrap:'w240'})}
           </section>
           <div class="actions"><button type="submit" class="btn" id="submitBtn">Pokračovat na shrnutí</button><button type="button" class="link" id="laterBtn">Dokončit později</button></div>
         </form>`, true),
 
   summary: () => { const c=S.company, v=verified(), m=matchNow();
-    const who = v ? PERSON : {name:(S.first+' '+S.last).trim(), born:(parseDob(S.dob)||{}).born||S.dob};
-    const role = m && m.ok ? `Podle obchodního rejstříku (${esc((m.people.find(x=>x.ok)||{}).role||'')})` : 'Plná moc ✓';
+    const role = m ? (m.ok ? `Podle obchodního rejstříku (${esc((m.people.find(x=>x.ok)||{}).role||'')})` : 'Plná moc ✓') : '';
     const edit = '<button type="button" class="link" data-go="register">Upravit</button>';
     return wizard('summary',`
         <h1>Zkontrolujte údaje a dokončete registraci</h1>
@@ -1178,13 +1131,14 @@ const VIEWS = {
         <form id="sumForm" class="stack sum" novalidate>
           <div class="sum-h" style="margin-top:0"><h3>Přihlašovací účet</h3></div>
           <div class="cbox"><dl><dt>Přihlašovací e-mail</dt><dd>${esc(S.email)} (ověřený ✓)</dd></dl></div>
-          <div class="sum-h"><h3>Kontaktní osoba</h3>${edit}</div>
-          <div class="cbox"><dl><dt>Jméno a příjmení</dt><dd>${esc(who.name)}</dd><dt>Datum narození</dt><dd>${esc(who.born)}</dd><dt>Kontaktní e-mail</dt><dd>${esc(S.cemail)}</dd><dt>Telefon</dt><dd>+420 ${esc(S.phone)}</dd><dt>Totožnost</dt><dd>${v?'Ověřeno přes Bank iD ✓':'Neověřeno'}</dd></dl></div>
           <div class="sum-h"><h3>Firma</h3>${edit}</div>
-          <div class="cbox"><dl><dt>Název</dt><dd>${esc(c.name)}</dd><dt>IČO</dt><dd>${esc(c.ico)}</dd>${c.dic?`<dt>DIČ</dt><dd>${esc(c.dic)}</dd>`:''}<dt>Sídlo</dt><dd>${esc(c.seat)}</dd><dt>Oprávnění jednat za firmu</dt><dd>${role}</dd></dl></div>
-          <div class="sum-h"><h3>Doručovací adresa</h3>${edit}</div>
-          <div class="cbox"><dl>${S.dName.trim()?`<dt>Provozovna</dt><dd>${esc(S.dName.trim())}</dd>`:''}<dt>Adresa</dt><dd>${deliveryLine()}</dd></dl></div>
-          ${v?'':limitsBox('Registrujete se bez ověření totožnosti. Budete mít omezený přístup ke službám:',SKIP_LATER)+'<div><button type="button" class="btn soft" data-verify>Ověřit přes Bank iD</button></div>'}
+          <div class="cbox"><dl><dt>Název</dt><dd>${esc(c.name)}</dd><dt>IČO</dt><dd>${esc(c.ico)}</dd>${c.dic?`<dt>DIČ</dt><dd>${esc(c.dic)}</dd>`:''}<dt>Sídlo</dt><dd>${esc(c.seat)}</dd></dl></div>
+          <div class="sum-h"><h3>Kontaktní údaje firmy</h3>${edit}</div>
+          <div class="cbox"><dl><dt>Kontaktní e-mail</dt><dd>${esc(S.cemail)}</dd><dt>Telefon</dt><dd>+420 ${esc(S.phone)}</dd></dl></div>
+          <div class="sum-h"><h3>Ověření totožnosti</h3></div>
+          ${v?`<div class="cbox"><dl><dt>Stav</dt><dd>Ověřeno přes Bank iD ✓</dd><dt>Jméno a příjmení</dt><dd>${esc(PERSON.name)}</dd><dt>Datum narození</dt><dd>${PERSON.born}</dd><dt>Oprávnění jednat za firmu</dt><dd>${role}</dd></dl></div>`
+             :`<div class="cbox"><dl><dt>Stav</dt><dd>Neověřeno</dd></dl></div>
+               ${limitsBox('Registrujete se bez ověření totožnosti. Budete mít omezený přístup ke službám:',SKIP_LATER)}<div><button type="button" class="btn soft" data-verify>Ověřit přes Bank iD</button></div>`}
           <label class="chk" style="margin-top:28px"><input type="checkbox" id="terms" ${S.terms?'checked':''} aria-describedby="e-terms"> <span>Souhlasím s <a href="#">obchodními podmínkami</a>.</span></label>
           <div class="slot-err" id="e-terms" role="alert"></div>
           <div class="actions"><button type="submit" class="btn" id="submitBtn">Dokončit registraci</button><button type="button" class="link" id="laterBtn">Dokončit později</button></div>
@@ -1212,7 +1166,7 @@ const VIEWS = {
       <div class="done-ic" aria-hidden="true">✓</div>
       <h1>Firma je zaregistrovaná</h1>
       <p class="sub">Děkujeme, registrace je hotová a můžete začít objednávat.</p>
-      <div class="cbox" style="margin-top:24px"><dl><dt>Firma</dt><dd>${esc(c.name)}</dd><dt>IČO</dt><dd>${esc(c.ico)}</dd><dt>Sídlo</dt><dd>${esc(c.seat)}</dd><dt>Doručovací adresa</dt><dd>${S.dName.trim()?esc(S.dName.trim())+', ':''}${deliveryLine()}</dd><dt>Kontaktní osoba</dt><dd>${esc(v?PERSON.name:(S.first+' '+S.last).trim())}</dd><dt>Kontaktní e-mail</dt><dd>${esc(S.cemail)}</dd><dt>Přihlašovací e-mail</dt><dd>${esc(S.email)}</dd><dt>Totožnost</dt><dd>${v?'Ověřeno přes Bank iD ✓':'Neověřeno'}</dd></dl></div>
+      <div class="cbox" style="margin-top:24px"><dl><dt>Firma</dt><dd>${esc(c.name)}</dd><dt>IČO</dt><dd>${esc(c.ico)}</dd><dt>Sídlo</dt><dd>${esc(c.seat)}</dd><dt>Kontaktní e-mail</dt><dd>${esc(S.cemail)}</dd><dt>Přihlašovací e-mail</dt><dd>${esc(S.email)}</dd><dt>Telefon</dt><dd>+420 ${esc(S.phone)}</dd><dt>Totožnost</dt><dd>${v?`Ověřeno přes Bank iD ✓ (${esc(PERSON.name)})`:'Neověřeno'}</dd></dl></div>
       ${v?alertBox('ok','Totožnost máte ověřenou, nákupy nejsou nijak omezené.','margin-top:0')
          :limitsBox('Zatím máte omezený přístup ke službám:',SKIP_LATER)+`<button type="button" class="btn soft" data-verify>Ověřit přes Bank iD</button>`}
       <div class="done-act"><button type="button" class="btn" id="doneShop">Začít nakupovat</button><button type="button" class="link" data-go="landing">Zpět na úvod</button></div>
@@ -1266,12 +1220,9 @@ function resetState(){
 }
 // partial updates keep the focus and typed text of the other fields
 function renderCompany(){ const el=$('#companyRes'); if(el){ el.innerHTML=companyHtml(); paintErrs(); } const b=$('#icoGo'); if(b) b.disabled=S.lookup==='loading'; }
-function renderDelivery(){ const el=$('#delivRes'); if(el){ el.innerHTML=deliveryHtml(); paintErrs(); } }
 function renderIdCard(){ const el=$('#idCard'); if(el) el.innerHTML=idCard(); }
-function renderPerson(){ const el=$('#personFields'); if(el) el.innerHTML=personFields(); }
-function renderNote(){ const el=$('#limitNote'); if(el) el.innerHTML=limitNote(); }
 function refreshAll(){
-  if(S.screen==='register'){ renderIdCard(); renderPerson(); renderCompany(); renderNote(); paintErrs(); }
+  if(S.screen==='register'){ renderIdCard(); renderCompany(); paintErrs(); }
   else render();
 }
 
@@ -1280,17 +1231,16 @@ function lookup(){
   if(S.lookup==='loading') return;
   S.ico=S.ico.replace(/\s/g,''); const i=$('#ico'); if(i) i.value=S.ico;
   S.touch.ico=true;
-  if(!/^\d{8}$/.test(S.ico)){ S.lookup='idle'; S.company=null; renderCompany(); renderDelivery(); $('#ico')?.focus(); return; }
-  S.lookup='loading'; S.company=null; renderCompany(); renderDelivery();
+  if(!/^\d{8}$/.test(S.ico)){ S.lookup='idle'; S.company=null; renderCompany(); $('#ico')?.focus(); return; }
+  S.lookup='loading'; S.company=null; renderCompany();
   const ico=S.ico;
   later(1200,()=>{
     const c=COMPANIES[ico], reg=REGISTERED[ico];
     if(reg){ S.lookup='dup'; S.dup=reg.name; }
     else if(c){ S.lookup='found'; S.company=c;
-      if(S.dFor && S.dFor!==c.ico) Object.assign(S,{dName:'',dStreet:'',dZip:'',dCity:''});   // a different company: the delivery address starts empty
-      S.dFor=c.ico; ['dStreet','dZip','dCity'].forEach(k=>{ S.touch[k]=false; }); S.poaState='none'; S.file=null; S.poaFail=false; S.fileErr=''; }
+      S.poaState='none'; S.file=null; S.poaFail=false; S.fileErr=''; }
     else S.lookup='notfound';
-    renderCompany(); renderDelivery();
+    renderCompany();
   });
 }
 function takeFile(f){
@@ -1332,8 +1282,6 @@ function closeVerify(restore=true){
 }
 function finishVerify(via){
   S.identity={verified:true,via};
-  Object.assign(S,{first:PERSON.first,last:PERSON.last,dob:PERSON.born});
-  S.touch.first=S.touch.last=S.touch.dob=false;
   closeVerify(false); refreshAll();
   if(S.screen==='summary' && Object.keys(errsCompany()).length){ S.tried=true; go('register'); }   // e.g. the verified person is not in the register: power of attorney needed
   toast('Totožnost je ověřena.');
@@ -1395,7 +1343,6 @@ app.addEventListener('click',e=>{
     return go('acctDone');
   }
   if(t.closest('#icoGo')) return lookup();
-  if(t.closest('#useSeat')){ const a=S.company.addr; Object.assign(S,{dStreet:a.street,dZip:a.zip,dCity:a.city}); renderDelivery(); markSaving(); return $('#useSeat').focus(); }
   if(t.closest('#pwTog')){ S.showPw=!S.showPw; const i=$('#pw'), b=$('#pwTog'); i.type=$('#pw2').type=S.showPw?'text':'password'; b.textContent=S.showPw?'Skrýt':'Zobrazit'; b.setAttribute('aria-pressed',S.showPw); return i.focus(); }
   if(t.closest('#pick')) return $('#fileIn').click();
   if(t.closest('[data-poa-remove]')){ S.file=null; S.poaState='none'; S.poaFail=false; return renderCompany(); }
@@ -1410,8 +1357,7 @@ app.addEventListener('input',e=>{
   if(el.id==='code'){ S.code=el.value; S.codeErr=''; $('#e-code').textContent=''; $('#f-code').classList.remove('err'); el.setAttribute('aria-invalid','false'); return; }
   const k=el.dataset.bind; if(!k) return;
   S[k]=el.value;
-  if(k==='ico' && S.lookup!=='idle'){ S.lookup='idle'; S.company=null; renderCompany(); renderDelivery(); }
-  if((k==='first'||k==='last'||k==='dob') && S.lookup==='found') renderCompany();
+  if(k==='ico' && S.lookup!=='idle'){ S.lookup='idle'; S.company=null; renderCompany(); }
   paintErrs();
 });
 app.addEventListener('change',e=>{
@@ -1438,7 +1384,7 @@ app.addEventListener('submit',e=>{
     if(!em||!pw) S.lgErr='Zadejte e-mail i heslo.';
     else if(S.acct) ok = em===S.email.trim().toLowerCase() && pw===S.pw;
     else if(em===DEMO_EMAIL){ ok=true;   // prototype: an existing account with one unfinished registration
-      Object.assign(S,{acct:true,email:DEMO_EMAIL,pw,pw2:pw,privacy:true,first:'Jan',last:'Novák',dob:'5. 1. 1988',phone:'777 123 456'}); }
+      Object.assign(S,{acct:true,email:DEMO_EMAIL,pw,pw2:pw,privacy:true,phone:'777 123 456'}); }
     if(!ok){ S.lgErr=S.lgErr||'Nesprávný e-mail nebo heslo.'; S.lgPw=''; render(); return $(S.lgEmail.trim()?'#lgPw':'#lgEmail').focus(); }
     Object.assign(S,{signedIn:true,resumed:!S.submitted,tried:false,touch:{}});
     return go(S.submitted?'done':'register');
@@ -1458,7 +1404,7 @@ app.addEventListener('submit',e=>{
   if(k){
     const p=document.createElement('div'); p.id='submitErr'; p.className='submit-err'; p.setAttribute('role','alert');
     p.textContent='Zkontrolujte prosím označená pole.'; ($('#submitBtn').closest('.actions')||$('#submitBtn')).before(p);
-    const target = k==='poa' ? ($('#verifyNow')||$('#pick')||$('#e-poa')) : k==='terms' ? $('#terms') : $('#'+k);
+    const target = k==='poa' ? ($('#pick')||$('#e-poa')) : k==='terms' ? $('#terms') : $('#'+k);
     if(target){ target.scrollIntoView({block:'center',behavior:REDUCED.matches?'auto':'smooth'}); target.focus({preventScroll:true}); }
     return;
   }
@@ -1515,7 +1461,6 @@ $('#sc-fill').addEventListener('click',()=>{
     return toast('Demo data filled in.');
   }
   if(S.screen==='summary') return toast('Nothing to fill in on this step.');
-  if(!verified()) Object.assign(S,{first:'Jan',last:'Novák',dob:'5. 1. 1988'});
   S.phone='777 123 456';
   if(S.screen!=='register') go('register'); else render();
   toast('Demo data filled in. Enter an IČO next, e.g. 03255654.');
